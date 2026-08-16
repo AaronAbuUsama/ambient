@@ -14,7 +14,7 @@ detail and a pile of themes.
 |---|---|---|
 | 1 | **Skeleton** | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
 | 2 | **Intake** | whatsappd adapter. Accounts, sources, allowlist, sync → transcripts + hash-addressed media blobs. Raw only. |
-| 3 | **Media processing** | Hash-keyed processors: speech-to-text, vision, extraction. Results become documents. |
+| — | **Media processing** | Hash-keyed processors: STT, vision, extraction. **Off the critical path** — self-contained, does not gate the shape. Any time after Intake; required before Knowledge is trustworthy. |
 | 4 | **Knowledge** | The OpenKnowledge project, templates, the ontology validator/queue/indexer, and the hand-operated passes that become skills. |
 | 5 | **Harness** | Pi session construction: `cwd`, model policy, per-session MCP list, skill discovery, typed run receipts. |
 | 6 | **Loops** | Triggers, cadences, the lease, the job runner. |
@@ -22,7 +22,7 @@ detail and a pile of themes.
 | 8 | **The mouth** | The speaker. |
 | 9 | **Evals** | Cases as directories, deterministic assertions, offline replay. Cross-cutting. |
 
-**Order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8, with 9 starting at 5.**
+**Order: 1 → 2 → 4 → 5 → 6 → 7 → 8. Media any time after 2. Evals from 5.**
 
 The two orderings that were grilled and rejected are recorded in
 [grills/003](grills/003-roadmap-order.md).
@@ -41,8 +41,9 @@ area 2 stops at raw transcripts and blobs on disk, before any interpretation. Yo
 material to shape against without committing to a knowledge model you invented in the
 abstract.
 
-**Media before knowledge**, because an unprocessed voice note is not a degraded transcript
-entry — it is a hole. Knowledge built on holes has to be rebuilt.
+**Media is needed before Knowledge is trustworthy** — an unprocessed voice note is a hole,
+not a degraded entry — but it is self-contained and does not gate the shape, so it is not a
+sequenced area.
 
 **Harness after knowledge**, because the harness's job is to automate passes that already
 work. Claude Code plus a human *is* the harness during area 4. That is the method:
@@ -57,6 +58,11 @@ assert. Before that the assertions are `lint` and schema validation, which area 
 ## Area 1 — Skeleton
 
 **Status: active. Not started.**
+
+**Do not copy the old CLI verbatim — its shape was wrong.** `src/home/` exposed eleven
+functions and twelve interfaces over file reading: large interface, thin implementation,
+every caller learning the layout. Port the *behaviours* behind one interface. See
+[seams.md](seams.md).
 
 **The question.** Is there a single command that creates a correct Ambient home, and a
 single command that tells you when one is wrong?
@@ -102,6 +108,14 @@ linked device on the principal's personal WhatsApp. The allowlist is the mitigat
 Do not plan this until area 1's gate is met.
 
 ---
+
+## Before area 1 is built
+
+1. **[AGENTS.md](AGENTS.md)** — done. The five Effect-lite rules and the deep-module tests.
+2. **[seams.md](seams.md)** — done. Every module, ownership, dependency direction.
+3. **Design-it-twice on `home` and `work`** — agreed, both. `work`'s result is marked
+   provisional. **Run these in a fresh context**, entering at `README.md`.
+4. Detailed interfaces for area 1 only, plus a sketch of area 2.
 
 ## Research queue
 

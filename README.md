@@ -2,6 +2,8 @@
 
 Design repo. No code yet.
 
+**[AGENTS.md](AGENTS.md) is the engineering contract — read it before writing any code.**
+
 ## Read in this order
 
 | Doc | What it is |
@@ -9,7 +11,8 @@ Design repo. No code yet.
 | [thesis.md](thesis.md) | What Ambient is, the category, the opinions. The front door. |
 | [product.md](product.md) | The nouns and what each owns. Settled / open at the bottom. |
 | [knowledge-flow.md](knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
-| [roadmap.md](roadmap.md) | Where we are, what is next, and the fresh-context handoff. |
+| [seams.md](seams.md) | Every module, what it owns, and the dependency direction. |
+| [roadmap.md](roadmap.md) | The nine areas, ordered, and the fresh-context handoff. |
 | [kernel.md](kernel.md) | Lessons from the two prior experiments. History only — the design lives in the docs above. |
 
 ## Evidence
