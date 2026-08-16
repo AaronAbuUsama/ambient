@@ -64,13 +64,20 @@ One way to organise the whole codebase, the CLI included. Six slots. You learn i
 then every module navigates the same.
 
 ```
-src/modules/<name>/
-  README.md        what it owns · its invariants · how to test it. one page.
-  types.ts         THE interface — types plus the entry signature. Read this first.
-  service.ts       the entry point's implementation.
-  internal/        everything only this module knows.
-  <name>.test.ts   tests, through the interface only.
+src/
+  main.ts          the process entry / composition root. ONE per executable.
+  modules/<name>/
+    README.md      what it owns · its invariants · how to test it. one page.
+    types.ts       THE interface — types plus the entry signature. Read this first.
+    service.ts     the entry point's implementation.
+    internal/      everything only this module knows.
+    <name>.test.ts tests, through the interface only.
 ```
+
+**`main.ts` is the composition root, and it is a file outside the modules.** It is the only
+file that reads `process.env`, calls `process.exit`, prints, or takes `process.argv`.
+Modules return values; `main.ts` turns them into exit codes and output. That is what makes
+the whole CLI testable in-process.
 
 - **`types.ts` is the module.** If you cannot understand what a module does by reading its
   `types.ts` alone, the module is the wrong shape.
@@ -95,7 +102,9 @@ src/modules/<name>/
 
 `ok init` does four things and we want one of them: it writes `.ok/config.yml`, and it also
 creates a nested `.git`, editor wiring under `.claude` / `.codex` / `.cursor` / `.github` /
-`.opencode` / `.pi`, and housekeeping files. Verified by running it.
+`.opencode` / `.pi`, and housekeeping files. Verified by running it. **`--no-skills`
+suppresses only *user-global* skill bundles** — the project projections are written anyway,
+so the flags do not avoid this.
 
 `.ok/config.yml` is entirely comments — every key is a default. So **we write those files
 from our own templates.** The result opens in the OpenKnowledge app because the format

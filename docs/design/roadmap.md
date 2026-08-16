@@ -12,9 +12,9 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **SKELETON** — specified, not started. Both interfaces are designed (ADR 001, ADR 002) and
-> the spec is written. Nothing is built. Nothing is blocked except INTAKE's device-pairing
-> decision.
+> **INTAKE** — active, not scoped. SKELETON is closed: `ambient init · doctor · chat add ·
+> agent add` work, 17/17 gate, `vp check` and `vp test` green. The next act is scoping
+> INTAKE — it has not been planned yet, deliberately.
 
 ---
 
@@ -22,8 +22,8 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 | Area | State | What it is |
 |---|---|---|
-| **SKELETON** | ◐ active | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
-| **INTAKE** | ○ next | whatsappd adapter. Sources, modes, allowlist, sync → transcripts + blob refs. Raw only. |
+| **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
+| **INTAKE** | ◐ active | whatsappd adapter. Sources, modes, allowlist, sync → transcripts + blob refs. Raw only. |
 | **KNOWLEDGE** | ○ | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
@@ -69,41 +69,27 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 ---
 
-## Active — SKELETON
+## Active — INTAKE
 
-**The question.** Is there one command that creates a correct Ambient home, and one that
-tells you when a home is wrong?
+**Not scoped yet.** Scoping it is the next act, and it should be done against the real
+`whatsappd` data rather than in the abstract.
 
-**Do not copy the old CLI.** Its shape was wrong: `src/home/` exposed eleven functions and
-twelve interfaces over file reading — large interface, thin implementation, every caller
-learning the layout. Port the *behaviours* behind one interface. See [seams.md](seams.md).
+**The question.** Can Ambient read a real WhatsApp account and land raw transcripts and
+media blobs on disk, in the shape SKELETON defined, with nothing interpreted?
 
-**In scope.** The home layout decided path by path (what owns each, what may write it) ·
-`ambient init`, idempotent · `ambient doctor`, re-derives health from disk and exits
-non-zero · `ambient chat add` / `agent add` scaffolders — **the scaffolder is how a
-convention becomes real** · fail-closed config validation · `schema.yaml` · `ok init` with
-folder frontmatter and page templates.
+**What is already known.**
 
-**Out of scope.** Any content, any model call, any loop. Nothing here reads a message.
+- **No device pairing is needed.** The previous build's paired credential exists and is
+  backed up at `~/ambient-backups/ambient-home-20260816-161025` (`whatsapp.db`, 8.1 MB).
+- Raw only. No interpretation, no knowledge, no model call.
+- Two source modes exist in the config schema already: `ingest` never speaks, `speak` reads
+  and speaks. The allowlist is opt-in per conversation and empty by default.
+- `home` owns every path. `channel` asks `home` for a chat's `transcript` and `media`
+  places; it never builds one.
 
-**Gate.** `ambient init` on a clean machine produces a home `ambient doctor` calls healthy.
-Break any file by hand and `doctor` names it precisely and exits non-zero. `chat add`
-produces a folder valid by construction.
-
-**In flight.** Nothing. Design-it-twice is done on both seams —
-[ADR 001](../adr/001-home-interface.md) (`home`) and [ADR 002](../adr/002-work-interface.md)
-(`work`, **provisional**) — and the spec is at
-[docs/planning/skeleton/spec.md](../planning/skeleton/spec.md). Next is implementation, then
-the gate. Issues not yet filed.
-
-**Risk.** The layout is being decided without real data in front of us. INTAKE follows
-immediately to catch that; budget one revision.
-
-## Next — INTAKE
-
-**Blocked on a decision, not a task:** reading real history means pairing `whatsappd` as a
-linked device on the principal's personal WhatsApp. The allowlist is the mitigation. Do not
-plan the area until SKELETON's gate is met.
+**Watch for.** SKELETON's layout was decided without real data in front of us. One revision
+was budgeted. This is the area that spends it — the chat ↔ source binding (`source`, `peer`)
+is the most likely thing to move.
 
 ---
 
@@ -111,6 +97,15 @@ plan the area until SKELETON's gate is met.
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-16** — **SKELETON closed.** `ambient init · doctor · chat add · agent add`;
+  17/17 gate against real temp directories; `vp check` and `vp test` green repo-wide.
+  Restructured to the module shape before closing — 696-line `index.ts` became a 212-line
+  `types.ts` plus an 86-line `service.ts`; 26 repetitions of one error idiom and 8
+  non-empty-tuple gymnastics both to zero. **OpenKnowledge is vendored, not called**: `ok
+  init` writes a nested `.git` and six editor directories to deliver one file whose every
+  key is a default, so we write those files ourselves; `ok preview` confirms the format
+  matches. `HomeDeps` deleted — with the spawn gone it had no members. Four ADR 001
+  statements were wrong on contact and are recorded in that ADR's Amendments section.
 - **2026-08-16** — Two observations parked from the spec review, **neither blocking**:
   (a) `capabilities` may already be dead — ADR 001's `Chat` returns `mcpServers` and
   `agents` already RESOLVED, which is the job seams.md gave that module; decide at
@@ -152,6 +147,8 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The `home` interface, and why the alternatives lost | [../adr/001-home-interface.md](../adr/001-home-interface.md) |
 | The `work` interface — **provisional** | [../adr/002-work-interface.md](../adr/002-work-interface.md) |
 | The home layout, CLI verbs, config schemas, the gate | [../planning/skeleton/spec.md](../planning/skeleton/spec.md) |
+| How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
+| The module shape; where Effect goes; OpenKnowledge vendored | [../../AGENTS.md](../../AGENTS.md) |
 | Effect's boundary; the five rules; deep-module tests | [../../AGENTS.md](../../AGENTS.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |
