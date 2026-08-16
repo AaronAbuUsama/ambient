@@ -49,7 +49,10 @@ it, so `init` cannot create a file `doctor` forgets to check.
    the cross-unit reference checks ([`internal/refs.ts`](./internal/refs.ts))
    that no single unit can see.
 7. **Names are a trust boundary.** `^[a-z0-9][a-z0-9-]{0,63}$`. No `Place` is
-   ever produced for an illegal name; asking for one throws.
+   ever produced for an illegal name: a grant — `chat.cwd()`, `.transcript()`,
+   `.media()`, `.now()`, `agent.cwd()` — is a method returning `Place |
+   HomeProblem`, so the answer to *where is it* has somewhere to say `BadName`.
+   Resolution stays total and `read()` keeps its one guard.
 8. **`home` parses only files whose size is bounded by *configuration*, never by
    *traffic*.** The `Parsed` union in [`internal/disk.ts`](./internal/disk.ts) is
    the enforcement: `transcript.jsonl` cannot be named there.

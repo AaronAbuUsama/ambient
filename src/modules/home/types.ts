@@ -8,6 +8,11 @@
  * The unit is the handle. Three inhabitants — home, chat, agent — answer the
  * same three verbs. `init` and `doctor` are not a second interface; they are the
  * root unit's `converge()` and `plan()`, over one list of things that must be true.
+ *
+ * **Every way `home` can fail is a `ProblemDetail` below.** Nothing in this module
+ * throws: a failure is a value, so the interface cannot lie about how it fails and
+ * an Effect `E` channel is already written. Narrow anything that can fail with
+ * `"problems" in result`.
  */
 
 // ── how a path escapes ────────────────────────────────────────────────
@@ -31,6 +36,7 @@ export type ProblemDetail =
   | { readonly _tag: "WrongKind"; readonly expected: "file" | "directory" }
   /** A symlink here leaves the home. */
   | { readonly _tag: "Escapes" }
+  /** The filesystem refused: a read, a listing or a write failed. `cause` is the OS message. */
   | { readonly _tag: "Unreadable"; readonly cause: string }
   | {
       readonly _tag: "Malformed";
@@ -58,7 +64,7 @@ export type ProblemDetail =
 /** `at` is a home-relative label — deliberately not a usable path. It is for humans. */
 export type Problem = { readonly at: string; readonly detail: ProblemDetail };
 
-/** Why a read failed. Narrow every read with `"problems" in result`. */
+/** Why `home` said no — to a read, or to a `Place`. Narrow with `"problems" in result`. */
 export type HomeProblem = { readonly problems: readonly Problem[] };
 
 // ── the values a unit reads as ────────────────────────────────────────
@@ -150,16 +156,23 @@ export type Global = {
 
 // ── the three units ───────────────────────────────────────────────────
 
+/**
+ * A place a handle grants. It is a method, not a property, because an illegal
+ * name has no `Place` — and the answer to "where is it" has to have somewhere to
+ * say so. `BadName` is its only failure; the folder need not exist yet.
+ */
+export type Grant = () => Place | HomeProblem;
+
 export type ChatHandle = {
   readonly slug: string;
   /** → `harness`, straight to Pi. The folder *is* the isolation. */
-  readonly cwd: Place;
+  cwd: Grant;
   /** → `channel`. Bounded by traffic, so `home` never opens it. */
-  readonly transcript: Place;
+  transcript: Grant;
   /** → `channel`. */
-  readonly media: Place;
+  media: Grant;
   /** → the receipt fold. */
-  readonly now: Place;
+  now: Grant;
   read(): Chat | HomeProblem;
   plan(): readonly Problem[];
   converge(): Promise<readonly Problem[]>;
@@ -167,7 +180,7 @@ export type ChatHandle = {
 
 export type AgentHandle = {
   readonly name: string;
-  readonly cwd: Place;
+  cwd: Grant;
   read(): Agent | HomeProblem;
   plan(): readonly Problem[];
   converge(): Promise<readonly Problem[]>;
@@ -176,13 +189,13 @@ export type AgentHandle = {
 export type Home = {
   /** Display only. */
   readonly root: string;
-  /** → the `blobs` module. */
+  /** → the `blobs` module. A property, not a `Grant`: the root has no name to be wrong. */
   readonly blobs: Place;
   /** → the `work` module. Optional on disk; `home` checks its magic bytes and stops. */
   readonly db: Place;
 
   read(): Global | HomeProblem;
-  /** Pure and total — an illegal slug fails at `read()`, `plan()` and `converge()`. */
+  /** Pure and total — an illegal slug fails at `read()`, `plan()`, `converge()` and every `Grant`. */
   chat(slug: string): ChatHandle;
   agent(name: string): AgentHandle;
   chats(): readonly ChatHandle[];

@@ -372,7 +372,8 @@ right and exactly what an in-memory stand-in models as fiction.
 10. A chat granting a nonexistent agent → named, exits `1`.
 11. `config.yml` created beside `config.yaml` → named as a near-miss, exits `1`.
 12. An illegal name is named and produces nothing: `home.chat('../escape')` reports
-    `BadName`, `converge` creates no directory, and asking it for a `Place` throws.
+    `BadName`, `converge` creates no directory, and asking it for a `Place` answers with
+    that same `BadName` problem instead of a path.
     A directory `chats/Ops` is named the same way, because the rule is
     lowercase-only, not case-collision. **There is no case-collision scan** — on a
     case-insensitive filesystem `chats/Ops` beside `chats/ops` cannot exist, so

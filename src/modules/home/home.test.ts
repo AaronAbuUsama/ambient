@@ -157,7 +157,8 @@ it("12 · an illegal name is named, and produces no Place and no directory", asy
     'chats/../escape: bad name "../escape" — expected ^[a-z0-9][a-z0-9-]{0,63}$',
   ]);
   expect(said(await escape.converge())).toEqual(said(escape.plan()));
-  expect(() => escape.cwd).toThrow();
+  const granted = escape.cwd();
+  expect("problems" in granted && said(granted.problems)).toEqual(said(escape.plan()));
   expect(fs.existsSync(`${root}/../escape`)).toBe(false);
   expect(fs.readdirSync(`${root}/chats`)).toEqual([]);
 
