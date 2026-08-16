@@ -32,8 +32,17 @@ docs/history/      how we got here — kernel, grills, research
 docs/planning/     per-feature specs and issues
 docs/agents/       skill docs — issue tracker, triage labels, domain
 docs/adr/          decisions, created lazily
+src/main.ts        the composition root — environment, printing, exit code
 src/modules/       the modules from docs/design/seams.md
 ```
+
+Every module has the same six slots — `README.md`, `types.ts`, `service.ts`,
+`internal/`, `<name>.test.ts` — described in [AGENTS.md](AGENTS.md). Read a module's
+`types.ts` first; it is the interface.
+
+**New here?** [docs/walkthrough-doctor.md](docs/walkthrough-doctor.md) traces
+`ambient doctor` from keypress to output through every file it touches. It is the
+shortest path to owning this codebase.
 
 ## The stack
 

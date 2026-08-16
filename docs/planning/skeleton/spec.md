@@ -35,7 +35,7 @@ receives a string and reads no environment.**
 | `config.yaml` | `home` | `init` | human · Root | §3.1 in full |
 | `schema.yaml` | `home` | `init` | human · Root | §3.4 in full |
 | `.gitignore` | `home` | `init` | `home` | exists |
-| `knowledge/` | `foreign` | `init`, via injected `ok init` | **OpenKnowledge only** | is a directory. **Never read inside** |
+| `knowledge/` | `foreign` | `init`, from our own templates | **OpenKnowledge only** | is a directory. **Never read inside** |
 | `blobs/` | `foreign` | `init` | `blobs` only | is a directory. Contents never inspected |
 | `state.db` | `foreign` | **`work`**, on first use | `work` only | *if present:* SQLite header magic. Nothing schema-level |
 | `chats/` | `home` | `init` | `home` (via `chat add`) | is a directory |
@@ -119,8 +119,13 @@ Global: `--home <path>` overrides `$AMBIENT_HOME`. Exit `0` = healthy, `1` = pro
 `home.converge()`. Converges, then reports what convergence could not fix.
 
 - Creates every `home`-owned global path from templates, plus `chats/` and `agents/`.
-- Runs `ok init` in `knowledge/` **iff absent**, through the injected `initKnowledge` —
-  `home` never spawns a process.
+- Writes the OpenKnowledge scaffold — `knowledge/.ok/config.yml`,
+  `knowledge/.ok/.gitignore`, `knowledge/.okignore` — **from our own templates**.
+  `home` spawns no process at all. We match OpenKnowledge's format and never call its
+  CLI, which is what keeps a nested `.git` and six directories of editor wiring out of
+  an Ambient home. See AGENTS.md, *OpenKnowledge — vendored, not depended on*.
+  `doctor` still checks only that `knowledge/` is a directory; the contents are
+  OpenKnowledge's and are never read.
 - **Converge, not skip-if-exists.** Re-running on a home where someone deleted `schema.yaml`
   puts it back. Running on a home half-made by a crashed `init` repairs it.
 - **Never overwrites authored content.** A `mandate.md` that exists is left alone, even a
@@ -156,8 +161,8 @@ exit=1
 - Works on a machine that never ran `init` — the unit converges its parents first.
 - **Names are a trust boundary.** `^[a-z0-9][a-z0-9-]{0,63}$`, plus reserved names. Chat
   slugs will eventually derive from WhatsApp group names, and `..` must never become a path.
-  Case collisions are detected — `chats/Ops` beside `chats/ops` is invisible on macOS and
-  breaks on Linux.
+  The lowercase-only rule is the whole check: `chats/Ops` is rejected on its own name, so
+  the case collision it would cause on Linux never gets a chance to form.
 - Templates are string constants inside the implementation, not a `templates/` directory, and
   not in the interface. `chat add --from <template>` does not exist.
 
@@ -366,7 +371,12 @@ right and exactly what an in-memory stand-in models as fiction.
    known set, exits `1`.
 10. A chat granting a nonexistent agent → named, exits `1`.
 11. `config.yml` created beside `config.yaml` → named as a near-miss, exits `1`.
-12. A chat folder named `../escape` or `Ops` beside `ops` → named, exits `1`.
+12. An illegal name is named and produces nothing: `home.chat('../escape')` reports
+    `BadName`, `converge` creates no directory, and asking it for a `Place` throws.
+    A directory `chats/Ops` is named the same way, because the rule is
+    lowercase-only, not case-collision. **There is no case-collision scan** — on a
+    case-insensitive filesystem `chats/Ops` beside `chats/ops` cannot exist, so
+    nothing here could be tested on the machine this is developed on.
 
 > **`chat add` produces a folder valid by construction.**
 

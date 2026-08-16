@@ -1,6 +1,12 @@
 # ADR 001 — the `home` interface
 
-**Status:** Accepted · **Date:** 2026-08-16 · **Area:** SKELETON
+**Status:** Accepted, amended · **Date:** 2026-08-16 · **Area:** SKELETON
+
+> **Amendments after implementation.** The decision stands; three details in the
+> interface below did not survive contact and are corrected here rather than
+> silently rewritten. See *Amendments* at the foot of this document.
+> `HomeDeps` no longer exists · `HomeProblem.problems` is a plain array ·
+> `converge` is async because it writes, not because it spawns.
 
 Produced by a `DESIGN-IT-TWICE` round (three parallel designs) on the `home` module, as
 required by [seams.md](../design/seams.md) — *"Two seams worth designing twice"*.
@@ -399,3 +405,45 @@ no logger, no filesystem.
   wants to sit beside the record schema, and `chat.transcript` as a bare `Place` is right;
   but if `doctor` is repeatedly blamed for calling a shredded transcript healthy, invariant
   8 gets revisited.
+
+---
+
+## Amendments
+
+Three things in the interface above were wrong on contact with the implementation.
+The decision — the handle, `plan`/`converge` as one list, nothing cached — is
+unaffected.
+
+### 1 · `HomeDeps` and `initKnowledge` are gone. `openHome(root)` takes no dependencies.
+
+*Dependencies*, above, calls `ok init` "the one real port … that single injected
+function is the whole of `HomeDeps`". AGENTS.md subsequently settled that we match
+OpenKnowledge's format and never call its CLI: `ok init` also creates a nested
+`.git`, editor wiring under six dot-directories, and housekeeping files, and its
+`.ok/config.yml` is entirely comments because every key is a default. `init` now
+writes that scaffold from `home`'s own templates.
+
+With the spawn gone, `HomeDeps` had no members. An empty deps object that every
+caller must construct and nothing reads fails the deletion test, so the type went
+with it. `home` now has *no* ports: not a clock, not a logger, not a filesystem,
+not a process.
+
+Invariant 9 — "never touches `.ok/`" — is narrowed to what it was actually
+protecting: `home` never **reads** inside `knowledge/`, and `doctor` still checks
+only that it is a directory. It writes the scaffold once, and only when absent.
+
+### 2 · `HomeProblem.problems` is `readonly Problem[]`, not `readonly [Problem, ...Problem[]]`.
+
+The non-empty tuple cannot be produced without either re-constructing the array
+(`[all[0], ...all.slice(1)]`) or an assertion, at *every* site that returns a
+failure — eight of them in the first implementation. It buys nothing at any
+consumer: the narrowing that matters is `"problems" in result`, which is identical
+either way, and no caller indexes `problems[0]` unguarded. Emptiness is instead
+prevented locally, where each reader pushes a problem before it returns nothing.
+
+### 3 · Invariant 1's asymmetry has a different cause than stated.
+
+"Sync except `converge`. The one async verb is the one that runs another program."
+`converge` no longer runs another program. It is async because it writes to disk;
+`plan` is sync because it only reads. The asymmetry is still a signal, and still
+correct — the reason was not.
