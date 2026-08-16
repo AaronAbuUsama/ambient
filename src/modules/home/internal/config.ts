@@ -17,7 +17,7 @@ import {
   textMap,
   unknownKeys,
 } from "./yaml.ts";
-import type { McpServer, ModelProfile, Role, Source, Thinking } from "../types.ts";
+import type { McpServer, ModelProfile, ProblemDetail, Role, Source, Thinking } from "../types.ts";
 
 /** The global `config.yaml`, before cross-file references are resolved. */
 export type GlobalConfig = {
@@ -54,14 +54,49 @@ const GLOBAL_KEYS = ["sources", "mcp", "models", "roles"] as const;
 const CHAT_KEYS = ["source", "peer", "tools", "mcp", "agents"] as const;
 const AGENT_KEYS = ["model", "thinking", "mcp", "scope"] as const;
 
-const readSources = (out: Out, root: Record<string, unknown>): readonly Source[] => {
-  const sources: Source[] = [];
-  const rec = need(out, "", root, "sources", (v) => record(out, "sources", v));
+/** One entry of a named section — `sources.personal`, `mcp.openknowledge`, `models.fast`. */
+type Named = { readonly name: string; readonly at: string; readonly r: Record<string, unknown> };
+
+/**
+ * Every named section reads the same: a mapping of name to mapping, each with a
+ * closed key set. Entries whose value is not a mapping are reported and dropped.
+ */
+const section = (
+  out: Out,
+  root: Record<string, unknown>,
+  key: string,
+  keys: readonly string[],
+): readonly Named[] => {
+  const entries: Named[] = [];
+  const rec = need(out, "", root, key, (v) => record(out, key, v));
   for (const [name, v] of Object.entries(rec ?? {})) {
-    const at = `sources.${name}`;
+    const at = `${key}.${name}`;
     const r = record(out, at, v);
     if (r === undefined) continue;
-    unknownKeys(out, `${at}.`, r, SOURCE_KEYS);
+    unknownKeys(out, `${at}.`, r, keys);
+    entries.push({ name, at, r });
+  }
+  return entries;
+};
+
+/** A config file opens the same way everywhere: parse, require a mapping, close its keys. */
+type Opened =
+  | { readonly out: Out; readonly r: Record<string, unknown> }
+  | { readonly problems: readonly ProblemDetail[] };
+
+const open = (src: string, keys: readonly string[]): Opened => {
+  const parsed = parseYaml(src);
+  if ("problems" in parsed) return parsed;
+  const out: Out = [];
+  const r = record(out, "", parsed.value);
+  if (r === undefined) return { problems: out };
+  unknownKeys(out, "", r, keys);
+  return { out, r };
+};
+
+const readSources = (out: Out, root: Record<string, unknown>): readonly Source[] => {
+  const sources: Source[] = [];
+  for (const { name, at, r } of section(out, root, "sources", SOURCE_KEYS)) {
     const kind = need(out, `${at}.`, r, "kind", (x) => oneOf(out, `${at}.kind`, x, KINDS));
     const mode = need(out, `${at}.`, r, "mode", (x) => oneOf(out, `${at}.mode`, x, MODES));
     const allow = need(out, `${at}.`, r, "allow", (x) => textList(out, `${at}.allow`, x));
@@ -74,12 +109,7 @@ const readSources = (out: Out, root: Record<string, unknown>): readonly Source[]
 
 const readServers = (out: Out, root: Record<string, unknown>): readonly McpServer[] => {
   const servers: McpServer[] = [];
-  const rec = need(out, "", root, "mcp", (v) => record(out, "mcp", v));
-  for (const [name, v] of Object.entries(rec ?? {})) {
-    const at = `mcp.${name}`;
-    const r = record(out, at, v);
-    if (r === undefined) continue;
-    unknownKeys(out, `${at}.`, r, MCP_KEYS);
+  for (const { name, at, r } of section(out, root, "mcp", MCP_KEYS)) {
     const command = need(out, `${at}.`, r, "command", (x) => text(out, `${at}.command`, x));
     const args = "args" in r ? textList(out, `${at}.args`, r.args) : [];
     const env = "env" in r ? textMap(out, `${at}.env`, r.env) : {};
@@ -92,12 +122,7 @@ const readServers = (out: Out, root: Record<string, unknown>): readonly McpServe
 
 const readProfiles = (out: Out, root: Record<string, unknown>): readonly ModelProfile[] => {
   const profiles: ModelProfile[] = [];
-  const rec = need(out, "", root, "models", (v) => record(out, "models", v));
-  for (const [name, v] of Object.entries(rec ?? {})) {
-    const at = `models.${name}`;
-    const r = record(out, at, v);
-    if (r === undefined) continue;
-    unknownKeys(out, `${at}.`, r, MODEL_KEYS);
+  for (const { name, at, r } of section(out, root, "models", MODEL_KEYS)) {
     const provider = need(out, `${at}.`, r, "provider", (x) => text(out, `${at}.provider`, x));
     const model = need(out, `${at}.`, r, "model", (x) => text(out, `${at}.model`, x));
     const thinking = need(out, `${at}.`, r, "thinking", (x) =>
@@ -145,12 +170,9 @@ const readRoles = (
 };
 
 export const readGlobalConfig = (src: string): Checked<GlobalConfig> => {
-  const parsed = parseYaml(src);
-  if ("problems" in parsed) return parsed;
-  const out: Out = [];
-  const root = record(out, "", parsed.value);
-  if (root === undefined) return { problems: out };
-  unknownKeys(out, "", root, GLOBAL_KEYS);
+  const doc = open(src, GLOBAL_KEYS);
+  if ("problems" in doc) return doc;
+  const { out, r: root } = doc;
   const sources = readSources(out, root);
   const mcp = readServers(out, root);
   const profiles = readProfiles(out, root);
@@ -159,12 +181,9 @@ export const readGlobalConfig = (src: string): Checked<GlobalConfig> => {
 };
 
 export const readChatConfig = (src: string): Checked<ChatConfig> => {
-  const parsed = parseYaml(src);
-  if ("problems" in parsed) return parsed;
-  const out: Out = [];
-  const r = record(out, "", parsed.value);
-  if (r === undefined) return { problems: out };
-  unknownKeys(out, "", r, CHAT_KEYS);
+  const doc = open(src, CHAT_KEYS);
+  if ("problems" in doc) return doc;
+  const { out, r } = doc;
   const source = need(out, "", r, "source", (v) => text(out, "source", v));
   const peer = need(out, "", r, "peer", (v) => text(out, "peer", v));
   const tools = need(out, "", r, "tools", (v) => textList(out, "tools", v));
@@ -180,12 +199,9 @@ export const readChatConfig = (src: string): Checked<ChatConfig> => {
 };
 
 export const readAgentConfig = (src: string): Checked<AgentConfig> => {
-  const parsed = parseYaml(src);
-  if ("problems" in parsed) return parsed;
-  const out: Out = [];
-  const r = record(out, "", parsed.value);
-  if (r === undefined) return { problems: out };
-  unknownKeys(out, "", r, AGENT_KEYS);
+  const doc = open(src, AGENT_KEYS);
+  if ("problems" in doc) return doc;
+  const { out, r } = doc;
   const model = need(out, "", r, "model", (v) => text(out, "model", v));
   const thinking = need(out, "", r, "thinking", (v) => oneOf(out, "thinking", v, THINKING));
   const mcp = need(out, "", r, "mcp", (v) => textList(out, "mcp", v));
