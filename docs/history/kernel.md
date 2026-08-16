@@ -3,7 +3,7 @@
 What the two prior experiments taught, and nothing else.
 
 **This document owns history and lessons only.** The design they led to lives in
-[product.md](product.md) and [knowledge-flow.md](knowledge-flow.md); what the knowledge
+[product.md](../design/product.md) and [knowledge-flow.md](../design/knowledge-flow.md); what the knowledge
 substrate already gives us is [research/open-knowledge.md](research/open-knowledge.md).
 When those disagree with this, those win — this is the record of how we got here, not the
 plan.
@@ -130,7 +130,7 @@ pages.** It excelled at PDF extractions and undercounted humans.
 
 So: the *ontology* — a closed type vocabulary, hand-written, that the model fills and never
 extends — carries over. A *separate graph store* does not. Resolved in
-[knowledge-flow.md](knowledge-flow.md).
+[knowledge-flow.md](../design/knowledge-flow.md).
 
 ### 4. Generated regions inside authored pages
 
@@ -164,7 +164,7 @@ email-pa's `now.md` is fully generated and never edited — so it cannot go stal
 fabricate. The old repo's free-text "private thought" is where the invented issue numbers
 came from.
 
-The synthesis is in [knowledge-flow.md](knowledge-flow.md): typed receipts,
+The synthesis is in [knowledge-flow.md](../design/knowledge-flow.md): typed receipts,
 deterministically folded. Judgement from the agent, assembly from the machine.
 
 ### 7. Leasing and queuing are irreducible; four copies are not

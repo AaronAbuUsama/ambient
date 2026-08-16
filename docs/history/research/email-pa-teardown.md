@@ -140,9 +140,9 @@ toy size.
 Not embeddings, not FTS, not graph traversal. A generated catalogue where every line is
 the page's own `summary:` frontmatter — and every summary is **judgment**, not metadata:
 
-> - [Thomas Mawer Ltd](orgs/thomas-mawer.md): Hull-based UK pulse supplier; sends a weekly
+> - `Thomas Mawer Ltd` (`orgs/thomas-mawer.md`): Hull-based UK pulse supplier; sends a weekly
 >   delivered pallet price list. Our most frequent correspondent.
-> - [Golden Tropical Ltd](orgs/golden-tropical.md): Bolton company whose MSC telex paperwork
+> - `Golden Tropical Ltd` (`orgs/golden-tropical.md`): Bolton company whose MSC telex paperwork
 >   and legal letters are produced from Trade Oasis's own mailbox. Director signs with
 >   Reji Malik's WhatsApp number.
 
@@ -170,7 +170,7 @@ surfacing them as:
 
 > ## Open questions
 > Things marked `[assumed]` that a person could settle in a sentence:
-> - **Serbia → UK (road)** — 2 — [open](./routes/serbia-uk-road.md)
+> - **Serbia → UK (road)** — 2 — `open` (`routes/serbia-uk-road.md`)
 
 **This is the anti-fabrication mechanism.** A convention plus a counter, not a mechanism.
 Ambient's answer to the same problem was a paragraph of apologetic prompt prose.

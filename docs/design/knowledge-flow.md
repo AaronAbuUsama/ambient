@@ -88,7 +88,7 @@ Three rules:
 
 1. **Keyed by content hash.** The same forwarded screenshot in three chats is processed
    once. This is the one thing the old repo got right —
-   [`media_descriptions`](../whatsapp-agent-tui/src/database/media.ts) cached per blob ref.
+   the old repo's `media_descriptions` table cached descriptions per blob ref.
 2. **The result is a document**, not a database row: a Media doc beside the blob, carrying
    the transcript or description as prose plus typed frontmatter. Which means it is
    searchable, linkable, citable, and correctable by hand like everything else.

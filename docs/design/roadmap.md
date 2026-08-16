@@ -25,7 +25,7 @@ detail and a pile of themes.
 **Order: 1 → 2 → 4 → 5 → 6 → 7 → 8. Media any time after 2. Evals from 5.**
 
 The two orderings that were grilled and rejected are recorded in
-[grills/003](grills/003-roadmap-order.md).
+[grills/003](../history/grills/003-roadmap-order.md).
 
 ---
 
@@ -111,7 +111,7 @@ Do not plan this until area 1's gate is met.
 
 ## Before area 1 is built
 
-1. **[AGENTS.md](AGENTS.md)** — done. The five Effect-lite rules and the deep-module tests.
+1. **[AGENTS.md](../../AGENTS.md)** — done. The five Effect-lite rules and the deep-module tests.
 2. **[seams.md](seams.md)** — done. Every module, ownership, dependency direction.
 3. **Design-it-twice on `home` and `work`** — agreed, both. `work`'s result is marked
    provisional. **Run these in a fresh context**, entering at `README.md`.

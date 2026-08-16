@@ -1,29 +1,39 @@
 # Ambient
 
-Design repo. No code yet.
+Design repo.
 
 **[AGENTS.md](AGENTS.md) is the engineering contract — read it before writing any code.**
 
-## Read in this order
+## What is true now
 
 | Doc | What it is |
 |---|---|
-| [thesis.md](thesis.md) | What Ambient is, the category, the opinions. The front door. |
-| [product.md](product.md) | The nouns and what each owns. Settled / open at the bottom. |
-| [knowledge-flow.md](knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
-| [seams.md](seams.md) | Every module, what it owns, and the dependency direction. |
-| [roadmap.md](roadmap.md) | The nine areas, ordered, and the fresh-context handoff. |
-| [kernel.md](kernel.md) | Lessons from the two prior experiments. History only — the design lives in the docs above. |
+| [docs/design/thesis.md](docs/design/thesis.md) | What Ambient is, the category, the opinions. The front door. |
+| [docs/design/product.md](docs/design/product.md) | The nouns and what each owns. **Settled / Open at the bottom is the current truth.** |
+| [docs/design/knowledge-flow.md](docs/design/knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
+| [docs/design/seams.md](docs/design/seams.md) | Every module, what it owns, and the dependency direction. |
+| [docs/design/roadmap.md](docs/design/roadmap.md) | The nine areas, ordered, and the fresh-context handoff. |
 
-## Evidence
+## How we got here
 
 | Doc | What it is |
 |---|---|
-| [research/open-knowledge.md](research/open-knowledge.md) | **Read before designing anything touching knowledge, skills or provenance.** A large amount is already solved there. |
-| [research/email-pa-teardown.md](research/email-pa-teardown.md) | The ten patterns worth stealing, with code. |
-| [grills/001-old-repo-teardown.md](grills/001-old-repo-teardown.md) | What went wrong in `whatsapp-agent-tui`, measured. |
-| [grills/002-from-scratch-round-1.md](grills/002-from-scratch-round-1.md) | First design pass. Harness proposal superseded; the four decisions stand. |
-| [grills/003-roadmap-order.md](grills/003-roadmap-order.md) | What the foundation is, and the order of the nine areas. |
+| [docs/history/research/open-knowledge.md](docs/history/research/open-knowledge.md) | **Read before designing anything touching knowledge, skills or provenance.** Much of it is already solved there. |
+| [docs/history/research/email-pa-teardown.md](docs/history/research/email-pa-teardown.md) | The ten patterns worth stealing, with code. |
+| [docs/history/kernel.md](docs/history/kernel.md) | Lessons from the two prior experiments. Defers to `docs/design/`. |
+| [docs/history/grills/](docs/history/grills/) | Dated decision records. `002`'s harness proposal is superseded; its four decisions stand. |
+
+## Layout
+
+```
+AGENTS.md          the engineering contract
+docs/design/       what is true now
+docs/history/      how we got here — kernel, grills, research
+docs/planning/     per-feature specs and issues
+docs/agents/       skill docs — issue tracker, triage labels, domain
+docs/adr/          decisions, created lazily
+src/modules/       the modules from docs/design/seams.md
+```
 
 ## The stack
 
@@ -41,11 +51,10 @@ We build the fourth row.
 
 ## Where we are
 
-[roadmap.md](roadmap.md) — gated sections, and the handoff for a fresh context.
+Nine areas, ordered — see [docs/design/roadmap.md](docs/design/roadmap.md).
 
-Nine areas, ordered. **Active: Area 1 — Skeleton** (home layout, `ambient` CLI, config and
-schema validation). Not started.
+**Active: Area 1 — Skeleton** (home layout, `ambient` CLI, config and schema validation).
+Not started. Two interfaces get designed twice first: `home` and `work`.
 
 Shape before content: conventions are generated and validated by code before anything
-writes into them. The ordering is grilled in
-[grills/003](grills/003-roadmap-order.md).
+writes into them.
