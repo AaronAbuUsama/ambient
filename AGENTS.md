@@ -80,3 +80,22 @@ caller learned the layout. Do not repeat that shape.
   OpenKnowledge already is one.
 - **Shape before content.** Conventions exist in code before anything writes into them.
 - **Operate it by hand until it is good, then automate.** Pi comes last, not first.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Local markdown — specs and issues live under `docs/planning/<feature>/`. There is no git
+remote; never reach for `gh` or `glab`. See [docs/agents/issue-tracker.md](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+The five canonical roles, unchanged, written as a `Status:` line in each issue file. See
+[docs/agents/triage-labels.md](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context — `CONTEXT.md` at the root, `docs/adr/` for decisions, both created lazily.
+See [docs/agents/domain.md](docs/agents/domain.md).
