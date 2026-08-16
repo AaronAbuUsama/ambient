@@ -196,7 +196,7 @@ it("15 · agent add is silent and leaves doctor silent", async () => {
   expect(home.plan()).toEqual([]);
 });
 
-// ── the two invariants that are conventions only if they are checked ──
+// ── the invariants that are conventions only if they are checked ─────
 
 const sources = (): readonly { readonly rel: string; readonly text: string }[] =>
   fs
@@ -230,6 +230,12 @@ it("17 · home opens no file whose size is bounded by traffic", () => {
     "agent.yaml",
     "SKILL.md",
   ]);
+});
+
+it("18 · every failure is a declared value, never a throw", () => {
+  // The bare verb only: prose may still say "throws" or "throwing".
+  const offenders = sources().filter((f) => /\bthrow\b/.test(f.text));
+  expect(offenders.map((f) => f.rel)).toEqual([]);
 });
 
 // ── beyond the gate: the resolutions the interface promises ──────────

@@ -386,13 +386,17 @@ right and exactly what an in-memory stand-in models as fiction.
     byte-identical.
 15. `agent add linear` exits `0`; `doctor` exits `0`.
 
-Plus the two invariants that are conventions only if they are checked — AGENTS.md: *"if
+Plus the three invariants that are conventions only if they are checked — AGENTS.md: *"if
 `doctor` cannot check it, it is not a convention"*:
 
 16. `path.join`, `path.resolve` and `__dirname` appear nowhere under `src/` outside
     `src/modules/home/`. This is the enforcement of ADR 001's escrow rule.
 17. `home` opens no file whose size is bounded by traffic — no read of `transcript.jsonl`,
     `blobs/`, `media/` or anything under `knowledge/`.
+18. No `throw` appears under `src/` outside tests. Every failure a module can produce is
+    declared in its `types.ts`, so its interface cannot lie about how it fails — AGENTS.md
+    *"errors are values, never thrown for control flow"*, and the `E` channel Effect will
+    want at the loop layer is already written.
 
 ---
 

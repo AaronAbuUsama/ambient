@@ -80,9 +80,10 @@ Every assertion runs against a real temp directory (`fs.mkdtemp`), never an
 in-memory stand-in: rename atomicity, symlink escapes and `EACCES` are what this
 module exists to get right and what a stand-in models as fiction.
 
-Assertions 16 and 17 are lint tests over `src/` itself, because a convention
+Assertions 16, 17 and 18 are lint tests over `src/` itself, because a convention
 `doctor` cannot check is folklore: `path.join` appears nowhere outside this
-module, and `internal/disk.ts` is the only file that opens one.
+module, `internal/disk.ts` is the only file that opens one, and no source file
+outside a test contains the word `throw`.
 
 ## Inside
 
