@@ -21,6 +21,7 @@ rule.
 | [knowledge.md](docs/rules/knowledge.md) | We match OpenKnowledge's format and never call its CLI. |
 | [issues.md](docs/rules/issues.md) | Specs and issues are files under `docs/planning/`. There is no remote; never `gh`, never `glab`. |
 | [decisions.md](docs/rules/decisions.md) | Decisions are ADRs. A correction is an amendment, never a rewrite. |
+| [artefacts.md](docs/rules/artefacts.md) | Anything generated for a human to read is designed with the design skills, never defaulted. |
 
 Three commands check them: `vp check`, `vp test`, `vp run shape`. What each rule is
 checked by is stated at the foot of its own file, and *"not currently checked"* is
