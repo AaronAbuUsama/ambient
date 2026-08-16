@@ -22,10 +22,17 @@ whether the **258 media messages with no blob** are recoverable, whether voice n
 download, whether a fresh sync yields more than 2,739 messages, and whether `requestHistory`
 returns anything on an iPhone primary.
 
-- It writes `summary.json` next to itself. **Check that first.**
-- `run4.log` is the live log. Last seen: `phase: authenticated (draining)`, `0 msgs in`.
-- If it never went online, it is likely stuck in the post-pairing reconnect. Re-run it;
-  the credential is valid.
+**It hung and was killed.** It authenticated and never reached `online` — the
+post-pairing reconnect loop (WhatsApp always forces a reconnect with stream error 515
+after a device links) does not recover on its own.
+
+- **There is no valid `summary.json`.** The one from the pre-pairing run is renamed
+  `summary-STALE-prepairing.json`; it describes a run that never connected. Ignore it.
+- `run4.log` ends at `[00:31] waiting for online — phase authenticated, 0 msgs in`.
+- **First job: re-run `node spike.ts`.** The credential IS valid — pairing succeeded.
+  If it hangs at `authenticated` again, the reconnect handling is the bug to fix, not
+  the credential. Look at how `spike.ts` waits for `online`; it likely needs to tolerate
+  a 515 disconnect and re-establish rather than waiting forever on the first socket.
 
 **A fresh pairing was completed this session** — the 15 August credential had been revoked.
 `pair.ts` is the reusable QR flow: it renders the code to the terminal, to `qr.txt`, and to
