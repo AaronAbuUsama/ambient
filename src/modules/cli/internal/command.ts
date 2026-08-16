@@ -3,7 +3,7 @@
  * left after the command name, and owns its own usage line.
  */
 
-import type { Home, Problem } from "../../home/types.ts";
+import type { Home, Problem } from "~/modules/home/types.ts";
 import type { Outcome } from "../types.ts";
 
 /** Async only where it writes: `doctor` never touches disk, so it is not. */

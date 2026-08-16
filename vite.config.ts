@@ -1,6 +1,10 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  // `~/…` resolves from src/. A module names another module by what it IS
+  // (`~/modules/home/types.ts`), never by how far away it happens to sit.
+  resolve: { alias: { "~": fileURLToPath(new URL("./src", import.meta.url)) } },
   // Markdown is hand-wrapped prose: every doc here is an authority someone reads
   // top to bottom, and reflowing them makes every future diff unreadable. Source
   // is formatted; documents are written.
