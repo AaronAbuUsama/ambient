@@ -364,3 +364,48 @@ person could settle in a sentence"* page, arrived at independently, from differe
 a different domain. Two independent derivations of the same primitive is the strongest
 evidence available that it is real. See
 [../../history/research/email-pa-teardown.md](../../history/research/email-pa-teardown.md) §8.
+
+---
+
+## Settled at the close of scoping (2026-08-16)
+
+**Partnership groups are in.** The `X <> Capxul` cluster — Sereel, Honeycoin, Base,
+Blockradar, PT, Prembly, TCS — joins the seed. ~19 groups plus the DM expansion.
+
+### Identity: record the provenance whatsappd discards
+
+`whatsappd` merges identifiers into people and keeps no record of why
+(`runtime/projection.ts:165-216` — transitive merge, `contactId = reachedIds[0]`, loser
+deleted). Measured: **84 of 853 multi-identifier merges are witnessed** by a message
+carrying both forms; **769 rest on the store's word alone**, and the alias table turns out
+to mirror `nativeIds` rather than corroborate it.
+
+They are probably correct. But *probably correct and uncheckable* compounds — every fact
+Ambient later attaches to a person inherits the uncertainty silently.
+
+So:
+
+1. A person carries `identifiers[]`, each marked **`witnessed`** or **`asserted`**.
+2. `asserted` is used, not quarantined — it only means a claim resting on it can say so.
+3. **Never merge automatically from here.** Propose with evidence; confirm. `email-pa`'s
+   rule, now with a measured reason rather than an instinct.
+4. The genuinely sharp cases — 4 pushname-drift, 3 multi-lid, 18 ghost identifiers — go to
+   the non-decidable queue. Dozens, not hundreds.
+
+### Media: four states, each a declared error
+
+WhatsApp does not store media; the CDN holds an encrypted blob and the message holds the
+key. Two independent things can therefore be missing, and each is a distinct failure with a
+distinct remedy — so each is a named value in `types.ts`, never a silent gap
+([../../rules/errors.md](../../rules/errors.md)):
+
+| State | What is wrong | Recoverable |
+|---|---|---|
+| **NoHandle** | the mirror row carries no `mediaKey`/`directPath` — we never recorded how to fetch it | no — our gap |
+| **Expired** | key held, CDN has dropped the blob (404/410) | no — time |
+| **Failed** | handle good, blob present, the fetch broke | **yes — retry** |
+| **NeverDriven** | everything present, nobody asked | **yes — the expected case** |
+
+A Media doc records *which*, so the knowledge base can say "this image existed and could not
+be read, for this reason" rather than implying it looked and saw nothing. The same
+discipline as `[assumed]`: record the uncertainty rather than hide it.
