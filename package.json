@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ambient": "node src/cli/main.ts"
+    "ambient": "node src/main.ts"
   },
   "dependencies": {
     "yaml": "^2.9.0"

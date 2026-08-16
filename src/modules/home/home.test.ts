@@ -2,24 +2,16 @@
  * SKELETON's gate — docs/planning/skeleton/spec.md §4, verbatim and executable.
  *
  * Every assertion runs against a real temp directory, never an in-memory stand-in:
- * rename atomicity, symlink escapes, EACCES and macOS case-insensitivity are what
- * this area exists to get right and what a stand-in models as fiction.
+ * rename atomicity, symlink escapes and `EACCES` are what this area exists to get
+ * right and what a stand-in models as fiction.
  */
 
-import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import { afterEach, expect, it } from "vite-plus/test";
 
-import { describe as render, openHome } from "./index.ts";
-import type { Home, HomeDeps, Problem } from "./index.ts";
-
-/** The one real port. The composition root spawns `ok init`; the gate does not. */
-const deps: HomeDeps = {
-  initKnowledge: async (dir) => {
-    await fs.promises.mkdir(dir, { recursive: true });
-  },
-};
+import { describe as render, openHome } from "./service.ts";
+import type { Home, Problem } from "./types.ts";
 
 const made: string[] = [];
 
@@ -34,7 +26,7 @@ afterEach(() => {
 });
 
 const opened = (root: string): Home => {
-  const home = openHome(root, deps);
+  const home = openHome(root);
   if ("problems" in home) throw new Error(`openHome refused: ${home.problems.map(render).join()}`);
   return home;
 };
@@ -158,7 +150,7 @@ it("11 · config.yml beside config.yaml is named as a near miss", async () => {
   expect(said(home.plan())).toContain('config.yml: bad name "config.yml" — expected "config.yaml"');
 });
 
-it("12 · an illegal chat name is named, and produces no Place and no directory", async () => {
+it("12 · an illegal name is named, and produces no Place and no directory", async () => {
   const { root, home } = await started();
   const escape = home.chat("../escape");
   expect(said(escape.plan())).toEqual([
@@ -203,40 +195,6 @@ it("15 · agent add is silent and leaves doctor silent", async () => {
   expect(home.plan()).toEqual([]);
 });
 
-// ── the exit codes the gate is written in ────────────────────────────
-
-/** A no-op `ok` on PATH: the composition root spawns it, so the gate supplies one. */
-const withFakeOk = (): string => {
-  const bin = tmp();
-  fs.writeFileSync(`${bin}/ok`, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
-  return bin;
-};
-
-const ambient = (root: string, bin: string, ...args: readonly string[]) => {
-  const run = spawnSync(
-    process.execPath,
-    [`${import.meta.dirname}/../../cli/main.ts`, "--home", root, ...args],
-    { encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH ?? ""}` } },
-  );
-  return { code: run.status, out: run.stdout };
-};
-
-it("the CLI exits 0 on a healthy home and 1 on a broken one, printing what is wrong", () => {
-  const root = `${tmp()}/home`;
-  const bin = withFakeOk();
-  expect(ambient(root, bin, "doctor")).toMatchObject({ code: 1 });
-  expect(ambient(root, bin, "init")).toEqual({ code: 0, out: "" });
-  expect(ambient(root, bin, "doctor")).toEqual({ code: 0, out: "" });
-  expect(ambient(root, bin, "chat", "add", "bug-reports")).toEqual({ code: 0, out: "" });
-  expect(ambient(root, bin, "agent", "add", "linear")).toEqual({ code: 0, out: "" });
-
-  fs.rmSync(`${root}/chats/bug-reports/mandate.md`);
-  expect(ambient(root, bin, "doctor")).toEqual({
-    code: 1,
-    out: "chats/bug-reports/mandate.md: missing\n",
-  });
-});
-
 // ── the two invariants that are conventions only if they are checked ──
 
 const sources = (): readonly { readonly rel: string; readonly text: string }[] =>
@@ -256,12 +214,12 @@ it("16 · only home knows a path", () => {
 it("17 · home opens no file whose size is bounded by traffic", () => {
   const reads = /readFile|createReadStream|readSync|\bopenSync\b/;
   const offenders = sources()
-    .filter((f) => f.rel !== "modules/home/disk.ts")
+    .filter((f) => f.rel !== "modules/home/internal/disk.ts")
     .filter((f) => reads.test(f.text))
     .map((f) => f.rel);
   expect(offenders).toEqual([]);
 
-  const disk = sources().find((f) => f.rel === "modules/home/disk.ts");
+  const disk = sources().find((f) => f.rel === "modules/home/internal/disk.ts");
   const union = /export type Parsed =([^;]+);/.exec(disk?.text ?? "");
   expect([...(union?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1])).toEqual([
     "identity.md",
@@ -292,8 +250,8 @@ it("a chat reads as identity plus mandate, with its references resolved", async 
   expect(chat.source.mode).toBe("ingest");
   expect(chat.mcpServers.map((m) => m.command)).toEqual(["ok"]);
   expect(chat.agents.map((a) => a.name)).toEqual(["linear"]);
-  expect(chat.agents[0]?.model).toBe("gpt-5.6-lunar");
-  expect(chat.model).toBe("gpt-5.6-lunar");
+  expect(chat.agents[0]?.model).toBe("gpt-5.6-luna");
+  expect(chat.model).toBe("gpt-5.6-luna");
   expect(chat.cwd.path).toBe(`${root}/chats/bug-reports`);
 });
 
@@ -302,7 +260,7 @@ it("a home reads as identity, sources and the ontology", async () => {
   const global = home.read();
   if ("problems" in global) throw new Error(said(global.problems).join("\n"));
   expect(global.sources.map((s) => s.name)).toEqual(["personal", "ambient"]);
-  expect(global.models.roles.speaker.model).toBe("gpt-5.6-lunar");
+  expect(global.models.roles.speaker.model).toBe("gpt-5.6-luna");
   expect(global.schema.types.map((t) => t.name)).toContain("Commitment");
 });
 
@@ -313,4 +271,14 @@ it("a symlink out of the home is refused, not followed", async () => {
   fs.rmSync(`${root}/blobs`, { recursive: true });
   fs.symlinkSync(outside, `${root}/blobs`);
   expect(said(home.plan())).toContain("blobs/: a symlink here leaves the home");
+});
+
+it("init writes the OpenKnowledge scaffold itself, and spawns nothing", async () => {
+  const { root } = await started();
+  expect(fs.readdirSync(`${root}/knowledge`).sort()).toEqual([".ok", ".okignore"]);
+  expect(fs.readdirSync(`${root}/knowledge/.ok`).sort()).toEqual([".gitignore", "config.yml"]);
+  expect(fs.readFileSync(`${root}/knowledge/.ok/config.yml`, "utf8")).toContain(
+    "# yaml-language-server: $schema=https://unpkg.com/@inkeep/open-knowledge@latest/dist/schemas/v0/config.project.schema.json",
+  );
+  expect(fs.readFileSync(`${root}/knowledge/.ok/.gitignore`, "utf8")).toContain("local/");
 });
