@@ -11,7 +11,9 @@ export default defineConfig({
   fmt: { ignorePatterns: ["**/*.md"] },
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    rules: { "vite-plus/prefer-vite-plus-imports": "error" },
+    // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
+    // docs/rules/types.md. A rule with no check is a hope.
+    rules: { "vite-plus/prefer-vite-plus-imports": "error", "typescript/no-explicit-any": "error" },
     options: { typeAware: true, typeCheck: true },
   },
 });
