@@ -6,6 +6,7 @@
  * this area exists to get right and what a stand-in models as fiction.
  */
 
+import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import { afterEach, expect, it } from "vite-plus/test";
@@ -200,6 +201,40 @@ it("15 · agent add is silent and leaves doctor silent", async () => {
   const { home } = await started();
   expect(await home.agent("linear").converge()).toEqual([]);
   expect(home.plan()).toEqual([]);
+});
+
+// ── the exit codes the gate is written in ────────────────────────────
+
+/** A no-op `ok` on PATH: the composition root spawns it, so the gate supplies one. */
+const withFakeOk = (): string => {
+  const bin = tmp();
+  fs.writeFileSync(`${bin}/ok`, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  return bin;
+};
+
+const ambient = (root: string, bin: string, ...args: readonly string[]) => {
+  const run = spawnSync(
+    process.execPath,
+    [`${import.meta.dirname}/../../cli/main.ts`, "--home", root, ...args],
+    { encoding: "utf8", env: { ...process.env, PATH: `${bin}:${process.env.PATH ?? ""}` } },
+  );
+  return { code: run.status, out: run.stdout };
+};
+
+it("the CLI exits 0 on a healthy home and 1 on a broken one, printing what is wrong", () => {
+  const root = `${tmp()}/home`;
+  const bin = withFakeOk();
+  expect(ambient(root, bin, "doctor")).toMatchObject({ code: 1 });
+  expect(ambient(root, bin, "init")).toEqual({ code: 0, out: "" });
+  expect(ambient(root, bin, "doctor")).toEqual({ code: 0, out: "" });
+  expect(ambient(root, bin, "chat", "add", "bug-reports")).toEqual({ code: 0, out: "" });
+  expect(ambient(root, bin, "agent", "add", "linear")).toEqual({ code: 0, out: "" });
+
+  fs.rmSync(`${root}/chats/bug-reports/mandate.md`);
+  expect(ambient(root, bin, "doctor")).toEqual({
+    code: 1,
+    out: "chats/bug-reports/mandate.md: missing\n",
+  });
 });
 
 // ── the two invariants that are conventions only if they are checked ──
