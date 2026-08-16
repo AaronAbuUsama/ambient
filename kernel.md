@@ -60,7 +60,10 @@ That is the development method, not an accident of history:
 
 ### Why email-pa worked and the WhatsApp repo didn't
 
-**Because the knowledge was built before anything spoke.**
+**Because it had exactly one thing to focus on.**
+
+Not because it lacked a mouth — that framing was wrong and is retired. It worked because
+nothing competed with getting the knowledge right.
 
 No speaking meant no leases, no queues, no send-guards, no idempotency keys, no harness
 integration, no destination binding — all of it downstream of the mouth. That left room to
@@ -156,6 +159,11 @@ Verbatim from `tradeoasis/AGENTS.md`, and it is the single sentence the old repo
 The old repo put judgement *into* the graph as model-invented predicates with sentence
 payloads, and grew `shipping_container_details` and `person_shipping_work` in one
 afternoon.
+
+**Caveat added later:** email-pa's graph is 97% `Price` and `Document` — mechanical
+extractions from PDFs with amounts, refs and due dates. WhatsApp produces almost none of
+that shape. The *ontology* (a closed type vocabulary) carries over; whether a separate
+*graph store* does is open. Do not read this section as settling that.
 
 ### 5. Generated regions inside authored pages
 

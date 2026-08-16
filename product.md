@@ -67,21 +67,41 @@ one step further along — it also has a line of its own.
 ### Chat
 
 One conversation Ambient is present in. It has a folder, and the folder is the whole
-grant:
-
-```
-chats/<slug>/
-  chat.md            the mandate — who is here, what this chat is for, how to behave
-  skills/            skills scoped to THIS chat only
-  now.md             this chat's state — local, generated
-  transcript.jsonl
-  notes/             what the speaker noticed, awaiting promotion
-  media/
-```
+grant.
 
 Same entity, same personality, **different behaviour**. A bug-reports group, an internal
 PA thread, an outreach conversation with a customer, and a thread with HMRC are four
 different jobs done by one entity. The folder is where that difference lives.
+
+### Mandate — two halves
+
+The real split, and the thing `chat.md` was fumbling:
+
+**Machine-readable configuration.** Which tools this speaker has and at what scope, which
+MCPs, which background agents it may hand off to. Structured enough that the Root can
+write it; legible enough that a non-engineer can read it and change it by hand.
+
+**Prose.** What this chat is for, who is here, how to behave.
+
+Both are **hot-reloaded**. Adding a capability — a tool, an MCP, a background agent —
+never requires a daemon restart. That is what makes "give it more to do" cheap enough to
+actually happen, for Aaron and for anyone else running their own.
+
+### Background agent
+
+The speaker never runs a long job itself. It **hands off**.
+
+A background agent is a configured thing — an MCP, a skill, a scope — creatable at runtime
+by the Root or by the user. Examples: a Linear agent, a calendar agent, a coding agent that
+executes a ticket the speaker filed. Some are granted to a specific chat; some run
+unattended and feed the knowledge base.
+
+The speaker may create, read and update a GitHub issue directly — that is a tool call.
+*Executing* that ticket is a different thing entirely: async, off-thread, a background
+agent.
+
+**Same paradigm as everything else:** a folder, a config file, a skill. Grokkable,
+inspectable, editable by hand.
 
 ### Speaker
 
@@ -97,95 +117,99 @@ chats/<slug>/skills/ local — how to do this chat's job
 The old repo's mistake was making the local mandate *replace* the global identity. It
 composes. Always.
 
-### Root — **[parked]**
+### Root — **[form parked, job not]**
 
-The thing that configures the system: create a chat, put a speaker in it, write its
-mandate, give it skills, extend it with tools, schedule background work. "The Root
-programs the channel."
+What it does is settled; whether it is a distinct mouthless agent or just another loop is
+parked, because nothing depends on the answer yet.
 
-Two candidate readings, deliberately not resolved yet because nothing depends on it today:
+Its job is the system itself:
 
-- a distinct agent with no mouth, or
-- **just another loop** — a configuration pass on a cadence, like every other loop.
+- create a chat, put a speaker in it, write its mandate
+- give a chat its own skills and tools
+- **dynamically create background agents** — configure an MCP, write a skill, bind a
+  scope — and grant them to a chat or set them running unattended
+- schedule and adjust background work
 
-Park it. When enough chats exist that configuring them by hand is annoying, the answer
-will be obvious. What matters now is that configuration is **file writes into a git repo**,
-so whichever it turns out to be, the substrate already supports it.
+Everything it does is a **configuration file write**, hot-reloaded, in a git repo. Skills
+go through OpenKnowledge's own gate: the Root authors a **Draft**; `install` makes it live.
+Whatever the Root can do, the user can also do by editing the same files.
 
 ### Knowledge base
 
 **One.** One wiki, one graph, shared by every chat and every source.
 
-Split by kind, not by owner:
+It is an **OpenKnowledge project**: markdown-CRDT over MCP. Humans and agents write the
+same documents concurrently, every change attributed, with `search`, `links`, `lint`,
+`audit`, `checkpoint`/`restore_version`, templates, and skills as first-class objects.
+See `research/open-knowledge.md` — a large amount of what looks like product surface is
+already solved there.
 
-- **Graph** — things with values. A person, an org, a document, a date, a status, a
-  number. Closed hand-written schema; the model fills it and never extends it.
-- **Wiki** — judgement in prose. Who someone is, how they behave, what to watch out for,
-  what is still assumed.
+Two kinds of content:
 
-Every fact and every page carries **provenance**: which source, which chat, which message.
+- **Judgement, in prose.** Who someone is, how they behave, what to watch out for, what is
+  still assumed. This is the bulk of it.
+- **Facts with values.** A person's number, an org, an issue's status, a commitment's due
+  date. Whether these live as typed frontmatter on documents or in a separate store is
+  **open** — see below.
 
----
-
-## Three subsystems
-
-The correction that matters most. These are **separate**, and conflating them is what
-broke the old repo.
-
-### 1. Ingestion — builds knowledge, never speaks
-
-Sources → observations → knowledge. Runs on cadences, layered:
-
-- per-chat digest — what happened in this conversation
-- cross-chat digest — what happened across everything this week
-- media annotation — what this image or document actually shows
-- entity and page upkeep — the wiki, the graph, the generated regions
-
-**email-pa is literally this subsystem, already proven, for an email source.** Nothing in
-it involves speaking, which is exactly why it worked.
-
-### 2. Speaking — one speaker per chat
-
-- **Reads** the global knowledge base: part of it as initial context (digests, `now`,
-  index), the rest through tools.
-- **Writes only its own local wiki.** Its own understanding of its own conversation.
-- Never writes global knowledge directly.
-
-### 3. Promotion — local becomes global
-
-On a cadence, a separate pass walks the chats' local wikis and folds what belongs into the
-global knowledge base, with provenance.
-
-This is the seam that lets the speaker stay fast and lets the shared knowledge stay
-coherent — a live agent under time pressure can never corrupt what every other chat reads.
+**Provenance is largely not ours to build.** OpenKnowledge already enforces that every
+factual claim cites a source, and that the source is a document inside the base. What is
+ours is one distinction on top: *learned from the principal's history* versus *Ambient
+witnessed this*. Ambient must never claim presence it did not have.
 
 ---
 
-## Local and global memory
+## Two halves
 
-Knowledge is global. **A speaker's own understanding of its own chat is local.**
+**Ingestion — builds knowledge, never speaks.**
+Sources → observations → knowledge. Layered cadences: per-chat digest, cross-chat weekly
+synthesis, media annotation, entity and page upkeep. `~/email-pa` is this half, already
+proven, for an email source — it worked because it had **one thing to focus on**, not
+because it lacked a mouth.
+
+**Speaking — one speaker per chat.**
+Reads knowledge as initial context and through tools. Decides whether to speak. Emits a
+structured receipt every run.
+
+**The speaker does not write shared knowledge directly. Settled.**
+
+The reason has changed, and the change is worth recording because the old reason was
+wrong: it is *not* that concurrent writes would corrupt the base — OpenKnowledge is a CRDT
+and handles that. It is that **a speaker under time pressure writes worse pages than a
+considered pass does**.
+
+So "promotion" is not a third subsystem. It is a cadenced **consolidation loop**, one of
+many, and it uses OpenKnowledge's own `workflow({ kind: 'consolidate' })`.
+
+There is **no local wiki**. A chat folder holds its mandate, its skills, its transcript,
+its media and its `now` — nothing that pretends to be a second knowledge base.
+
+---
+
+## Memory layout
 
 ```
-wiki/                       GLOBAL — written by ingestion and promotion only
-  index.md  now.md
+identity.md                 who Ambient is. always. never overridden.
+
+<knowledge base>/           an OpenKnowledge project — the ONE knowledge base
+  index.md                  curated judgement, one line per page
+  now.md                    generated
   people/  orgs/  topics/
-  ontology/
+  <ontology>                form undecided — see Open
 
 chats/<slug>/
-  chat.md                   mandate
-  skills/                   this chat's skills
+  <mandate>                 machine-readable config + prose. hot-reloaded.
+  skills/                   this chat's own skills (OK skill scope)
+  now.md                    this chat's state — generated from run receipts
   transcript.jsonl
-  wiki/                     LOCAL — the speaker's own, written by the speaker
-    now.md                  this chat's state
-    notes/                  what it noticed, awaiting promotion
+  media/
+
+agents/<name>/              background agents — MCP, skill, scope
 ```
 
-A speaker's initial context is small and known: `identity.md`, its own `chat.md`, its own
-local `now.md`, the global `now.md` and `index.md`, and the transcript tail. Everything
-else is a tool call.
-
-**[open]** Whether the speaker writes its local wiki *during* a turn, or whether even that
-is deferred to a background pass. Doing it inline is simpler; deferring it is faster.
+A speaker's initial context is small and known: `identity.md`, its mandate, its own
+`now.md`, the knowledge base's `now.md` and `index.md`, and the transcript tail.
+Everything else is a tool call.
 
 ### Loop
 
@@ -202,17 +226,18 @@ weekly · dream/synthesis · a long job.
 
 ## Global and local
 
-The distinction that makes the whole thing work. Both levels exist for most things:
+Both levels exist for most things. The rule is that **local adds to global; it never
+replaces it** — the mistake the old repo made.
 
 | | Global | Local (per chat) |
 |---|---|---|
-| identity | `identity.md` | `chat.md` — adds to it |
-| skills | `skills/` | `chats/<slug>/skills/` — shadows by name |
-| state | `wiki/now.md` — where Ambient stands | `chats/<slug>/now.md` — where this thread stands |
-| index | `wiki/index.md` | this chat's own notes |
-| knowledge | the wiki and the graph | — knowledge is never local |
+| identity | `identity.md` | the mandate's prose — adds to it |
+| skills | OK skills at `scope: Global` | OK skills at `scope: Project`, plus the chat's own |
+| state | `now.md` — where Ambient stands | `chats/<slug>/now.md` — where this thread stands |
+| capabilities | every tool, MCP and background agent that exists | the subset this chat is granted |
+| knowledge | the one knowledge base | — knowledge is never local |
 
-Knowledge is the one thing that is only ever global. Everything else has both levels.
+Knowledge is the only thing that is global-only.
 
 ---
 
@@ -253,30 +278,41 @@ What that requires:
 
 ## Settled
 
-- Ambient is one entity; it is not Aaron.
-- **Aaron is the principal.** Everyone else is a third party.
-- Sources have modes: `ingest` (never speaks) and `speak`.
-- Aaron's personal WhatsApp is `ingest`, continuously. His email later, the same.
-  Ambient's own number is `speak`. **Ambient never acts on Aaron's number.**
+- Ambient is one entity; it is not the principal.
+- **Aaron is the principal** for his own instance. Everyone else is a third party. Other
+  people will run their own — the architecture must not assume Aaron.
+- Sources have modes: `ingest` (never speaks) and `speak`. History import and continuous
+  ingestion are two distinct operations, both real.
+- The principal's personal WhatsApp is `ingest`. Ambient's own number is `speak`.
+  **Ambient never acts on the principal's number.**
 - Ingestion is governed by an **allowlist**, opt-in per conversation.
-- One knowledge base. Provenance on everything.
+- **One knowledge base**, an OpenKnowledge project. No partitions.
+- **The speaker does not write shared knowledge directly** — a quality decision, not a
+  concurrency one. Consolidation is a cadenced loop.
 - Identity composes: global always, local adds, local never replaces.
-- Three separate subsystems: ingestion, speaking, promotion.
-- Local memory per chat; global knowledge shared.
-- Configuration is file writes in a git repo.
+- **The mandate has two halves**: machine-readable capability config, and prose.
+  Hot-reloaded — adding a capability never restarts the daemon.
+- **The speaker never runs a long job.** It hands off to a background agent.
+- **Background agents are configurable at runtime** by the Root or by the user: an MCP, a
+  skill, a scope. Same paradigm as everything else — a folder and a config file.
+- **Skills compound like knowledge does.** An agent authors a Draft; `install` is the
+  review gate. OpenKnowledge owns this mechanism.
+- **Silence is first-class. Canon.**
+- Extensibility is for the user, not only for the agent. Most users will not be engineers.
+- Configuration is files in a git repo.
 
 ## Open
 
-**[open] The job.** What is Ambient *for*, in one sentence, to someone who has never seen
-it? "Knows things and replies in chats" is a capability, not a job. email-pa's sentence —
-"email-fed business intelligence, one folder per business" — is why every decision in it
-holds together. This is the last big one.
+**[open] Does the ontology make sense here, and in what form?** The *ontology* — a closed
+type vocabulary — and the *graph store* are separate questions. email-pa's graph is 97%
+Price and Document rows extracted from PDFs; WhatsApp produces almost none of that. See
+the grill.
 
-**[open] Inline or deferred local writes.** Does the speaker update its local wiki during
-a turn, or does a background pass do it?
+**[open] What `now` is, exactly.** Direction agreed: every agent invocation ends with a
+structured output, and `now` is a generated fold over recent receipts plus derived counts —
+something for the next invocation to grab onto. Shape still to pin down. See the grill.
 
 **[open] Disclosure.** Storage is one base, settled. Speech is not: something learned in a
-private thread must not surface in a work group. Mandate concern per chat, provenance
-rule, or an eval that catches leaks? Becomes real the day the mouth arrives.
+private thread must not surface in a work group. Becomes real the day the mouth arrives.
 
-**[parked] Root** — distinct agent, or just another loop. Nothing depends on it yet.
+**[parked] Root form** — distinct mouthless agent, or another loop. Its *job* is settled.
