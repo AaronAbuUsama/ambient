@@ -307,6 +307,10 @@ What that requires:
 - **Silence is first-class. Canon.**
 - Extensibility is for the user, not only for the agent. Most users will not be engineers.
 - Configuration is files in a git repo.
+- **`cwd` is the chat's own folder.** That is what scopes its skills and its writes, with
+  no scoping code. It does not conflict with one shared knowledge base, because
+  OpenKnowledge is addressed over MCP, not by filesystem path. The outbound destination is
+  the one thing `cwd` does not guard — that stays a send tool pre-bound to its chat.
 
 ## Open
 

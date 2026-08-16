@@ -89,19 +89,34 @@ engineering problem it was meant to solve.
 **Never hand-assemble what goes into the model.** Solve context and compaction at the Pi
 level.
 
-### 2. Isolation comes from somewhere; pick it deliberately
+### 2. `cwd` is the chat folder — and that is what scopes everything
 
-email-pa used `cwd` as a hard wall — every script and the graph resolve relative to the
-unit, so one business physically cannot read another. That worked because units *must not*
-bleed.
+email-pa set `cwd` to the unit, and every script and path resolved relative to it. Ambient
+does the same thing one level down: **`cwd` is the chat's own folder.**
 
-**Ambient's requirement is the opposite: one shared knowledge base.** So `cwd` cannot be
-the isolation here, and the guard has to sit elsewhere — a send tool pre-bound to its chat,
-so the model never names a destination. That was the one thing the old repo's
+That single choice buys three things for free:
+
+- **Skill scoping.** Pi discovers skills relative to `cwd`, so a chat's own skills are
+  simply the ones in its folder. email-pa proves this — per-unit `.claude/skills`, and its
+  `check` command reports the per-unit symlinks.
+- **Write scoping.** The agent's natural writes land in its own folder: transcript, media,
+  its `now`.
+- **No scoping code.** No grants, no path guards, no destination binding to enforce.
+
+**This does not conflict with one shared knowledge base**, because the knowledge base is
+not reached by filesystem path. OpenKnowledge is addressed over **MCP** — `exec`, `search`,
+`write`, `edit` — and its own STOP rule forbids native file tools on in-scope markdown. MCP
+calls are not `cwd`-relative. So a speaker standing in `chats/<slug>/` reads the whole
+knowledge base through OK and still writes locally by default.
+
+Consequence: a chat folder's **markdown** (its mandate, its `now`) is in-scope for OK and
+routes through OK's tools — which is what you want, since the mandate is exactly the file a
+human edits by hand. Its `transcript.jsonl`, media blobs and other non-markdown are out of
+scope automatically and stay native.
+
+The one guard `cwd` does *not* give you is the outbound destination. That stays a send tool
+pre-bound to its chat, so the model never names a recipient — the one thing the old repo's
 `resources.ts` got right.
-
-The lesson is not "use cwd". It is: *know which thing is your wall, and don't assume the
-previous project's wall is yours.*
 
 ### 3. Facts and judgement are different, and the split is not free
 
