@@ -101,27 +101,35 @@ never builds a path.
 
 ## Open questions — answered 2026-08-16
 
-### 1. Can more history be pulled? **No. Both knobs are already at maximum.**
+### 1. Can more history be pulled? **YES — and the first answer here was wrong.**
 
-`packages/whatsappd/src/baileys/socket.ts`:
+**Retracted 2026-08-16.** This section first concluded "no, both knobs are at maximum",
+reading only `syncFullHistory` and the browser identity. That was shallow research and the
+principal's own scepticism was correct: he knows his phone holds far more than 2,739
+messages.
+
+`syncFullHistory` is only the **initial dump WhatsApp volunteers on connect.** Paging
+backwards is a separate, explicit operation — and `whatsappd` already exposes it:
 
 ```ts
-syncFullHistory: requestFullHistory,          // = auth.creds.registered === true
-shouldSyncHistoryMessage: () => true,
-browser: Browsers.macOS("Desktop")            // the identity that yields the most history
+// packages/whatsappd/src/session.ts:246
+requestHistory(
+  anchor: { readonly ref: MessageRef; readonly timestamp: number },
+  opts?: { readonly count?: number },     // defaults to 50, the protocol maximum (ADR-0010)
+): Promise<{ requestId: string }>
 ```
 
-Full history is requested on **every reconnect after registration** — not on the first
-link, deliberately: asking during the `link_code_companion_reg` in-between state leaves the
-phone stuck at "logging in". And the browser identity is already `Desktop`, which is the
-one WhatsApp gives the most to.
+It is a first-class **durable operation** (`runtime/operation-executor.ts:110`), not a
+side-channel. You anchor on the oldest message you hold and ask for fifty more, repeatedly.
 
-**There is nothing left to turn up.** 2,739 messages is what WhatsApp gives for this
-account. The fresh pairing is still worth doing — it is cheap, and it replaces an
-assumption with a measurement — but expect it to **confirm the ceiling, not raise it.**
+The old repo had a `historyBackfillLimit` config key (`multipleOf(25)`), so it paged — but
+boundedly, and 2,739 messages across 913 chats says it paged shallowly or not per-chat.
 
-**Consequence:** the cold start is what it is. Ambient starts knowing *people*, not
-*conversations*. Design for that rather than hoping for more.
+**So the ceiling is not WhatsApp's. It is how hard we drive `requestHistory`.** How deep it
+actually reaches is now an empirical question, and it is the subject of the spike below.
+
+**Consequence:** every conclusion downstream of "the history is thin" is provisional. The
+cold-start correction in `thesis.md` may itself need correcting once the spike reports.
 
 ### 2. Is historical media addressable? **Almost certainly not — and it barely matters.**
 
@@ -165,7 +173,13 @@ audio by year:   2024: 5 · 2025: 6 · 2026: 67
 67 of 78 are from this year and have refs. **Eleven unfillable holes across four years.**
 Record them as unreadable; do not chase them.
 
-### 5–6. Deferred to the spec, not blocking
+### 5–6. Deferred, and now less certain
+
+Whether identity is ingested alongside conversations, and whether the mirror is read after
+the first import, both depend on how much conversation history the spike recovers. If
+paging reaches years back, the transcripts stop being secondary.
+
+### 5–6 (original note)
 
 Whether identity (1,560 contacts, 2,417 aliases) is ingested as well as conversations, and
 whether the mirror is read at all after the first import, are now design choices rather than
@@ -194,3 +208,47 @@ One revision was budgeted when the home layout was decided without data. Candida
 6. Messages with no reachable media are recorded as such — never silently dropped, never
    implied to have been read.
 7. `vp check`, `vp test`, `pnpm shape` green; `fallow dupes` no worse than 0.0%.
+
+---
+
+## Before the spec: a research pass and a spike
+
+Agreed 2026-08-16, after the history finding. **Do not write the spec until this reports.**
+
+The one wrong answer above was wrong because it was research by grep. Three of the four
+"answered" questions rest on measurements taken from a database produced by a session whose
+provenance we do not trust, and the fourth was simply mistaken.
+
+### The spike
+
+Pair fresh into a clean home, keep the existing database untouched as a baseline, and drive
+the mechanisms deliberately:
+
+1. **Page one chat to exhaustion.** Take a known high-traffic conversation. Call
+   `requestHistory` in a loop, anchoring on the oldest message held, until it stops
+   yielding. **Measure: how many messages, how far back, how many requests, how long.**
+2. **Then page a second chat**, to learn whether depth is per-chat or account-wide.
+3. **Drive media download explicitly.** The account holds 524 media messages and only 266
+   blobs on disk — so even recent media is not fully downloaded. Find out whether that gap
+   is the downloader never being driven, a failure, or an expiry.
+4. **Voice notes specifically.** The principal reports several high-traffic chats each
+   holding more voice notes than the 78 counted account-wide. Establish whether they arrive
+   with paged history and whether their audio downloads.
+
+### What it must produce
+
+A number for each: messages recovered, oldest timestamp reached, requests needed, blobs
+downloaded, voice notes recovered. Plus the cost — wall-clock and any rate limiting hit.
+
+### Why it comes before the spec
+
+INTAKE's shape depends entirely on the answer. If paging reaches years back, INTAKE is a
+long-running, resumable, rate-limited backfill job over 913 chats, and that is a different
+piece of software from a one-time read of a mirror table. **The spike decides which one we
+are building.**
+
+### Standing correction
+
+`requestHistory` was in `whatsappd` all along and this document said the opposite. Read the
+source before concluding a capability is absent — and when the principal says a measurement
+contradicts what he knows about his own data, the measurement is the thing to doubt.
