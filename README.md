@@ -54,7 +54,10 @@ We build the fourth row.
 Nine areas, ordered — see [docs/design/roadmap.md](docs/design/roadmap.md).
 
 **Active: Area 1 — Skeleton** (home layout, `ambient` CLI, config and schema validation).
-Not started. Two interfaces get designed twice first: `home` and `work`.
+Specified, not started. Both interfaces designed twice —
+[ADR 001](docs/adr/001-home-interface.md) (`home`),
+[ADR 002](docs/adr/002-work-interface.md) (`work`, provisional) — and the spec is at
+[docs/planning/skeleton/spec.md](docs/planning/skeleton/spec.md).
 
 Shape before content: conventions are generated and validated by code before anything
 writes into them.

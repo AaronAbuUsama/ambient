@@ -12,8 +12,9 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **SKELETON** — not started. Two interfaces are being designed first: `home` and `work`.
-> Nothing is built. Nothing is blocked except INTAKE's device-pairing decision.
+> **SKELETON** — specified, not started. Both interfaces are designed (ADR 001, ADR 002) and
+> the spec is written. Nothing is built. Nothing is blocked except INTAKE's device-pairing
+> decision.
 
 ---
 
@@ -89,8 +90,11 @@ folder frontmatter and page templates.
 Break any file by hand and `doctor` names it precisely and exits non-zero. `chat add`
 produces a folder valid by construction.
 
-**In flight.** Design-it-twice on `home` → `docs/adr/001-home-interface.md`. Then `work` →
-`002`, marked provisional. Then the spec → `docs/planning/skeleton/`.
+**In flight.** Nothing. Design-it-twice is done on both seams —
+[ADR 001](../adr/001-home-interface.md) (`home`) and [ADR 002](../adr/002-work-interface.md)
+(`work`, **provisional**) — and the spec is at
+[docs/planning/skeleton/spec.md](../planning/skeleton/spec.md). Next is implementation, then
+the gate. Issues not yet filed.
 
 **Risk.** The layout is being decided without real data in front of us. INTAKE follows
 immediately to catch that; budget one revision.
@@ -107,6 +111,17 @@ plan the area until SKELETON's gate is met.
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-16** — Two observations parked from the spec review, **neither blocking**:
+  (a) `capabilities` may already be dead — ADR 001's `Chat` returns `mcpServers` and
+  `agents` already RESOLVED, which is the job seams.md gave that module; decide at
+  CAPABILITIES, not now. (b) ADR 002 falsifier #2 (`Loop.spec → RunSpec` assumes every
+  unit is an agent session; Whisper is a plain API call) is rated most likely and lands at
+  MEDIA/LOOPS — `work` is not built in SKELETON, so it does not block.
+- **2026-08-16** — SKELETON specified. Design-it-twice run on both load-bearing seams:
+  `home` → ADR 001 (unit handles; no cache, so hot-reload is structural), `work` → ADR 002
+  (**provisional**; loops are declarations, `claim/complete/fail/nextDue` rejected).
+  **Grill 002 Q1 amended** — the work key generalises from `chat_id` to `(kind, key)`.
+  Layout, CLI verbs, config schemas and the gate written. No code written.
 - **2026-08-16** — Design phase closed. Product model, knowledge flow, seam map and
   engineering contract agreed across one session; nine areas named and ordered.
   No code written.
@@ -121,7 +136,7 @@ Answer before the area that needs it — not before.
 |---|---|---|
 | What did the MCP spec change? | CAPABILITIES | Statelessness; better with many agents on many servers. **Read the spec — do not design from memory.** |
 | How does Pi take per-session MCP config? | HARNESS, CAPABILITIES | email-pa sets `enableMCP: false` after a stray server polluted a client's directory |
-| Schema coverage for a whole domain | SKELETON | Six types drafted; needs business, code, calendar, and per-install extension without going open-ended |
+| ~~Schema coverage for a whole domain~~ | ~~SKELETON~~ | **Answered** — [spec.md §3.4](../planning/skeleton/spec.md). Closed *field vocabulary*, open *type space*: users add types, never field forms. Whether the six shipped types cover a real domain is now an observation for KNOWLEDGE, not a design question |
 | Does OK `search` hold at thousands of docs? | MOUTH | Index-as-judgement is fine either way; ranking is the question |
 
 ## Decision index
@@ -134,6 +149,9 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The nouns; sources, modes, principal, mandate, background agents | [product.md](product.md) — **Settled/Open at the bottom is current truth** |
 | Mechanical vs reasoning; media; the schema; `now` | [knowledge-flow.md](knowledge-flow.md) |
 | Modules, ownership, dependency direction | [seams.md](seams.md) |
+| The `home` interface, and why the alternatives lost | [../adr/001-home-interface.md](../adr/001-home-interface.md) |
+| The `work` interface — **provisional** | [../adr/002-work-interface.md](../adr/002-work-interface.md) |
+| The home layout, CLI verbs, config schemas, the gate | [../planning/skeleton/spec.md](../planning/skeleton/spec.md) |
 | Effect's boundary; the five rules; deep-module tests | [../../AGENTS.md](../../AGENTS.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |
