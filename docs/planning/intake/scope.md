@@ -89,25 +89,87 @@ Raw only. No interpretation, no knowledge, no model call.
 `home` owns every path. `channel` asks for a chat's `transcript()` and `media()` grants; it
 never builds a path.
 
-## Open questions — answer before writing the spec
+## Decisions taken
 
-1. **Can more history be pulled?** The old repo had a `historyBackfillLimit`. If whatsappd
-   can request deeper history sync, the mirror grows and the cold start improves
-   materially. **This is the highest-value unknown** — it decides whether KNOWLEDGE gets
-   four years or eight months.
-2. **Is historical media reachable at all?** The mirror carries no media ref, so the 266
-   blobs on disk are presumably recent. If a 2025 image cannot be addressed, historical
-   media is permanently absent and the wiki should say so rather than imply it looked.
-3. **What are the 298 `unsupported` messages?** Eleven percent of everything. If they are
-   system events, ignore them; if they are a content type worth reading, that is a gap.
-4. **How many of the 78 voice notes are historical?** Recent ones are processable;
-   historical ones without a blob ref are holes that cannot be filled.
-5. **Do we ingest identity, or only conversations?** 1,560 contacts and 2,417 aliases exist
-   independently of any message. They are the richest thing in the account. Deciding they
-   are in scope changes what INTAKE writes.
-6. **Does the mirror need reading at all after the first import?** If the accepted log is
-   authoritative going forward, the mirror is a one-time source and the steady state has
-   one reader, not two.
+- **Use `whatsappd`; do not rebuild.** It is 14,705 lines, 198 merged PRs, and already
+  Aaron's. `channel` hides it behind Ambient's own interface, so replacing it later is one
+  module. Rebuilding on `baileys` would mean rediscovering the durable operation queue, the
+  accepted log, account leases and the media store.
+- **Pair fresh, and keep the existing database as a baseline.** The fresh pairing is the
+  only thing that empirically answers "can more history be pulled"; the old database turns
+  the answer into a measurement rather than an impression.
+
+## Open questions — answered 2026-08-16
+
+### 1. Can more history be pulled? **No. Both knobs are already at maximum.**
+
+`packages/whatsappd/src/baileys/socket.ts`:
+
+```ts
+syncFullHistory: requestFullHistory,          // = auth.creds.registered === true
+shouldSyncHistoryMessage: () => true,
+browser: Browsers.macOS("Desktop")            // the identity that yields the most history
+```
+
+Full history is requested on **every reconnect after registration** — not on the first
+link, deliberately: asking during the `link_code_companion_reg` in-between state leaves the
+phone stuck at "logging in". And the browser identity is already `Desktop`, which is the
+one WhatsApp gives the most to.
+
+**There is nothing left to turn up.** 2,739 messages is what WhatsApp gives for this
+account. The fresh pairing is still worth doing — it is cheap, and it replaces an
+assumption with a measurement — but expect it to **confirm the ceiling, not raise it.**
+
+**Consequence:** the cold start is what it is. Ambient starts knowing *people*, not
+*conversations*. Design for that rather than hoping for more.
+
+### 2. Is historical media addressable? **Almost certainly not — and it barely matters.**
+
+`baileys/history.ts` defaults the download thunk to `noDownloader`:
+
+```ts
+makeDownload: (raw: WAMessage) => DownloadThunk = noDownloader
+```
+
+So history-synced messages carry no ref. It is a *default parameter*, not a hard rule — a
+caller could pass a real downloader — so this is a lever, not a wall. But the volume makes
+it moot:
+
+```
+media messages by year:   2022: 2 · 2024: 11 · 2025: 15 · 2026: 496
+```
+
+**496 of 524 media messages are from this year.** Twenty-eight historical items across four
+years. Not worth engineering for.
+
+### 3. What are the 298 `unsupported` messages? **Mostly protocol noise.**
+
+```
+protocolMessage 167 · reactionMessage 50 · unknown 26 · templateMessage 17
+secretEncryptedMessage 15 · pollUpdate 7 · album 6 · interactive 4 · botForwarded 3 · pinInChat 1
+```
+
+**167 (56%) are `protocolMessage`** — system traffic, ignore. **50 are reactions**, which
+already appear on their target message's `reactions[]` array, so they are duplicates rather
+than lost content. The remaining ~81 are long-tail types.
+
+**Verdict: ignore the class.** Record the count so the wiki can say what was skipped; do not
+build parsers for the tail.
+
+### 4. How many voice notes are historical? **Eleven.**
+
+```
+audio by year:   2024: 5 · 2025: 6 · 2026: 67
+```
+
+67 of 78 are from this year and have refs. **Eleven unfillable holes across four years.**
+Record them as unreadable; do not chase them.
+
+### 5–6. Deferred to the spec, not blocking
+
+Whether identity (1,560 contacts, 2,417 aliases) is ingested as well as conversations, and
+whether the mirror is read at all after the first import, are now design choices rather than
+unknowns — the data needed to decide them is in this document.
 
 ## What this is likely to move in SKELETON
 
