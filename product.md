@@ -66,8 +66,41 @@ one step further along — it also has a line of its own.
 
 ### Chat
 
-One conversation Ambient is present in. It has a folder, and the folder is the whole
-grant.
+One conversation Ambient is present in. It has a folder, and **the folder is the whole
+grant**.
+
+**The knowledge base and the chat folders are separate trees.** A chat folder is not
+knowledge — it is a *runtime instance directory*, the environment Ambient operates in for
+one room. It lives outside the OpenKnowledge content directory.
+
+```
+chats/bug-reports/
+  config          machine-readable — tools, MCP servers, reachable background agents
+  mandate         prose — what this chat is for, who is here, how to behave
+  skills/         its own, independent of every other chat's
+  notes/          its own
+  transcript · media refs · now
+```
+
+Three reasons it is a folder on disk:
+
+1. **Inspectable.** `cat` the config and you know exactly what this chat can do. No
+   registry, no database, no admin UI.
+2. **Individually configurable.** Different permissions, tools, MCPs and reachable agents
+   per chat. The folder *is* the grant.
+3. **Grokkable.** One place per chat, nothing to cross-reference.
+
+All of it editable by the Root or by the user on the fly. No restart.
+
+### The two planes
+
+| Plane | Reached by | Carries |
+|---|---|---|
+| Filesystem | `cwd` = the chat folder | config, mandate, skills, notes, transcript, `now` |
+| MCP | the server list in that config | the shared knowledge base, tools, background agents |
+
+Same entity, instantiated per room. Same identity, same voice, same knowledge — different
+in exactly the ways the folder declares.
 
 Same entity, same personality, **different behaviour**. A bug-reports group, an internal
 PA thread, an outreach conversation with a customer, and a thread with HMRC are four
@@ -100,8 +133,32 @@ The speaker may create, read and update a GitHub issue directly — that is a to
 *Executing* that ticket is a different thing entirely: async, off-thread, a background
 agent.
 
-**Same paradigm as everything else:** a folder, a config file, a skill. Grokkable,
-inspectable, editable by hand.
+**Same paradigm as everything else:** a folder, a config file, a skill.
+
+```
+agents/linear/
+  agent.yaml     model · thinking · which MCPs THIS agent gets · scope
+  SKILL.md       what it does, how, and when it declines
+```
+
+**Ambient runs one small MCP server that reflects a chat's granted agents as tools** —
+`linear__dispatch(objective)` enqueues a job and returns immediately. The job runs as its
+own session, `cwd` = a job directory, with its own MCP list. Its result lands as a receipt
+in the originating chat, which wakes the reply loop.
+
+Creating an agent on the fly is writing a folder. Discovery is a filesystem convention.
+
+That collapses capability into one concept — **MCP servers**:
+
+| Source | Exposes |
+|---|---|
+| OpenKnowledge's MCP | the shared knowledge base |
+| third-party MCPs named in the chat's config | tools |
+| Ambient's reflector MCP | the background agents this chat may reach |
+
+**[open]** The agent-to-agent mechanism must be designed against the *current* MCP spec,
+which has changed substantially (statelessness; better behaviour when many agents attach to
+many servers). Read the spec before designing the reflector — do not design from memory.
 
 ### Speaker
 
@@ -307,6 +364,14 @@ What that requires:
 - **Silence is first-class. Canon.**
 - Extensibility is for the user, not only for the agent. Most users will not be engineers.
 - Configuration is files in a git repo.
+- **Media blobs are global and content-addressed** — stored once, processed once, a
+  forwarded screenshot deduped across every chat. **Interpretations are knowledge** — a
+  Media doc in the knowledge base keyed by the same hash, searchable and citable. Chat
+  folders hold references only.
+- **Use OpenKnowledge's MCP directly.** An OK-compatible server of our own is a later
+  problem. The discipline that costs nothing now: **depend on OK's tool surface, never on
+  its internals** — no reading `.ok/` state, no assuming file layout, no touching skill
+  projections. Then swapping the implementation is a config change.
 - **`cwd` is the chat's own folder.** That is what scopes its skills and its writes, with
   no scoping code. It does not conflict with one shared knowledge base, because
   OpenKnowledge is addressed over MCP, not by filesystem path. The outbound destination is
