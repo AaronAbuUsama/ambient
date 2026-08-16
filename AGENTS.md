@@ -58,6 +58,52 @@ must learn. Not a line-count ratio.
 twelve interfaces over file reading. Large interface, thin implementation — shallow. Every
 caller learned the layout. Do not repeat that shape.
 
+## The module shape — every module, no exceptions
+
+One way to organise the whole codebase, the CLI included. Six slots. You learn it once and
+then every module navigates the same.
+
+```
+src/modules/<name>/
+  README.md        what it owns · its invariants · how to test it. one page.
+  types.ts         THE interface — types plus the entry signature. Read this first.
+  service.ts       the entry point's implementation.
+  internal/        everything only this module knows.
+  <name>.test.ts   tests, through the interface only.
+```
+
+- **`types.ts` is the module.** If you cannot understand what a module does by reading its
+  `types.ts` alone, the module is the wrong shape.
+- **`internal/` makes the seam physical.** `types.ts` is what callers know; `internal/` is
+  what only this module knows. **No module imports from another module's `internal/`.**
+- **The CLI is a module.** `service.ts` maps argv to a command and does nothing else;
+  `internal/commands/*.ts` hold the handlers. No exception for being "just wiring".
+- Grouping by what a file *is* — a `types/`, a `services/`, a `handlers/` folder — was
+  considered and rejected: it dissolves the module boundary across four folders, and the
+  boundary is the entire point.
+
+**Legibility is part of done.** These are checkable, and `doctor` checks them:
+
+- No source file over ~250 lines.
+- No top-level implementation nested inside a closure. If a function is the module's work,
+  it is a named top-level function in a file, not a nested arrow inside the entry point.
+- Every module has all six slots.
+
+## OpenKnowledge — vendored, not depended on
+
+**We match OpenKnowledge's format. We never call its CLI.**
+
+`ok init` does four things and we want one of them: it writes `.ok/config.yml`, and it also
+creates a nested `.git`, editor wiring under `.claude` / `.codex` / `.cursor` / `.github` /
+`.opencode` / `.pi`, and housekeeping files. Verified by running it.
+
+`.ok/config.yml` is entirely comments — every key is a default. So **we write those files
+from our own templates.** The result opens in the OpenKnowledge app because the format
+matches, and it costs us no CLI dependency, no nested repository and no editor pollution.
+
+The knowledge base's *layout* is the thing worth taking from OpenKnowledge. Its tooling is
+not. A UI of our own replaces the app later; the format survives that.
+
 ## Discipline
 
 - No `any`. External data is `unknown`, narrowed at the boundary.
