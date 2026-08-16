@@ -14,8 +14,9 @@ One entity with one accumulated understanding of the world, present across many
 conversations — WhatsApp chats today, one or more email accounts too — that builds its
 knowledge from what arrives and eventually speaks for itself.
 
-The knowledge is markdown files in folders. You can open it in Obsidian. You can `git log`
-it. You can read any page and know what Ambient knows and how sure it is.
+The knowledge is an OpenKnowledge project — markdown-CRDT over MCP, co-written by humans
+and agents, every change attributed, every claim sourced. You can read any page and know
+what Ambient knows and how sure it is.
 
 ---
 

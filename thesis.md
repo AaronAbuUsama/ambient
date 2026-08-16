@@ -123,7 +123,7 @@ Ambient         the glue — sources, ingestion, loops, mandates, capabilities,
 solved one row up; see `research/open-knowledge.md` before designing anything that touches
 knowledge, skills, or provenance.
 
-### Two halves, not three subsystems
+### Two halves
 
 **Ingestion — builds knowledge, never speaks.**
 Sources → observations → knowledge. Layered cadences: per-chat digests, cross-chat weekly

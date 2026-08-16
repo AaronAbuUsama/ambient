@@ -109,7 +109,7 @@ Ambient, present in one chat, doing that chat's job. Composed of:
 
 ```
 identity.md          global — who Ambient is. always. never overridden.
-chats/<slug>/chat.md local — what this chat is for. ADDS to identity, never replaces it.
+<the chat's mandate>  local — what this chat is for. ADDS to identity, never replaces it.
 chats/<slug>/skills/ local — how to do this chat's job
 + the shared knowledge base
 ```
@@ -258,13 +258,13 @@ handling bugs, doing real business — who everyone is, what they do, tracked ac
 chats over a long period. That is the year-of-email equivalent, and it is the only way to
 get a knowledge base that is worth anything on day one.
 
-So the backfill is not a nice-to-have. **The architecture has to support ingesting from an
-account Ambient does not live on, without pretending it was there.**
+So history import is not a nice-to-have. **The architecture has to support ingesting from
+an account Ambient does not live on, without pretending it was there.**
 
 What that requires:
 
-1. **Source modes.** Aaron's personal number is `backfill` — read, learn, never speak.
-   Ambient's own number is `live`.
+1. **Source modes.** The principal's personal number is `ingest` — read, learn, never
+   speak. Ambient's own number is `speak`.
 2. **Ingestion policy.** Not every personal chat belongs in a work knowledge base. Which
    conversations are in scope is a decision, not a default.
 3. **Provenance, everywhere.** One knowledge base, but every fact knows where it came
