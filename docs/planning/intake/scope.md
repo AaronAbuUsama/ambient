@@ -128,10 +128,50 @@ boundedly, and 2,739 messages across 913 chats says it paged shallowly or not pe
 **So the ceiling is not WhatsApp's. It is how hard we drive `requestHistory`.** How deep it
 actually reaches is now an empirical question, and it is the subject of the spike below.
 
+#### Qualified again, same day — and this is the settled position
+
+`whatsappd`'s own `docs/architecture/history-semantics.md` already ran this experiment on a
+real account whose **primary is an iPhone**: `requestHistory` submitted 7 times, delivery
+acknowledged every time, **0 answered**. Count, chat type and phone state were all varied
+without effect. Upstream [Baileys #2452](https://github.com/WhiskeySockets/Baileys/issues/2452)
+splits by primary-phone platform — reproduced on iOS, reported working on Android.
+
+**The principal's real account is the iPhone one.** So:
+
+- The paging mechanism **exists** — my first answer was wrong.
+- The ceiling is **not** how hard we drive it — my second answer was wrong too.
+- **The ceiling is the phone.** An iOS primary does not answer on-demand history requests.
+
+Two wrong answers in opposite directions, both from reading one layer and stopping. The
+lesson is in the standing correction at the foot of this document, and it now has a second
+instance: `whatsappd` had already measured this and written it down.
+
+**Expect INTAKE to be a one-time mirror read, not a long-running backfill.** The spike runs
+a few hundred requests rather than seven to make that a confident zero rather than an
+inherited one.
+
 **Consequence:** every conclusion downstream of "the history is thin" is provisional. The
 cold-start correction in `thesis.md` may itself need correcting once the spike reports.
 
-### 2. Is historical media addressable? **Almost certainly not — and it barely matters.**
+### 2. Is historical media addressable? **YES — this answer was also wrong.**
+
+**Retracted 2026-08-16.** The claim below rested on `history.ts` defaulting to
+`noDownloader`. That is only the **pure-test default parameter**. The real socket wires a
+live downloader:
+
+```ts
+// packages/whatsappd/src/baileys/socket.ts:471
+const makeDownload = mediaDownloader(sock, logger);
+// :538
+toMessagingHistoryEvents(payload, selfAddress(sock), makeDownload)
+```
+
+History-synced messages therefore carry a working `media.download()`. The gap of **524
+media messages against 266 blobs on disk** is almost certainly "the downloader was never
+driven" rather than expiry — and that is now the spike's primary question, because unlike
+the history question it is expected to *succeed*.
+
+#### The original, wrong reasoning
 
 `baileys/history.ts` defaults the download thunk to `noDownloader`:
 
