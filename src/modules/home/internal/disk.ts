@@ -154,18 +154,38 @@ export const isSqlite = (abs: string): boolean | { readonly cause: string } => {
   }
 };
 
-/** Directory entries, sorted, or `undefined` if there is no readable directory. */
-export const list = (h: Layout, abs: string): readonly string[] | undefined => {
-  if (look(h, abs).kind !== "dir") return undefined;
+/**
+ * Directory entries, sorted. Nothing at all lists as nothing — the item that
+ * expects a directory reports its absence. A directory that exists and cannot be
+ * read is a problem in its own right, and says so rather than reading as empty.
+ */
+export const list = (h: Layout, abs: string): readonly string[] | ProblemDetail => {
+  if (look(h, abs).kind !== "dir") return [];
   try {
     return fs.readdirSync(abs).sort();
-  } catch {
-    return undefined;
+  } catch (e) {
+    return { _tag: "Unreadable", cause: causeOf(e) };
   }
 };
 
-export const mkdir = async (abs: string): Promise<void> => {
-  await fsp.mkdir(abs, { recursive: true });
+/**
+ * The same listing for the two passes that enumerate rather than check: they walk
+ * what is there, and the item that owns the directory is what reports it missing
+ * or unreadable. Saying it twice is what `ordered` would have to undo.
+ */
+export const entries = (h: Layout, abs: string): readonly string[] => {
+  const found = list(h, abs);
+  return "_tag" in found ? [] : found;
+};
+
+/** Every write answers with why it failed. `home` throws nothing — see `types.ts`. */
+export const mkdir = async (abs: string): Promise<ProblemDetail | undefined> => {
+  try {
+    await fsp.mkdir(abs, { recursive: true });
+    return undefined;
+  } catch (e) {
+    return { _tag: "Unreadable", cause: causeOf(e) };
+  }
 };
 
 /**
@@ -178,15 +198,18 @@ export const writeNew = async (
   dir: string,
   name: string,
   content: string,
-): Promise<void> => {
-  if (look(h, at(dir, name)).kind !== "absent") return;
+): Promise<ProblemDetail | undefined> => {
+  if (look(h, at(dir, name)).kind !== "absent") return undefined;
   const stamp = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const tmp = at(dir, `.${name}.tmp-${stamp}`);
   try {
     await fsp.writeFile(tmp, content, { encoding: "utf8", flag: "wx" });
     await fsp.rename(tmp, at(dir, name));
+    return undefined;
   } catch (e) {
-    await fsp.rm(tmp, { force: true });
-    throw e;
+    // The write already failed; a failure to clear the temp file cannot say
+    // anything the caller does not already know, and must not mask it.
+    await fsp.rm(tmp, { force: true }).catch(() => undefined);
+    return { _tag: "Unreadable", cause: causeOf(e) };
   }
 };

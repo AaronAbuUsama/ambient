@@ -9,7 +9,7 @@
 
 import { readAgentConfig, readChatConfig } from "./config.ts";
 import type { Layout } from "./disk.ts";
-import { at, legal, list } from "./disk.ts";
+import { at, entries, legal } from "./disk.ts";
 import { problem } from "./problem.ts";
 import { readGlobals, readText } from "./read.ts";
 import type { Problem } from "../types.ts";
@@ -18,7 +18,7 @@ type Kind = "agent" | "mcpServer" | "model" | "source";
 
 type Ref = (key: string, to: string, kind: Kind, known: readonly string[]) => void;
 
-const named = (h: Layout, dir: string): readonly string[] => (list(h, dir) ?? []).filter(legal);
+const named = (h: Layout, dir: string): readonly string[] => entries(h, dir).filter(legal);
 
 export const crossRefs = (h: Layout): readonly Problem[] => {
   const globals = readGlobals([], h);

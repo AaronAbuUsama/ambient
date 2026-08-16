@@ -2,11 +2,12 @@
 
 **Status:** Accepted, amended · **Date:** 2026-08-16 · **Area:** SKELETON
 
-> **Amendments after implementation.** The decision stands; three details in the
+> **Amendments after implementation.** The decision stands; five details in the
 > interface below did not survive contact and are corrected here rather than
 > silently rewritten. See *Amendments* at the foot of this document.
 > `HomeDeps` no longer exists · `HomeProblem.problems` is a plain array ·
-> `converge` is async because it writes, not because it spawns.
+> `converge` is async because it writes, not because it spawns · a handle's
+> `Place`s are methods returning `Place | HomeProblem` · nothing throws.
 
 Produced by a `DESIGN-IT-TWICE` round (three parallel designs) on the `home` module, as
 required by [seams.md](../design/seams.md) — *"Two seams worth designing twice"*.
@@ -410,7 +411,7 @@ no logger, no filesystem.
 
 ## Amendments
 
-Three things in the interface above were wrong on contact with the implementation.
+Five things in the interface above were wrong on contact with the implementation.
 The decision — the handle, `plan`/`converge` as one list, nothing cached — is
 unaffected.
 
@@ -447,3 +448,58 @@ prevented locally, where each reader pushes a problem before it returns nothing.
 `converge` no longer runs another program. It is async because it writes to disk;
 `plan` is sync because it only reads. The asymmetry is still a signal, and still
 correct — the reason was not.
+
+### 4 · The `Place`s a handle grants are methods returning `Place | HomeProblem`, not properties.
+
+```ts
+export type Grant = () => Place | HomeProblem   // BadName is its only failure
+
+export type ChatHandle = { …; cwd: Grant; transcript: Grant; media: Grant; now: Grant; … }
+export type AgentHandle = { …; cwd: Grant; … }
+```
+
+Invariant 7 says *"no `Place` is ever produced for an illegal name"*, and the
+interface above gave that answer nowhere to live: `cwd`, `transcript`, `media` and
+`now` were non-optional `readonly Place`, so the getter threw. **An invariant
+enforced by throwing is a convention, not a structure** — and it made the interface
+lie about how the module fails, which is exactly the debt AGENTS.md's *"errors are
+values"* rule exists to prevent, and exactly what an Effect migration would price
+in (`E = never` on every signature that can in fact fail).
+
+Making them methods is the smallest change that gives the invariant somewhere to
+live. Nothing else in the decision moves: resolution stays total (`chat()` and
+`agent()` still always return a handle), `read()` keeps its one guard per entry
+point, and the grant answers with the same `BadName` problem `plan()` reports —
+one vocabulary, as invariant 7 intended.
+
+**The alternative considered and rejected: put the places on the read `Chat` /
+`Agent` value instead**, where `Chat.cwd` already lives and a name has already been
+checked. It is the tidier shape and it costs invariant 10: a handle holds a name,
+not a descriptor, and a caller must be able to ask *where does this chat's
+transcript go* without a successful read. `channel` appending an arriving message
+to a chat whose `mandate.md` is missing is the case that decides it — the chat
+cannot speak, and traffic must still be recorded rather than dropped. `Place`s
+that require a valid whole-unit read would make a broken mandate lose messages.
+
+`home.blobs` and `home.db` stay plain `readonly Place` properties: the root has no
+name that can be wrong.
+
+### 5 · `home` throws nothing at all, and `types.ts` is the whole failure vocabulary.
+
+Beyond the two grants, one throw survived in `internal/disk.ts`: `writeNew`
+rethrew an `fs` error after clearing its temp file, and the convergence loop
+rescued it with `.catch()` and turned it into `Unreadable`. So the *caller* already
+treated it as a condition while the *implementation* called it a bug. An `EACCES`,
+`ENOSPC` or read-only volume is the world failing, not our code being wrong —
+AGENTS.md reserves throwing for the latter — so `mkdir` and `writeNew` now return
+`ProblemDetail | undefined`, `Ensure.make` resolves with a detail, and the rescue
+`catch` is gone rather than load-bearing.
+
+The same pass closed a hole in the other direction: `list` swallowed a failed
+`readdir` into `undefined`, so a directory `home` could not read reported as
+*empty and healthy*. It now returns `readonly string[] | ProblemDetail` and
+`doctor` names it `chats/: unreadable — EACCES …`. `Unreadable`'s meaning is
+widened to *"the filesystem refused: a read, a listing or a write failed"* rather
+than inventing a fourth tag, so no rendered output changes shape.
+
+Gate assertion 18 keeps it true: no `throw` under `src/` outside tests.

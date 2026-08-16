@@ -9,7 +9,7 @@
 import { readAgentConfig, readChatConfig, readGlobalConfig } from "./config.ts";
 import { readSchema } from "./schema.ts";
 import type { Layout, Parsed } from "./disk.ts";
-import { at, badName, causeOf, isSqlite, legal, list, look, mkdir, writeNew } from "./disk.ts";
+import { at, badName, entries, isSqlite, legal, list, look, mkdir, writeNew } from "./disk.ts";
 import { detailsOf, kindOf, ordered, problem } from "./problem.ts";
 import { readText } from "./read.ts";
 import { crossRefs } from "./refs.ts";
@@ -19,8 +19,8 @@ import type { Problem, ProblemDetail } from "../types.ts";
 /** One item of the list. `plan` runs `check`; `converge` runs `make` then `check`. */
 export type Ensure = {
   readonly at: string;
-  /** Resolving with a non-empty string means convergence failed, and says why. */
-  readonly make?: () => Promise<string | void>;
+  /** Resolving with a detail means convergence failed, and says why. It never throws. */
+  readonly make?: () => Promise<ProblemDetail | undefined>;
   readonly check: () => readonly Problem[];
 };
 
@@ -47,9 +47,7 @@ const AGENT_ENTRIES = ["agent.yaml", "SKILL.md"] as const;
 
 const dirItem = (h: Layout, label: string, abs: string): Ensure => ({
   at: label,
-  make: async () => {
-    if (look(h, abs).kind === "absent") await mkdir(abs);
-  },
+  make: async () => (look(h, abs).kind === "absent" ? await mkdir(abs) : undefined),
   check: () => {
     const f = look(h, abs);
     return f.kind === "dir" ? [] : [problem(label, kindOf(f, "directory"))];
@@ -90,23 +88,27 @@ const normal = (name: string): string => name.toLowerCase().replace(/\.yml$/, ".
 /** A file that looks like it should work and silently does not is the worst failure. */
 const namesItem = (h: Layout, label: string, abs: string, declared: readonly string[]): Ensure => ({
   at: label,
-  check: () =>
-    (list(h, abs) ?? []).flatMap((entry) => {
+  check: () => {
+    const found = list(h, abs);
+    if ("_tag" in found) return [problem(label, found)];
+    return found.flatMap((entry) => {
       if (declared.includes(entry)) return [];
       const near = declared.find((d) => normal(d) === normal(entry));
       return near === undefined
         ? []
         : [problem(`${label}${entry}`, { _tag: "BadName", got: entry, expected: `"${near}"` })];
-    }),
+    });
+  },
 });
 
 /** Names are a trust boundary. `..` must never become a path. */
 const childrenItem = (h: Layout, label: string, abs: string): Ensure => ({
   at: label,
-  check: () =>
-    (list(h, abs) ?? [])
-      .filter((entry) => !legal(entry))
-      .map((entry) => problem(`${label}${entry}`, badName(entry))),
+  check: () => {
+    const found = list(h, abs);
+    if ("_tag" in found) return [problem(label, found)];
+    return found.filter((e) => !legal(e)).map((e) => problem(`${label}${e}`, badName(e)));
+  },
 });
 
 /**
@@ -118,10 +120,12 @@ const knowledgeItem = (h: Layout): Ensure => ({
   at: "knowledge/",
   make: async () => {
     const ok = at(h.knowledge, ".ok");
-    await mkdir(ok);
-    await writeNew(h, ok, "config.yml", template.OK_CONFIG);
-    await writeNew(h, ok, ".gitignore", template.OK_GITIGNORE);
-    await writeNew(h, h.knowledge, ".okignore", template.OKIGNORE);
+    return (
+      (await mkdir(ok)) ??
+      (await writeNew(h, ok, "config.yml", template.OK_CONFIG)) ??
+      (await writeNew(h, ok, ".gitignore", template.OK_GITIGNORE)) ??
+      (await writeNew(h, h.knowledge, ".okignore", template.OKIGNORE))
+    );
   },
   check: () => {
     const f = look(h, h.knowledge);
@@ -149,8 +153,8 @@ const dbItem = (h: Layout): Ensure => ({
   },
 });
 
-export const slugs = (h: Layout): readonly string[] => list(h, h.chats) ?? [];
-export const names = (h: Layout): readonly string[] => list(h, h.agents) ?? [];
+export const slugs = (h: Layout): readonly string[] => entries(h, h.chats);
+export const names = (h: Layout): readonly string[] => entries(h, h.agents);
 
 export const chatItems = (h: Layout, slug: string): readonly Ensure[] => {
   const label = `chats/${slug}`;
@@ -215,11 +219,8 @@ export const planned = (items: readonly Ensure[]): readonly Problem[] =>
 export const converged = async (items: readonly Ensure[]): Promise<readonly Problem[]> => {
   const failures: Problem[] = [];
   for (const item of items) {
-    if (item.make === undefined) continue;
-    const failed = await item.make().catch(causeOf);
-    if (typeof failed === "string") {
-      failures.push(problem(item.at, { _tag: "Unreadable", cause: failed }));
-    }
+    const failed = await item.make?.();
+    if (failed !== undefined) failures.push(problem(item.at, failed));
   }
   return ordered([...failures, ...items.flatMap((i) => i.check())]);
 };

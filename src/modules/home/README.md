@@ -61,10 +61,14 @@ it, so `init` cannot create a file `doctor` forgets to check.
 10. **No dependencies.** `home` spawns no process, reads no environment and takes
     no injected ports. It writes `knowledge/` from its own templates rather than
     calling OpenKnowledge's CLI.
+11. **Nothing throws.** Every failure `home` can produce is a `ProblemDetail` in
+    [`types.ts`](./types.ts) — the whole answer to *what can this fail with*, in
+    one file. A bad slug, an unreadable directory and a write that will not land
+    are all values, which is why an Effect `E` channel is already written.
 
 ## How to test it
 
-[`home.test.ts`](./home.test.ts) is SKELETON's gate — the seventeen assertions of
+[`home.test.ts`](./home.test.ts) is SKELETON's gate — the eighteen assertions of
 [`docs/planning/skeleton/spec.md`](../../../docs/planning/skeleton/spec.md) §4,
 one `it` each, plus the resolutions the interface promises.
 
