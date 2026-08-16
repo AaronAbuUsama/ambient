@@ -20,6 +20,7 @@ Design repo. No code yet.
 | [research/email-pa-teardown.md](research/email-pa-teardown.md) | The ten patterns worth stealing, with code. |
 | [grills/001-old-repo-teardown.md](grills/001-old-repo-teardown.md) | What went wrong in `whatsapp-agent-tui`, measured. |
 | [grills/002-from-scratch-round-1.md](grills/002-from-scratch-round-1.md) | First design pass. Harness proposal superseded; the four decisions stand. |
+| [grills/003-roadmap-order.md](grills/003-roadmap-order.md) | What the foundation is, and the order of the nine areas. |
 
 ## The stack
 
@@ -39,6 +40,9 @@ We build the fourth row.
 
 [roadmap.md](roadmap.md) — gated sections, and the handoff for a fresh context.
 
-**Active: Section 1 — the knowledge base exists and is worth reading.** Not started.
-Blocked on one decision: pairing `whatsappd` as a linked device on the principal's personal
-WhatsApp, since that is where the only real history lives.
+Nine areas, ordered. **Active: Area 1 — Skeleton** (home layout, `ambient` CLI, config and
+schema validation). Not started.
+
+Shape before content: conventions are generated and validated by code before anything
+writes into them. The ordering is grilled in
+[grills/003](grills/003-roadmap-order.md).
