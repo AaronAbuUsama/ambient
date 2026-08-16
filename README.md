@@ -9,6 +9,7 @@ Design repo. No code yet.
 | [thesis.md](thesis.md) | What Ambient is, the category, the opinions. The front door. |
 | [product.md](product.md) | The nouns and what each owns. Settled / open at the bottom. |
 | [knowledge-flow.md](knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
+| [roadmap.md](roadmap.md) | Where we are, what is next, and the fresh-context handoff. |
 | [kernel.md](kernel.md) | Lessons from the two prior experiments. History only — the design lives in the docs above. |
 
 ## Evidence
@@ -34,6 +35,10 @@ Ambient         the glue — sources, ingestion, loops, mandates, capabilities,
 
 We build the fourth row.
 
-## Next
+## Where we are
 
-The roadmap: gated sections — plan, build, review, then plan the next. Not written yet.
+[roadmap.md](roadmap.md) — gated sections, and the handoff for a fresh context.
+
+**Active: Section 1 — the knowledge base exists and is worth reading.** Not started.
+Blocked on one decision: pairing `whatsappd` as a linked device on the principal's personal
+WhatsApp, since that is where the only real history lives.
