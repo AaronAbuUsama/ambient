@@ -21,7 +21,7 @@ Produced by a `DESIGN-IT-TWICE` round (three parallel designs).
 
 `work` owns durable work: triggers, due times, leases, claims, retry, jobs. It **decides
 when and what runs**. It is the one layer where Effect is agreed
-([AGENTS.md](../../AGENTS.md), *Where Effect goes*).
+([effect.md](../rules/effect.md), *Where Effect goes, and where it does not*).
 
 **The seam that must not close.** [seams.md](../design/seams.md): *"`harness` runs a session;
 `work` decides that a session should run. Two seams, not one. Conflating them is what
@@ -277,7 +277,8 @@ the entire re-trigger behaviour — no flag, no `CASE`, no second code path.
 
 Break it and `TestClock` silently stops controlling the store while still controlling the
 fibers, and every timing test dies without a failing test to tell you. Enforced by a grep in
-`doctor` — AGENTS.md: *"if `doctor` cannot check it, it is not a convention."*
+`doctor` — [legibility.md](../rules/legibility.md): *"a rule that cannot be run is not a
+rule."*
 
 ### Amendment to grill 002 Q1 — flagged explicitly
 
@@ -376,7 +377,7 @@ The failure story is grill 002's, unchanged: **degraded, never corrupt.**
 
 ### Where Effect genuinely earns its place, and where it does not
 
-AGENTS.md asks for this accounting honestly, and the design that was *assigned* the
+[effect.md](../rules/effect.md) asks for this accounting honestly, and the design that was *assigned* the
 Effect-native constraint delivered the most useful version of it — by reporting that two of
 the three primitives its constraint was named after are the wrong tool here.
 
@@ -413,7 +414,7 @@ over every kind — its own report concedes *"`perform` becomes the largest func
 system... the complexity does not vanish; it moves into the composition root's switch"* —
 where the winner's per-loop `spec` keeps each loop's three lines next to its own
 declaration. And its interface is typed in `Effect.Effect<...>`, which pushes Effect onto
-`channel` and `speaker`, against AGENTS.md's own table. **Its interruption analysis and its
+`channel` and `speaker`, against [effect.md](../rules/effect.md)'s own table. **Its interruption analysis and its
 lease-renewal rule are both adopted** — they are the two places the winner was wrong.
 
 **C — a loop is a declared policy, in `loops.yaml`.** Produces the best *artefact* of the

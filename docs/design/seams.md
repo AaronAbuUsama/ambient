@@ -18,7 +18,7 @@ Revisable. Expected to change on contact.
 | Module | Owns | Interface is about | Effect |
 |---|---|---|---|
 | `cli` | Command wiring only. **No logic.** | `init` · `doctor` · `chat add` · `agent add` | no |
-| `home` | The home on disk: layout, validation, health, scaffolding, change hints. **The only thing that knows a path.** | designed — [ADR 001](../adr/001-home-interface.md). `openHome(root, deps)` → unit handles; read · plan · converge | no |
+| `home` | The home on disk: layout, validation, health, scaffolding, change hints. **The only thing that knows a path.** | designed — [ADR 001](../adr/001-home-interface.md). `openHome(root)` → unit handles; read · plan · converge. **No ports** — see that ADR's Amendments | no |
 | `blobs` | Content-addressed binary store. Dedup by hash. | put · get · exists, all by hash | no |
 | `channel` | A source of messages and a bound destination. Accounts, source modes, allowlist, cursors. **Hides `whatsappd` entirely.** | sync a source → transcript entries + blob refs; send, pre-bound to one chat | no |
 | `media` | Interpreting a blob: speech-to-text, vision, extraction. Keyed by hash, cached. | `process(ref) → Interpretation` | later |

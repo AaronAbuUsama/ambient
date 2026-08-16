@@ -36,6 +36,9 @@ The rule that makes `internal/` mean something: **no module imports another
 module's `internal/`.** `cli` may import `home/types.ts` and `home/service.ts`.
 It may not import `home/internal/anything`.
 
+Both are rules rather than habits — [rules/modules.md](./rules/modules.md) and
+[rules/imports.md](./rules/imports.md), checked by `vp run shape`.
+
 ---
 
 ## The trace

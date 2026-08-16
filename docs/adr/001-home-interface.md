@@ -2,12 +2,13 @@
 
 **Status:** Accepted, amended · **Date:** 2026-08-16 · **Area:** SKELETON
 
-> **Amendments after implementation.** The decision stands; five details in the
+> **Amendments after implementation.** The decision stands; six details in the
 > interface below did not survive contact and are corrected here rather than
 > silently rewritten. See *Amendments* at the foot of this document.
 > `HomeDeps` no longer exists · `HomeProblem.problems` is a plain array ·
 > `converge` is async because it writes, not because it spawns · a handle's
-> `Place`s are methods returning `Place | HomeProblem` · nothing throws.
+> `Place`s are methods returning `Place | HomeProblem` · nothing throws ·
+> `DanglingRef` carries the known set and a fourth kind.
 
 Produced by a `DESIGN-IT-TWICE` round (three parallel designs) on the `home` module, as
 required by [seams.md](../design/seams.md) — *"Two seams worth designing twice"*.
@@ -24,7 +25,7 @@ designed before it is built.
 **The failure to beat, measured.** The previous attempt's `src/home/` was 1038 lines: nine
 files exposing eleven functions and twelve interfaces, all over file reading. Large
 interface, thin implementation — shallow. Every caller learned the layout.
-[AGENTS.md](../../AGENTS.md): *"Do not repeat that shape."*
+[modules.md](../rules/modules.md): *"Do not repeat the old shape."*
 
 **The five things the interface must cover.** Create a home idempotently · read it validated
 as one value · re-derive health from disk · scaffold a chat/agent/skill from templates ·
@@ -222,8 +223,8 @@ than folklore:
 > **`home` emits a `Place` only when the consumer hands it to something outside our
 > codebase. `home` never emits a path our own code will `join` onto.**
 
-Enforced by one test, because [AGENTS.md](../../AGENTS.md) demands that conventions be
-validated rather than believed: `path.join`, `path.resolve` and `__dirname` appear nowhere
+Enforced by one test, because [legibility.md](../rules/legibility.md) demands that a rule
+be runnable rather than believed: `path.join`, `path.resolve` and `__dirname` appear nowhere
 under `src/` outside `src/modules/home/`.
 
 Five `Place`s escape, all roots-of-grant: `chat.cwd` (Pi takes a `cwd`; the folder *is* the
@@ -411,15 +412,15 @@ no logger, no filesystem.
 
 ## Amendments
 
-Five things in the interface above were wrong on contact with the implementation.
+Six things in the interface above were wrong on contact with the implementation.
 The decision — the handle, `plan`/`converge` as one list, nothing cached — is
 unaffected.
 
 ### 1 · `HomeDeps` and `initKnowledge` are gone. `openHome(root)` takes no dependencies.
 
 *Dependencies*, above, calls `ok init` "the one real port … that single injected
-function is the whole of `HomeDeps`". AGENTS.md subsequently settled that we match
-OpenKnowledge's format and never call its CLI: `ok init` also creates a nested
+function is the whole of `HomeDeps`". [knowledge.md](../rules/knowledge.md) subsequently
+settled that we match OpenKnowledge's format and never call its CLI: `ok init` also creates a nested
 `.git`, editor wiring under six dot-directories, and housekeeping files, and its
 `.ok/config.yml` is entirely comments because every key is a default. `init` now
 writes that scaffold from `home`'s own templates.
@@ -462,8 +463,8 @@ Invariant 7 says *"no `Place` is ever produced for an illegal name"*, and the
 interface above gave that answer nowhere to live: `cwd`, `transcript`, `media` and
 `now` were non-optional `readonly Place`, so the getter threw. **An invariant
 enforced by throwing is a convention, not a structure** — and it made the interface
-lie about how the module fails, which is exactly the debt AGENTS.md's *"errors are
-values"* rule exists to prevent, and exactly what an Effect migration would price
+lie about how the module fails, which is exactly the debt
+[errors.md](../rules/errors.md)'s *"a failure is a value"* rule exists to prevent, and exactly what an Effect migration would price
 in (`E = never` on every signature that can in fact fail).
 
 Making them methods is the smallest change that gives the invariant somewhere to
@@ -491,7 +492,7 @@ rethrew an `fs` error after clearing its temp file, and the convergence loop
 rescued it with `.catch()` and turned it into `Unreadable`. So the *caller* already
 treated it as a condition while the *implementation* called it a bug. An `EACCES`,
 `ENOSPC` or read-only volume is the world failing, not our code being wrong —
-AGENTS.md reserves throwing for the latter — so `mkdir` and `writeNew` now return
+[errors.md](../rules/errors.md) reserves throwing for the latter — so `mkdir` and `writeNew` now return
 `ProblemDetail | undefined`, `Ensure.make` resolves with a detail, and the rescue
 `catch` is gone rather than load-bearing.
 
@@ -502,4 +503,20 @@ The same pass closed a hole in the other direction: `list` swallowed a failed
 widened to *"the filesystem refused: a read, a listing or a write failed"* rather
 than inventing a fourth tag, so no rendered output changes shape.
 
-Gate assertion 18 keeps it true: no `throw` under `src/` outside tests.
+Gate assertion 18 keeps it true: no `throw` under `src/` outside tests, and so does
+`vp run shape`.
+
+### 6 · `DanglingRef` carries the known set, and has a fourth kind.
+
+The error vocabulary above declares
+`{ _tag: 'DanglingRef'; key; to; kind: 'agent' | 'mcpServer' | 'model' }`. The
+implementation's is `{ _tag: "DanglingRef"; key; to; kind: "agent" | "mcpServer" |
+"model" | "source"; known: readonly string[] }`.
+
+Both changes come from the same place — spec §1's referential-integrity table has
+six rows, and one of them is a chat's `source`, which the drafted union had no
+kind for. And a dangling reference is the one problem where naming what *was*
+available is most of the fix: *"names model profile "thorough", which is not
+defined (known: fast, careful)"* is the difference between a typo found in one
+read and a hunt through `config.yaml`. Gate assertions 9 and 10 are written
+against that rendering, so the known set is load-bearing rather than decorative.

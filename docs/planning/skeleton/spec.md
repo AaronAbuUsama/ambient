@@ -1,6 +1,6 @@
 # SKELETON — spec
 
-**Area:** SKELETON (Area 1) · **State:** specified, not started · **Date:** 2026-08-16
+**Area:** SKELETON · **State:** built and closed, 2026-08-16 · **Specified:** 2026-08-16
 
 The conventions, as code. Interfaces settled in [ADR 001](../../adr/001-home-interface.md)
 (`home`) and [ADR 002](../../adr/002-work-interface.md) (`work`, provisional). This document
@@ -80,9 +80,10 @@ line is `channel`'s to tolerate on read.
 So `chat add` creates the folder, `config.yaml` and `mandate.md` — and nothing else. Not
 `skills/`, not `media/`, not `now.md`.
 
-This follows AGENTS.md — *"Create a directory only when there is behaviour. No scaffolding
-for later"* — and it keeps `doctor` honest, because a directory nothing writes is a
-convention `doctor` cannot meaningfully check, and an unchecked convention is folklore.
+This follows [modules.md](../../rules/modules.md) — *"Do not create a directory before
+there is behaviour in it"* — and it keeps `doctor` honest, because a directory nothing
+writes is a convention `doctor` cannot meaningfully check, and an unchecked convention is
+folklore.
 
 The counter-argument is real and worth recording: roadmap.md says *"the scaffolder is how a
 convention becomes real"*, and an empty `media/` in a fresh chat teaches a human reading the
@@ -123,7 +124,7 @@ Global: `--home <path>` overrides `$AMBIENT_HOME`. Exit `0` = healthy, `1` = pro
   `knowledge/.ok/.gitignore`, `knowledge/.okignore` — **from our own templates**.
   `home` spawns no process at all. We match OpenKnowledge's format and never call its
   CLI, which is what keeps a nested `.git` and six directories of editor wiring out of
-  an Ambient home. See AGENTS.md, *OpenKnowledge — vendored, not depended on*.
+  an Ambient home. See [knowledge.md](../../rules/knowledge.md).
   `doctor` still checks only that `knowledge/` is a directory; the contents are
   OpenKnowledge's and are never read.
 - **Converge, not skip-if-exists.** Re-running on a home where someone deleted `schema.yaml`
@@ -179,8 +180,8 @@ regenerates and overwrites them.
 An `ambient skill add` that writes a file into `chats/<slug>/skills/` would be writing
 directly into those projections — re-implementing what OpenKnowledge owns, and bypassing the
 Draft→`install` gate that thesis.md calls out as the self-evolution mechanic's review
-boundary. AGENTS.md's standing decision applies: *depend on OK's tool surface, never on its
-internals.*
+boundary. [knowledge.md](../../rules/knowledge.md) applies: *depend on OK's tool surface,
+never on its internals.*
 
 Skill authoring belongs to **KNOWLEDGE**, through OpenKnowledge's own tools. Reversible: if
 a chat-local skill turns out to need a non-OK path, it is one more `Ensure` arm.
@@ -386,17 +387,17 @@ right and exactly what an in-memory stand-in models as fiction.
     byte-identical.
 15. `agent add linear` exits `0`; `doctor` exits `0`.
 
-Plus the three invariants that are conventions only if they are checked — AGENTS.md: *"if
-`doctor` cannot check it, it is not a convention"*:
+Plus the three invariants that are conventions only if they are checked —
+[legibility.md](../../rules/legibility.md): *"a rule that cannot be run is not a rule"*:
 
 16. `path.join`, `path.resolve` and `__dirname` appear nowhere under `src/` outside
     `src/modules/home/`. This is the enforcement of ADR 001's escrow rule.
 17. `home` opens no file whose size is bounded by traffic — no read of `transcript.jsonl`,
     `blobs/`, `media/` or anything under `knowledge/`.
 18. No `throw` appears under `src/` outside tests. Every failure a module can produce is
-    declared in its `types.ts`, so its interface cannot lie about how it fails — AGENTS.md
-    *"errors are values, never thrown for control flow"*, and the `E` channel Effect will
-    want at the loop layer is already written.
+    declared in its `types.ts`, so its interface cannot lie about how it fails —
+    [errors.md](../../rules/errors.md), *"a failure is a value"* — and the `E` channel
+    Effect will want at the loop layer is already written.
 
 ---
 
@@ -411,6 +412,6 @@ Plus the three invariants that are conventions only if they are checked — AGEN
 - **The chat ↔ source binding** (`source`, `peer`) survives contact with INTAKE or it does
   not. One revision is budgeted.
 - **Issues are not filed yet.** This spec is the whole of
-  `docs/planning/skeleton/`; per [issue-tracker.md](../../agents/issue-tracker.md),
+  `docs/planning/skeleton/`; per [issues.md](../../rules/issues.md),
   implementation tickets go to `docs/planning/skeleton/issues/NN-<slug>.md` when the work is
   broken down.

@@ -13,8 +13,8 @@ area closes, delete its detail and leave two lines in the Ledger.
 ## You are here
 
 > **INTAKE** — active, not scoped. SKELETON is closed: `ambient init · doctor · chat add ·
-> agent add` work, 17/17 gate, `vp check` and `vp test` green. The next act is scoping
-> INTAKE — it has not been planned yet, deliberately.
+> agent add` work, 18/18 gate, `vp check`, `vp test` and `vp run shape` green. The next act
+> is scoping INTAKE — it has not been planned yet, deliberately.
 
 ---
 
@@ -97,14 +97,20 @@ is the most likely thing to move.
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-16** — **Conventions made runnable.** `vp run shape` checks what AGENTS.md
+  only claimed — file length against a declared exception list, the six slots, `internal/`
+  privacy, no `../..`, no `throw`, and every document cross-link. The contract split into
+  one file per rule under [../rules/](../rules/), each stating its rule, its argument and
+  the command that enforces it or *"not currently checked"*. Closing an area now has a
+  list: [definition-of-done.md](./definition-of-done.md). Duplication baseline **0 lines**.
 - **2026-08-16** — **SKELETON closed.** `ambient init · doctor · chat add · agent add`;
-  17/17 gate against real temp directories; `vp check` and `vp test` green repo-wide.
+  18/18 gate against real temp directories; `vp check` and `vp test` green repo-wide.
   Restructured to the module shape before closing — 696-line `index.ts` became a 212-line
   `types.ts` plus an 86-line `service.ts`; 26 repetitions of one error idiom and 8
   non-empty-tuple gymnastics both to zero. **OpenKnowledge is vendored, not called**: `ok
   init` writes a nested `.git` and six editor directories to deliver one file whose every
   key is a default, so we write those files ourselves; `ok preview` confirms the format
-  matches. `HomeDeps` deleted — with the spawn gone it had no members. Four ADR 001
+  matches. `HomeDeps` deleted — with the spawn gone it had no members. Six ADR 001
   statements were wrong on contact and are recorded in that ADR's Amendments section.
 - **2026-08-16** — Two observations parked from the spec review, **neither blocking**:
   (a) `capabilities` may already be dead — ADR 001's `Chat` returns `mcpServers` and
@@ -148,8 +154,8 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The `work` interface — **provisional** | [../adr/002-work-interface.md](../adr/002-work-interface.md) |
 | The home layout, CLI verbs, config schemas, the gate | [../planning/skeleton/spec.md](../planning/skeleton/spec.md) |
 | How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
-| The module shape; where Effect goes; OpenKnowledge vendored | [../../AGENTS.md](../../AGENTS.md) |
-| Effect's boundary; the five rules; deep-module tests | [../../AGENTS.md](../../AGENTS.md) |
+| Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
+| What closing an area requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |
 | Area ordering, and what was rejected | [../history/grills/003-roadmap-order.md](../history/grills/003-roadmap-order.md) |
