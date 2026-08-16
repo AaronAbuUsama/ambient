@@ -292,3 +292,75 @@ are building.**
 `requestHistory` was in `whatsappd` all along and this document said the opposite. Read the
 source before concluding a capability is absent — and when the principal says a measurement
 contradicts what he knows about his own data, the measurement is the thing to doubt.
+
+---
+
+## The allowlist — derived, not enumerated
+
+Settled 2026-08-16 with the principal, against the real account. **Not every chat is
+ingested. 913 exist; roughly 31 matter today.**
+
+### The rule
+
+1. **Seed by name and topic, never by volume.** Volume ranking is wrong here — it surfaced
+   `NewBee 🐝 Programmer` (658 messages, 24% of the corpus, a community the principal barely
+   participates in and where **0 of 22 speakers are nameable**) while missing
+   `THE CALL ADVISORY` entirely. Sync is thin and uneven, so message counts measure what
+   WhatsApp happened to give us, not what matters.
+2. **Expand to the people.** Every person who speaks in a seed group, and their DM.
+   Measured: 20 seed groups yield 11 distinct speakers, and **all 11 have a DM** with the
+   principal. The expansion is small, connected, and the only way to reach the people —
+   237 DMs are nameless, and a nameless DM is identified by who its owner is *elsewhere*.
+3. **Exclude `status@broadcast`.** 444 messages, 16% of the whole corpus, and not a chat.
+
+### The seed today
+
+```
+THE CALL · THE CALL DEV TEAM · THE CALL Team · THE CALL UX/UI · THE CALL ADVISORY
+The Call - Weekly Checkins · Bug Reports · EXTERNAL DEV · INTERNAL DEV
+Capxul Devs · Capxul April Launch · Paynest
+light:   Cpx · Check-ins
+dropped: STORAGE
+open:    the ~7 `X <> Capxul` partnership groups
+```
+
+### Two findings this depends on
+
+**WhatsApp Communities are not modelled.** `wa_chats` carries only
+`accountId · chatId · isGroup · lastMessageAt · subject`; `wa_groups` only
+`accountId · groupId · participants · subject`. There is no parent, no community, no
+linked-group field. "The Call is a community containing these groups" is **knowledge, not
+data** — it must be inferred from names, told to Ambient, or asked. Which is the argument
+for the queue below.
+
+**Group participants are absent from history, but fetchable live.** 142 of 143 groups store
+an empty `participants` array. That is a Baileys/protocol limit on the *history* path, not a
+`whatsappd` gap — `toHistoryParticipants` maps them whenever they arrive, and
+`groupMetadata(jid)` on a live socket returns membership. **One live call per seed group
+recovers real membership**, which is strictly better than inferring it from who spoke. Add
+it to the spike.
+
+## The non-decidable queue
+
+A product primitive, not an edge case. Established by measurement across both spikes:
+
+| Residue | Count |
+|---|---|
+| People with no name anywhere | 207 |
+| Identifier merges with no witness in traffic | 769 of 853 |
+| DMs with no name | 237 |
+| Community membership | not in the data at all |
+
+None of this is a defect. It is what the source genuinely does not contain, and **no amount
+of cleverness resolves it** — the principal simply has not saved those numbers, and WhatsApp
+does not record which groups belong to a community.
+
+So Ambient needs **a place for what it cannot decide, surfaced for the principal to settle
+in a sentence.** Some of it an agent can resolve by reading intelligently and asking in the
+chat; the rest has to be flagged and left.
+
+This is `email-pa`'s `[assumed]` marker plus its generated *"Open questions — things a
+person could settle in a sentence"* page, arrived at independently, from different data, in
+a different domain. Two independent derivations of the same primitive is the strongest
+evidence available that it is real. See
+[../../history/research/email-pa-teardown.md](../../history/research/email-pa-teardown.md) §8.
