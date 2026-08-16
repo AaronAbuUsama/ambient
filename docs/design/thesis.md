@@ -225,6 +225,14 @@ poisoned from testing. The real history — a CTO across several companies, bugs
 business, hundreds of people tracked across years of chats — lives on the principal's
 personal WhatsApp.
 
-That is the year-of-email equivalent, and the only path to a knowledge base worth having on
-day one. Which is why `ingest`-mode sources, the allowlist, and provenance are not future
-features. They are v0.1.
+That is the closest thing to the year-of-email equivalent, and the only path to a knowledge
+base worth having on day one. Which is why `ingest`-mode sources, the allowlist, and
+provenance are not future features. They are v0.1.
+
+**Corrected on contact with the real account (2026-08-16).** The assumption was years of
+conversation. The measurement is 1,560 contacts, 913 chats, 143 groups and 2,417 aliases
+against only 2,739 messages, ninety percent of them from this year. A linked device gets
+history from roughly the point of linking. So the cold start is solved for **people** and
+not for **conversations** — Ambient can know who everyone is and how they relate, but not
+what was said before 2026. That may be the more useful half; it is not the half we
+predicted. See [../planning/intake/scope.md](../planning/intake/scope.md).

@@ -71,11 +71,18 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 ## Active — INTAKE
 
-**Not scoped yet.** Scoping it is the next act, and it should be done against the real
-`whatsappd` data rather than in the abstract.
+**Scoped — [docs/planning/intake/scope.md](../planning/intake/scope.md).** Six open
+questions must be answered before a spec is written. The decisive finding: `whatsappd`
+holds **two stores that do not cover the same time** — the mirror has four years and no
+media refs, the accepted log has ten days and does carry them. History import and
+continuous ingestion therefore read different stores and cannot share a reader.
 
 **The question.** Can Ambient read a real WhatsApp account and land raw transcripts and
 media blobs on disk, in the shape SKELETON defined, with nothing interpreted?
+
+**The account is the principal's own**, already paired, at
+`~/projects/whatsapp-agent-tui/.proof-private/ios/whatsapp.db`. 1,560 contacts · 913 chats ·
+143 groups · 2,417 aliases · 2,739 messages · 266 blobs.
 
 **What is already known.**
 
@@ -87,9 +94,11 @@ media blobs on disk, in the shape SKELETON defined, with nothing interpreted?
 - `home` owns every path. `channel` asks `home` for a chat's `transcript` and `media`
   places; it never builds one.
 
-**Watch for.** SKELETON's layout was decided without real data in front of us. One revision
-was budgeted. This is the area that spends it — the chat ↔ source binding (`source`, `peer`)
-is the most likely thing to move.
+**Watch for.** SKELETON's layout was decided without real data. One revision was budgeted
+and this area spends it. Three candidates, in the scope: the chat ↔ source binding; where
+account-level identity lands (1,560 contacts and 2,417 aliases exist independently of any
+chat, and the layout has no home for account material that is not knowledge); and slugs —
+913 chats, many with emoji subjects, against `^[a-z0-9][a-z0-9-]{0,63}$`.
 
 ---
 
@@ -103,6 +112,13 @@ Append-only. Two lines per closed area, or per pivot. Newest first.
   one file per rule under [../rules/](../rules/), each stating its rule, its argument and
   the command that enforces it or *"not currently checked"*. Closing an area now has a
   list: [definition-of-done.md](./definition-of-done.md). Duplication baseline **0 lines**.
+- **2026-08-16** — **INTAKE scoped** against the principal's real iOS account. The mirror
+  spans four years with no media refs; the accepted log spans ten days and carries them —
+  so history import and continuous ingestion read different stores. **Corrects
+  `thesis.md`'s cold start**: the graph is rich (1,560 contacts, 913 chats, 2,417 aliases)
+  but conversation history is thin (2,739 messages, 90% from 2026). True of people, not of
+  conversations. Six open questions block the spec; the highest-value one is whether
+  `whatsappd` can pull deeper history.
 - **2026-08-16** — **SKELETON closed.** `ambient init · doctor · chat add · agent add`;
   18/18 gate against real temp directories; `vp check` and `vp test` green repo-wide.
   Restructured to the module shape before closing — 696-line `index.ts` became a 212-line
