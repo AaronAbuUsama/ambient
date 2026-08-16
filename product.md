@@ -136,7 +136,7 @@ Whatever the Root can do, the user can also do by editing the same files.
 
 ### Knowledge base
 
-**One.** One wiki, one graph, shared by every chat and every source.
+**One.** One knowledge base, shared by every chat and every source.
 
 It is an **OpenKnowledge project**: markdown-CRDT over MCP. Humans and agents write the
 same documents concurrently, every change attributed, with `search`, `links`, `lint`,
@@ -289,6 +289,13 @@ What that requires:
 - **One knowledge base**, an OpenKnowledge project. No partitions.
 - **The speaker does not write shared knowledge directly** — a quality decision, not a
   concurrency one. Consolidation is a cadenced loop.
+- **The ontology carries over; a separate graph store does not.** Entities are
+  OpenKnowledge documents with typed frontmatter; the ported tool is a validator, queue and
+  indexer, never a CRUD layer. See [knowledge-flow.md](knowledge-flow.md).
+- **`now` is a deterministic fold over typed run receipts** plus derived counts, at both
+  the chat and global level.
+- **Media is a first-class pipeline** — voice notes, images, video, documents — hashed and
+  cached, results are documents, background loop by default with a just-in-time escape.
 - Identity composes: global always, local adds, local never replaces.
 - **The mandate has two halves**: machine-readable capability config, and prose.
   Hot-reloaded — adding a capability never restarts the daemon.
@@ -303,14 +310,10 @@ What that requires:
 
 ## Open
 
-**[open] Does the ontology make sense here, and in what form?** The *ontology* — a closed
-type vocabulary — and the *graph store* are separate questions. email-pa's graph is 97%
-Price and Document rows extracted from PDFs; WhatsApp produces almost none of that. See
-the grill.
-
-**[open] What `now` is, exactly.** Direction agreed: every agent invocation ends with a
-structured output, and `now` is a generated fold over recent receipts plus derived counts —
-something for the next invocation to grab onto. Shape still to pin down. See the grill.
+**[open] The schema's full domain coverage.** The first draft in
+[knowledge-flow.md](knowledge-flow.md) covers people, orgs, commitments, issues, media and
+chats. It must cover whatever a given principal's life actually contains — business, code,
+calendars — and be extensible per install without becoming open-ended. Not yet designed.
 
 **[open] Disclosure.** Storage is one base, settled. Speech is not: something learned in a
 private thread must not surface in a work group. Becomes real the day the mouth arrives.

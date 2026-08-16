@@ -9,7 +9,7 @@ Design repo. No code yet.
 | [thesis.md](thesis.md) | What Ambient is, the category, the opinions. The front door. |
 | [product.md](product.md) | The nouns and what each owns. Settled / open at the bottom. |
 | [knowledge-flow.md](knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
-| [kernel.md](kernel.md) | Lessons from the two prior experiments, and the mechanics that follow. |
+| [kernel.md](kernel.md) | Lessons from the two prior experiments. History only — the design lives in the docs above. |
 
 ## Evidence
 
