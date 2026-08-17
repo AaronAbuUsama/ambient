@@ -162,17 +162,31 @@ caught IMPORT: does the code's call graph match the design's.
 /render-slice INGEST
 ```
 
-**Every step ends by running this, and each adds its own sections** — nine of them, one or two
-per step, listed in [the skill](../../.agents/skills/render-slice/SKILL.md). So the page's own
-completeness tells you where the slice is: a missing section names the step that has not run.
+**Every step ends by running this, and each adds its own sections** — twelve, grouped
+**Plan · Design · Record**, listed in
+[`references/sections.md`](../../.agents/skills/render-slice/references/sections.md). So the
+page's own completeness tells you where the slice is: a missing section names the step that has
+not run.
 
 It reads the same markdown you do and holds no state of its own, so it cannot drift from
-reality — and anything it says wrong is a document to fix, never a cache to clear.
+reality — and anything it says wrong is a document to fix, never a cache to clear. **That is
+also the rule for its content:** if something is on the page and in no markdown file, the page is
+not reproducible. [`import/design.md`](../planning/import/design.md) exists because its page was
+briefly in exactly that state.
 
-**There is deliberately no script behind this.** A slice lives in markdown that an agent can
-read directly; parsing those files with a regex to tell you which step you are on would be a
-second, more fragile definition of what a slice is. One existed for about an hour and was
-deleted.
+**The chrome is a fixed template, and the diagrams have solved geometry.** `assets/shell.html`
+holds the layout; [`references/diagrams.md`](../../.agents/skills/render-slice/references/diagrams.md)
+holds coordinates for all four diagram recipes, because freehand placement is what produces
+collisions. `impeccable` designed that template once and is **not** vendored — see
+[`artefacts.md`](../rules/artefacts.md).
+
+**There is deliberately no script parsing your markdown.** A slice lives in files an agent reads
+directly; a regex that decides which step you are on would be a second, more fragile definition
+of what a slice is. One existed for about an hour and was deleted. Splicing three strings into a
+template is not that.
+
+**Look at the page before you call it rendered.** Measuring the DOM is not looking: a legend once
+ran 36px straight through a row of nodes and passed every numeric check.
 
 ## What is proven, and what is not
 
