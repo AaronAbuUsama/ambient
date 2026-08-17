@@ -91,12 +91,13 @@ Append-only. Two lines per closed slice, or per pivot. Newest first.
 
 - **2026-08-17** — **The method is a rule, not folklore.**
   [../rules/slices.md](../rules/slices.md): map → frontier → plan → build → close, one gate
-  each, an open question carrying a kind. 35 upstream skills vendored whole and never
-  edited, because `modules.md` requires `codebase-design`'s words *exactly* and a rule must
-  not depend on vocabulary that can change with no diff here. `map-slice` and `plan-slice`
+  each, an open question carrying a kind. **Seven** upstream skills vendored — those something
+  here names, closed under their dependencies — because `modules.md` requires
+  `codebase-design`'s words *exactly*. `map-slice`, `plan-slice` and `setup-abu-usama-skills`
   written; `close-slice` gains **definition-of-done row 10**, the call graph, read not run.
   **Learned:** IMPORT passed rows 1–9 while its topology was wrong, so every existing row
-  measured behaviour and none measured shape. Slice replaces Area throughout, and the
+  measured behaviour and none measured shape. Also learned by doing it wrong first: vendoring
+  all 35 skills was copying instead of thinking — the set had to be *traced*, not swept in. Slice replaces Area throughout, and the
   rejected ordering is renamed *breadth-first* — otherwise "thin vertical slice" would read
   as the thing we adopted rather than the thing we turned down.
 - **2026-08-17** — **IMPORT correction re-proved on the real default home.** Reader v2 uses
@@ -181,6 +182,8 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
 | How a slice is built — the five steps and their gates | [../rules/slices.md](../rules/slices.md) |
+| Running a slice, step by step, from the operator's seat | [../walkthrough-slice.md](../walkthrough-slice.md) |
+| The Transcript line, and the two shapes it beat | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
 | Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../planning/method/deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |

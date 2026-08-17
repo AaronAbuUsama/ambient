@@ -82,9 +82,12 @@ Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
 | `plan-slice` | 3 — write `spec.md` including the **Program design**, then the build tickets |
 | `new-module` | 4 — scaffold a module's six slots. **Refuses a module with no `seams.md` row.** |
 | `close-slice` | 5 — run the definition of done, then move the roadmap |
+| `setup-abu-usama-skills` | reference — how this repo answers what the vendored skills ask about trackers, labels and domain docs |
 
-[`.agents/skills/vendor/`](.agents/skills/vendor/) holds 35 upstream skills, copied whole and
-**never edited** — `grilling`, `research`, `prototype`, `tdd`, `code-review`,
-`domain-modeling`, `codebase-design` and the rest. They are vendored rather than resolved at
-runtime because [modules.md](docs/rules/modules.md) requires `codebase-design`'s vocabulary
-*exactly*, and a rule must not depend on words that can change without a diff here.
+[`.agents/skills/vendor/`](.agents/skills/vendor/) holds **seven** upstream skills —
+`codebase-design`, `domain-modeling`, `grilling`, `research`, `prototype`, `tdd`,
+`code-review` — chosen because something here names them, and closed under their own
+dependencies. They are vendored rather than resolved at runtime because
+[modules.md](docs/rules/modules.md) requires `codebase-design`'s vocabulary *exactly*, and a
+rule must not depend on words that can change without a diff here. **Never edited**, with one
+declared patch recorded in [that directory's README](.agents/skills/vendor/README.md).

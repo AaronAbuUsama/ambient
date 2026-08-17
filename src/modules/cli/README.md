@@ -18,13 +18,13 @@ nothing else:
 | `ambient import <archive> --into <slug> [--zone <IANA>]` | `archive` → `transcript` → `blobs`, into a chat that already exists |
 | `--home <path>` | overrides the root the caller supplied |
 
-**`import` is the one row that does not read as a single verb on a handle, and that is a
-known divergence, not a design.** Its handler orchestrates four modules where its siblings
-call one, so `cli` is currently the composition owner for that path — see
-[definition-of-done.md](../../../docs/design/definition-of-done.md) row 10 and
-[import/spec.md](../../../docs/planning/import/spec.md). Resolving it means moving the
-orchestration or amending the documented topology; leaving both standing is what row 10
-exists to catch.
+**`import` was the one row that did not read as a single verb, and no longer is.** Its
+handler held the whole operation — 176 lines against 8, 8, 12 and 14 for its siblings, which
+had made `cli` the composition owner this file says it is not. The operation now lives in
+[`import`](../import/README.md), which owns the order of its writes; this handler parses
+argv, resolves two `Place`s and renders. Caught by
+[definition-of-done.md](../../../docs/design/definition-of-done.md) row 10, and traced in
+[walkthrough-import.md](../../../docs/walkthrough-import.md).
 
 `service.ts` does the mapping. Each verb is one file under
 [`internal/commands/`](./internal/commands), owning its own usage line — so

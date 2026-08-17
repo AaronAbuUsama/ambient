@@ -22,6 +22,7 @@ Revisable. Expected to change on contact.
 | `blobs` | Content-addressed binary store. Dedup by hash. | put · get · exists, all by hash | no |
 | `archive` | An Archive file → Messages. No network, no home, no path building. | read an Archive → Message values | no |
 | `transcript` | The one Write path. Line format, dedup key, append, read. | append · read Messages and Blob refs | no |
+| `import` | **The History Import operation itself** — open an Archive, store its media, write the Transcript, persist the Receipt. Owns the order of those writes and what a crash between them leaves. | `runImport(deps) → ImportReport`, one call | no |
 | `channel` | A Live account Reader and a bound destination. Accounts, source modes, allowlist, cursors. **Hides `whatsappd` entirely.** | read a Live account → Message values; send, pre-bound to one Chat | no |
 | `media` | Interpreting a blob: speech-to-text, vision, extraction. Keyed by hash, cached. | `process(ref) → Interpretation` | later |
 | `knowledge` | The OpenKnowledge project and the ontology. **Hides the OK MCP client.** Frontmatter validation, the work queue, the derived index. | read · search · write · validate · next · index | no |
@@ -34,13 +35,14 @@ Revisable. Expected to change on contact.
 ## Dependency direction
 
 ```
-cli ─────────────> home
+cli ─────────────> home, import
 
 composition root ─> everything (the ONLY place wiring happens)
 
 work ────────────> harness ──┬─> knowledge
                              ├─> capabilities
                              └─> home
+import ──────────> archive, transcript, blobs, home (a Place)
 archive ────┐
             ├─> transcript ─> blobs
 channel ────┘

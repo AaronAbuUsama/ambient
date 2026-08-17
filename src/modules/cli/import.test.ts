@@ -79,8 +79,12 @@ it("keeps the primary source and one complete Receipt per Archive hash", async (
   );
   expect(fs.readdirSync(`${root}/chats/fixture/imports`)).toEqual([hash]);
   const second: unknown = JSON.parse(fs.readFileSync(`${receiptDir}/receipt.json`, "utf8"));
+  // The Receipt describes the IMPORT, not the last run. A re-import that wrote nothing must
+  // not overwrite the numbers of the run that wrote the lines: a Receipt reading
+  // `linesWritten: 0` beside a full Transcript says the Transcript came from somewhere else.
   expect(second).toMatchObject({
-    transcript: { messagesWritten: 0, messagesSkipped: 2, linesWritten: 0, linesSkipped: 2 },
+    transcript: { messagesWritten: 2, messagesSkipped: 0, linesWritten: 2, linesSkipped: 0 },
+    reruns: [{ written: 0, skipped: 2 }],
   });
 
   fs.writeFileSync(input, `${source}[16/02/2025, 4:08:00 PM] Rex: newer\n`);

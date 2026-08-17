@@ -3,6 +3,9 @@
 **Area:** IMPORT · **State:** built and closed, 2026-08-17 · **Specified:** 2026-08-17
 
 Settled by [ADR 003](../../adr/003-history-import-is-an-archive.md) and its four amendments.
+The Transcript line's shape, and the two alternatives it beat, are
+[ADR 004](../../adr/004-transcript-line-is-a-union-on-provenance.md) — written after the code,
+which is the wrong order and is recorded as such.
 Vocabulary is [CONTEXT.md](../../../CONTEXT.md) — *Archive, Reader, Write path, Transcript,
 Marker, Placeholder, Wall clock, Instant, Zone, Provenance, Blob* are used here in exactly
 the senses defined there, per [language.md](../../rules/language.md).

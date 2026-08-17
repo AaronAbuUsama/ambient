@@ -16,9 +16,21 @@ something here names them — not because they exist.
 | `code-review` | step 4, closing a ticket | *`setup-matt-pocock-skills`, deliberately not vendored* |
 
 The set is closed under its own dependencies. `tdd` names `code-review` and
-`codebase-design`; both are here. `code-review` names `setup-matt-pocock-skills` to configure
-an issue tracker — **we override that**: [`issues.md`](../../../docs/rules/issues.md) says
-issues are files in this repo and there is no remote.
+`codebase-design`; both are here.
+
+## The one declared patch
+
+`code-review/SKILL.md` line 13 pointed at `/setup-matt-pocock-skills`, which asks three
+questions this repo has already answered and writes a `docs/agents/` that no longer exists.
+It now points at [`setup-abu-usama-skills`](../setup-abu-usama-skills/SKILL.md), which
+**declares** those answers instead: issues are files, there is no remote, `gh` and `glab`
+are never run, and the Status vocabulary is the six strings in
+[`issues.md`](../../../docs/rules/issues.md).
+
+The patched line carries `<!-- PATCHED: see ../README.md -->` so nobody mistakes it for
+upstream. **It is the only edit in this directory, and it must stay the only one** — a
+declared patch with a reason is a decision, an undeclared one is decay. Same argument as the
+file-length exception list in `scripts/shape.ts`. On the next version bump, re-apply it.
 
 ## What was deliberately dropped
 

@@ -49,6 +49,9 @@ Every module has the same six slots — `README.md`, `types.ts`, `service.ts`,
 **New here?** [docs/walkthrough-doctor.md](docs/walkthrough-doctor.md) traces
 `ambient doctor` from keypress to output through every file it touches. It is the
 shortest path to owning this codebase.
+[docs/walkthrough-import.md](docs/walkthrough-import.md) does the same for `ambient import`,
+across six modules. **Building something?**
+[docs/walkthrough-slice.md](docs/walkthrough-slice.md) is how a slice runs, end to end.
 
 ## The stack
 
