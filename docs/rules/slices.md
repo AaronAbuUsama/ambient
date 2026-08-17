@@ -142,4 +142,4 @@ one context window each, executed end to end.
 - that `scope.md` exists before `spec.md`, and that Open and Fog were empty when it did
 - that every CLI verb has a walkthrough
 - that every public symbol has a production caller — the one most worth automating, because
-  `transcript` shipped live variants nothing constructs
+  `transcript` shipped live variants no caller originates

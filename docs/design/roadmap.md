@@ -3,7 +3,7 @@
 The anchor. When you are deep in one thing and need to know where you are, what is already
 settled, or what breaks if you go backwards — this is the page.
 
-**Hard cap: 200 lines.** The last attempt's ledger hit 2000 and nobody read it. When an
+**Hard cap: 200 lines.** The last attempt's ledger hit 2000 and nobody read it. When a
 slice closes, delete its detail and leave two lines in the Ledger.
 
 **Slices have names, not numbers.** Order changes; identity should not.
@@ -42,7 +42,7 @@ slice closes, delete its detail and leave two lines in the Ledger.
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
 | **CAPABILITIES** | ○ | Chat folders as runtime instances; the reflector MCP; background agents. |
 | **MOUTH** | ○ | The speaker. |
-| **MEDIA** | ○ off-path | STT, vision, extraction. Hash-keyed, cached. Any time after INTAKE. |
+| **MEDIA** | ○ off-path | STT, vision, extraction. Hash-keyed, cached. Any time after IMPORT. |
 | **EVALS** | ○ off-path | Cases as directories, offline replay. Starts once HARNESS exists. |
 
 `○` not started · `◐` active · `●` closed
@@ -61,7 +61,7 @@ SKELETON ──> IMPORT ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> 
 - **SKELETON is under everything.** Changing the home layout after IMPORT means rewriting
   what is on disk. This is why it goes first and why its interfaces get designed twice.
 - **KNOWLEDGE is not trustworthy without MEDIA.** An unprocessed voice note is a hole, not
-  a degraded entry. MEDIA can land any time after INTAKE, but must precede *trusting* the
+  a degraded entry. MEDIA can land any time after IMPORT, but must precede *trusting* the
   knowledge base.
 - **HARNESS automates what KNOWLEDGE proved by hand.** Building it earlier means guessing
   at passes that do not exist yet — the old repo's mistake.
@@ -74,7 +74,7 @@ SKELETON ──> IMPORT ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> 
 its scaffolder arrived last, so they had to be retrofitted. Conventions are generated and
 validated by code before anything writes into them.
 
-**But shape needs real data.** INTAKE is foundational too — it stops at raw transcripts and
+**But shape needs real data.** IMPORT is foundational too — it stops at raw transcripts and
 blobs, giving real material to shape against without committing to an invented model.
 
 **Operate it by hand until it is good, then automate.** Claude Code plus a human *is* the
@@ -89,6 +89,16 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 Append-only. Two lines per closed slice, or per pivot. Newest first.
 
+- **2026-08-17** — **The method is a rule, not folklore.**
+  [../rules/slices.md](../rules/slices.md): map → frontier → plan → build → close, one gate
+  each, an open question carrying a kind. 35 upstream skills vendored whole and never
+  edited, because `modules.md` requires `codebase-design`'s words *exactly* and a rule must
+  not depend on vocabulary that can change with no diff here. `map-slice` and `plan-slice`
+  written; `close-slice` gains **definition-of-done row 10**, the call graph, read not run.
+  **Learned:** IMPORT passed rows 1–9 while its topology was wrong, so every existing row
+  measured behaviour and none measured shape. Slice replaces Area throughout, and the
+  rejected ordering is renamed *breadth-first* — otherwise "thin vertical slice" would read
+  as the thing we adopted rather than the thing we turned down.
 - **2026-08-17** — **IMPORT correction re-proved on the real default home.** Reader v2 uses
   WhatsApp's structural mark, preserves rich media on poorer re-imports, and atomically
   replaces corrected Transcripts; the real ZIP produced 13,134 lines, 1,139 stored refs and
@@ -170,6 +180,8 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | Why history import reads an archive — **and its two amendments** | [../adr/003-history-import-is-an-archive.md](../adr/003-history-import-is-an-archive.md) |
 | How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
+| How a slice is built — the five steps and their gates | [../rules/slices.md](../rules/slices.md) |
+| Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../planning/method/deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |

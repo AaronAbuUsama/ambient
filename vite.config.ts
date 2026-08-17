@@ -14,17 +14,23 @@ export default defineConfig({
   // Markdown is hand-wrapped prose: every doc here is an authority someone reads
   // top to bottom, and reflowing them makes every future diff unreadable. Source
   // is formatted; documents are written.
-  // `install-anti-slop` is vendored whole — its assets and installer belong to the skill
-  // that ships them, and reformatting our copy diverges it from upstream for no gain. Named
-  // rather than wildcarded, so a second vendored skill is a diff someone reviews. Our own
-  // skills (`close-area`, `new-module`) are prose only and covered by the markdown line.
-  // Same argument either way: we format what we author.
-  fmt: { ignorePatterns: ["**/*.md", ".agents/skills/install-anti-slop/**"] },
+  //
+  // Vendored skills are upstream source, not this project's program: reformatting our copy
+  // diverges it for no gain, and it must not be edited at all. `.claude/skills/` is the
+  // symlinked projection of `.agents/skills/`, so both names are listed — exclude one and
+  // the tools find the same files by the other. We format and lint what we author.
+  fmt: {
+    ignorePatterns: ["**/*.md", ".agents/skills/vendor/**", ".agents/skills/install-anti-slop/**"],
+  },
   lint: {
-    // The anti-slop skill is vendored source, not this project's program. `.claude` is its
-    // symlinked projection, so both names are explicit: lint what we author once, and do not
-    // require the vendor-only `@oxlint/plugins` dependency to type-check an untouched asset.
-    ignorePatterns: [".agents/skills/install-anti-slop/**", ".claude/skills/install-anti-slop/**"],
+    // Type-checking an untouched vendored asset would also require its own devDependency
+    // (`@oxlint/plugins`), which we do not have and should not add for code we never run.
+    ignorePatterns: [
+      ".agents/skills/vendor/**",
+      ".claude/skills/vendor/**",
+      ".agents/skills/install-anti-slop/**",
+      ".claude/skills/install-anti-slop/**",
+    ],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.

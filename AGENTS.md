@@ -72,5 +72,19 @@ recorded is [decisions.md](docs/rules/decisions.md).
 
 ## Project skills
 
-[`.claude/skills/`](.claude/skills/) — `close-slice` runs the definition of done and
-updates the roadmap; `new-module` scaffolds a module's six slots.
+Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
+[`.claude/skills/`](.claude/skills/). They run the five steps of
+[slices.md](docs/rules/slices.md):
+
+| Skill | Step |
+|---|---|
+| `map-slice` | 1 — trace, measure, write `scope.md` with its destination, open questions and fog |
+| `plan-slice` | 3 — write `spec.md` including the **Program design**, then the build tickets |
+| `new-module` | 4 — scaffold a module's six slots. **Refuses a module with no `seams.md` row.** |
+| `close-slice` | 5 — run the definition of done, then move the roadmap |
+
+[`.agents/skills/vendor/`](.agents/skills/vendor/) holds 35 upstream skills, copied whole and
+**never edited** — `grilling`, `research`, `prototype`, `tdd`, `code-review`,
+`domain-modeling`, `codebase-design` and the rest. They are vendored rather than resolved at
+runtime because [modules.md](docs/rules/modules.md) requires `codebase-design`'s vocabulary
+*exactly*, and a rule must not depend on words that can change without a diff here.

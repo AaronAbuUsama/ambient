@@ -2,7 +2,7 @@
 
 **Area:** IMPORT · **State:** built and closed, 2026-08-17 · **Specified:** 2026-08-17
 
-Settled by [ADR 003](../../adr/003-history-import-is-an-archive.md) and its two amendments.
+Settled by [ADR 003](../../adr/003-history-import-is-an-archive.md) and its four amendments.
 Vocabulary is [CONTEXT.md](../../../CONTEXT.md) — *Archive, Reader, Write path, Transcript,
 Marker, Placeholder, Wall clock, Instant, Zone, Provenance, Blob* are used here in exactly
 the senses defined there, per [language.md](../../rules/language.md).
@@ -460,7 +460,7 @@ it are corrected here rather than inherited: its dedup key claims NUL separation
 and uses spaces in the code, and it does not recognise the `<attached: …>` Marker form at
 all — so it cannot read the with-media shape.
 
-**Two ADR amendments already stand** against ADR 003 and are the reason this spec exists in
+**Four ADR amendments now stand** against ADR 003 and are the reason this spec exists in
 its current form: the live column's evidence was taken with the full-history request
 disabled, and a fresh pairing then reached 43,334 messages across 1,506 chats. Decision 1
 survives both, with a narrowed reason — an Archive is chosen because it needs no credential

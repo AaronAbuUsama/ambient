@@ -50,14 +50,14 @@ vp run shape              # rows 4 and 6
 pnpm dlx fallow dupes     # row 5 — the baseline is 0 lines, 0.0%
 ```
 
-**Row 2 is red today, and not because of IMPORT.** `vp check`'s lint half fails inside
-`.agents/skills/install-anti-slop/assets/`, vendored code that references `ESTree` types this
-repo does not install, so they resolve to an `error` type. It arrived with commit `53bce37`
-on 2026-08-16, before this area existed. Its formatting half was fixed by excluding the
-vendored skill from `fmt`; the lint half needs either the plugin's types added as a
-devDependency or the same exclusion for lint, and that is a decision about the skill install,
-not about IMPORT. **Resolve it before closing — but do not resolve it by editing vendored
-code**, and do not let a green IMPORT be reported as a green repo while it stands.
+**Row 2 was red when this ticket was written, and is not any more.** `vp check`'s lint half
+failed inside vendored skill assets that reference an `@oxlint/plugins` devDependency this
+repo does not carry, so its ESTree types resolved to an error type and oxlint's own
+`no-redundant-type-constituents` fired — correctly, about code we neither author nor compile.
+It arrived with `53bce37`, before this slice existed. Resolved by scoping `fmt` and `lint`
+out of vendored paths, both `.agents/skills/` and its `.claude/skills/` symlink projection —
+exclude one name and the tools find the same files by the other. **Left here as the record:
+the checker was wrong about its scope, not the code about its content.**
 
 Then rows 7–9 by reading:
 

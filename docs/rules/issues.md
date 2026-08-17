@@ -5,12 +5,14 @@
 Specs and issues live under `docs/planning/`. **There is no git remote.** Never run `gh`,
 `glab`, or any other remote tracker command — there is nothing for them to talk to.
 
-- One feature per directory: `docs/planning/<feature-slug>/`.
-- The spec is `docs/planning/<feature-slug>/spec.md`.
-- A ticket is one file: `docs/planning/<feature-slug>/issues/NN-<slug>.md`, numbered from
-  `01`. Never a single combined tickets file.
+- One slice per directory: `docs/planning/<slice>/`, holding `scope.md`, `spec.md` and `issues/`.
+- The spec is `docs/planning/<slice>/spec.md`; how it is reached is [slices.md](./slices.md).
+- A ticket is one file: `docs/planning/<slice>/issues/NN-<slug>.md`, numbered in dependency
+  order. Never a single combined tickets file. **`00` is reserved** for a ticket that writes
+  no code and unblocks the rest — IMPORT's was the `seams.md` rows, without which
+  `new-module` refuses to scaffold.
 - State is a `Status:` line near the top of the ticket — `needs-triage`, `needs-info`,
-  `ready-for-agent`, `ready-for-human`, `wontfix`.
+  `ready-for-agent`, `ready-for-human`, `done`, `wontfix`.
 - Conversation appends to the bottom under a `## Comments` heading.
 
 "Publish to the issue tracker" means write that file. "Fetch the ticket" means read it.

@@ -2,7 +2,7 @@
 
 What "closed" means for a slice. Every row is a command you can run or a state you can
 look at — nothing aspirational, nothing that depends on how it felt. A slice is closed
-when all nine pass, in order.
+when all ten pass, in order.
 
 Run from the repository root. The skill [`close-slice`](../../.claude/skills/close-slice/SKILL.md)
 runs this list and reports it row by row.
@@ -18,6 +18,7 @@ runs this list and reports it row by row.
 | 7 | `docs/design/roadmap.md` status board | The slice's row reads `● closed`, and **You are here** names the next slice. |
 | 8 | `docs/design/roadmap.md` ledger | A dated entry, newest first, two lines: what shipped and what was learned. The slice's **Active** detail is deleted in the same commit — the ledger line is what survives. |
 | 9 | ADR **Amendments** | Every statement in an ADR that did not survive contact is corrected in that ADR's `## Amendments` section, with the reason. Never a silent rewrite of the body. |
+| 10 | The **call graph**, read not run | The spec's **Program design** matches the code: the trace from `main.ts` owns each step where the design said it would, every public symbol has a production caller, and no module became the composition root by accident. A divergence is resolved out loud — move the code, or amend the Program design — never left standing in both. |
 
 ## The duplication baseline
 
@@ -36,7 +37,7 @@ in the roadmap ledger entry. An unexplained rise is the check failing.
 
 ## Why these and not more
 
-Rows 1–5 are the ones that fail. Rows 7–9 are the ones that get skipped when the work is
+Rows 1–5 are the ones that fail. Rows 7–10 are the ones that get skipped when the work is
 done and the writing-up is not — and skipping them is how a roadmap becomes a
 2000-line ledger nobody reads, and how an ADR quietly becomes a lie about what was
 built.
@@ -45,3 +46,12 @@ Row 9 is the sharpest. Four statements in [ADR 001](../adr/001-home-interface.md
 wrong on contact with the implementation; a fifth followed. They are in that document's
 Amendments section, and the decision they support is still legible because the record of
 being wrong is next to it.
+
+**Row 10 exists because IMPORT passed rows 1–9 while its topology was wrong.** Its CLI
+handler reached 176 lines against 8, 8, 12 and 14 for its siblings — making `cli` the
+composition owner its own spec said it was not — and `transcript` shipped `from: "live"`
+variants nothing originates, since only its own deserialiser ever rebuilds one. Every test
+passed, every check was green, and no row looked at the shape of the program. It is **read,
+not run**, like rows 7–9, because the designed graph is prose today. Making it runnable is named as a candidate at the foot of
+[slices.md](../rules/slices.md), once two slices have produced the artefact in a stable
+shape.

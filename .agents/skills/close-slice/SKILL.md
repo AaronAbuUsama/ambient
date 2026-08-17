@@ -25,6 +25,19 @@ Then read, do not run:
 - **row 7** — `docs/design/roadmap.md` status board and **You are here**
 - **row 8** — the ledger entry, and whether the slice's **Active** section is still there
 - **row 9** — any ADR statement the implementation contradicted
+- **row 10 — the call graph.** Compare the spec's **Program design** against the code that
+  now exists. Three questions, each with an answer you can point at:
+  1. **Does the graph match?** Walk the trace from `main.ts` and name any step whose owner
+     differs from the design.
+  2. **Does every public symbol have a production caller?** A symbol nothing constructs is
+     design that got implemented — the conformance table is where to check.
+  3. **Did any module become the composition root by accident?** A handler far larger than
+     its siblings is the signal. `import`'s reached 176 lines against 8, 8, 12 and 14 while
+     its spec said it *"wires and does nothing else"*, and every other row was green.
+
+  **A divergence is not automatically a failure.** The code may be right and the design
+  wrong. But it must be resolved out loud: either move the code, or amend the spec's Program
+  design saying what changed and why. Silently keeping both is the failure.
 
 ## 2 · Report before writing
 

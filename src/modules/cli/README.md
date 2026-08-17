@@ -15,7 +15,16 @@ nothing else:
 | `ambient doctor` | `home.plan()` |
 | `ambient chat add <slug>` | `home.chat(slug).converge()` |
 | `ambient agent add <name>` | `home.agent(name).converge()` |
+| `ambient import <archive> --into <slug> [--zone <IANA>]` | `archive` → `transcript` → `blobs`, into a chat that already exists |
 | `--home <path>` | overrides the root the caller supplied |
+
+**`import` is the one row that does not read as a single verb on a handle, and that is a
+known divergence, not a design.** Its handler orchestrates four modules where its siblings
+call one, so `cli` is currently the composition owner for that path — see
+[definition-of-done.md](../../../docs/design/definition-of-done.md) row 10 and
+[import/spec.md](../../../docs/planning/import/spec.md). Resolving it means moving the
+orchestration or amending the documented topology; leaving both standing is what row 10
+exists to catch.
 
 `service.ts` does the mapping. Each verb is one file under
 [`internal/commands/`](./internal/commands), owning its own usage line — so

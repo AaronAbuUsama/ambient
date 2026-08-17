@@ -33,9 +33,11 @@ AGENTS.md          the engineering contract
 CONTEXT.md         the lexicon — every domain noun, one meaning each
 docs/design/       what is true now
 docs/history/      how we got here — kernel, grills, research
-docs/planning/     per-feature specs and issues
-docs/agents/       skill docs — issue tracker, triage labels, domain
+docs/planning/     per-slice scope, specs and issues
+docs/rules/        one rule per file: the rule, its argument, its check
 docs/adr/          decisions, created lazily
+.agents/skills/    repo-owned skills, plus vendor/ — upstream, unedited
+.claude/skills/    symlinks into .agents/skills/
 src/main.ts        the composition root — environment, printing, exit code
 src/modules/       the modules from docs/design/seams.md
 ```
