@@ -1,5 +1,7 @@
 /** `archive` assembly. The interface is `types.ts`. */
 
+import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
 import * as fs from "node:fs/promises";
 
 import type { ArchiveLine } from "~/modules/transcript/types.ts";
@@ -121,10 +123,30 @@ const failed = (cause: unknown): ArchiveProblem => ({
   problems: [{ _tag: "Unreadable", cause: cause instanceof Error ? cause.message : String(cause) }],
 });
 
+const hashFile = async (path: string): Promise<string | ArchiveProblem> => {
+  try {
+    const hash = createHash("sha256");
+    for await (const chunk of createReadStream(path)) hash.update(chunk);
+    return hash.digest("hex");
+  } catch (cause: unknown) {
+    return failed(cause);
+  }
+};
+
+const textOf = (primary: Uint8Array): string | ArchiveProblem => {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(primary);
+  } catch {
+    return { problems: [{ _tag: "InvalidText" }] };
+  }
+};
+
 export const openArchive: OpenArchive = async (path, zone) => {
   const zip = await looksLikeZip(path);
   if (typeof zip !== "boolean") return zip;
   if (zip) {
+    const sha256 = await hashFile(path);
+    if (typeof sha256 !== "string") return sha256;
     const opened = await openZip(path);
     if ("problems" in opened) return opened;
     const read = readArchive(opened.text, zone);
@@ -132,16 +154,21 @@ export const openArchive: OpenArchive = async (path, zone) => {
       opened.close();
       return read;
     }
-    return { ...opened, read };
+    return { ...opened, sha256, readerVersion: 1, read };
   }
   try {
-    const text = await fs.readFile(path, "utf8");
+    const primary = Uint8Array.from(await fs.readFile(path));
+    const text = textOf(primary);
+    if (typeof text !== "string") return text;
     const read = readArchive(text, zone);
     return "problems" in read
       ? read
       : {
           form: "text",
-          bytes: Buffer.byteLength(text),
+          sha256: createHash("sha256").update(primary).digest("hex"),
+          bytes: primary.byteLength,
+          readerVersion: 1,
+          primary,
           read,
           media: [],
           close: () => undefined,
@@ -186,6 +213,8 @@ export const describe: DescribeArchiveProblem = (problem) => {
       return `Archive ZIP is invalid: ${problem.cause}`;
     case "InvalidFilename":
       return "Archive ZIP has a filename that is not UTF-8";
+    case "InvalidText":
+      return "Archive chat text is not UTF-8";
     case "UnsafeEntry":
       return `Archive ZIP entry "${problem.name}" is not flat`;
     case "MissingChatText":

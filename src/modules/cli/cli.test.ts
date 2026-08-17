@@ -5,6 +5,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import { afterEach, expect, it } from "vite-plus/test";
@@ -140,6 +141,11 @@ it("prints a default Zone and refuses a missing Chat before writing", async () =
   expect(
     await run(["import", input, "--into", "fixture", "--home", root], "/nowhere", "Africa/Accra"),
   ).toMatchObject({ said: "Imported 2 Messages into fixture using default Zone Africa/Accra" });
+  const hash = createHash("sha256").update(archive()).digest("hex");
+  const receipt: unknown = JSON.parse(
+    fs.readFileSync(`${root}/chats/fixture/imports/${hash}/receipt.json`, "utf8"),
+  );
+  expect(receipt).toMatchObject({ zone: { name: "Africa/Accra", source: "default" } });
   expect(
     await run(
       ["import", input, "--into", "fixture", "--zone", "+00:00", "--home", root],
@@ -155,7 +161,9 @@ it("streams ZIP media into the global Blob store and prints unresolved Markers",
     `${import.meta.dirname}/../archive/fixtures/media.zip.base64`,
     "utf8",
   );
-  fs.writeFileSync(input, Buffer.from(encoded.trim(), "base64"));
+  const zip = Buffer.from(encoded.trim(), "base64");
+  const archiveHash = createHash("sha256").update(zip).digest("hex");
+  fs.writeFileSync(input, zip);
   await run(["init", "--home", root], "/nowhere");
   await run(["chat", "add", "fixture", "--home", root], "/nowhere");
 
@@ -176,6 +184,17 @@ it("streams ZIP media into the global Blob store and prints unresolved Markers",
   expect(transcript).toContain('"media":{"state":"NoHandle","why":"not-in-archive"}');
   expect(fs.readdirSync(`${root}/blobs`)).toEqual([hashes[0]]);
   expect(fs.existsSync(`${root}/chats/fixture/media`)).toBe(false);
+  expect(
+    fs.readFileSync(`${root}/chats/fixture/imports/${archiveHash}/_chat.txt`, "utf8"),
+  ).toContain("photo–one.jpg");
+  const receipt: unknown = JSON.parse(
+    fs.readFileSync(`${root}/chats/fixture/imports/${archiveHash}/receipt.json`, "utf8"),
+  );
+  expect(receipt).toMatchObject({
+    archive: { sha256: archiveHash, bytes: zip.byteLength, form: "zip-media" },
+    counts: { markers: 3, resolved: 2, unresolved: 1 },
+    findings: [{ kind: "unresolved-markers", count: 1 }],
+  });
 });
 
 // ── the exit codes the gate is written in ────────────────────────────

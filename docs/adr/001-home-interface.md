@@ -2,13 +2,14 @@
 
 **Status:** Accepted, amended · **Date:** 2026-08-16 · **Area:** SKELETON
 
-> **Amendments after implementation.** The decision stands; six details in the
+> **Amendments after implementation.** The decision stands; seven details in the
 > interface below did not survive contact and are corrected here rather than
 > silently rewritten. See *Amendments* at the foot of this document.
 > `HomeDeps` no longer exists · `HomeProblem.problems` is a plain array ·
 > `converge` is async because it writes, not because it spawns · a handle's
 > `Place`s are methods returning `Place | HomeProblem` · nothing throws ·
-> `DanglingRef` carries the known set and a fourth kind.
+> `DanglingRef` carries the known set and a fourth kind · Chats grant a foreign
+> `imports/` directory.
 
 Produced by a `DESIGN-IT-TWICE` round (three parallel designs) on the `home` module, as
 required by [seams.md](../design/seams.md) — *"Two seams worth designing twice"*.
@@ -412,7 +413,7 @@ no logger, no filesystem.
 
 ## Amendments
 
-Six things in the interface above were wrong on contact with the implementation.
+Seven things in the interface above were wrong on contact with the implementation.
 The decision — the handle, `plan`/`converge` as one list, nothing cached — is
 unaffected.
 
@@ -520,3 +521,17 @@ available is most of the fix: *"names model profile "thorough", which is not
 defined (known: fast, careful)"* is the difference between a typo found in one
 read and a hunt through `config.yaml`. Gate assertions 9 and 10 are written
 against that rendering, so the known set is load-bearing rather than decorative.
+
+### 7 · A Chat grants `imports/` as a foreign, traffic-bounded directory.
+
+The interface and `Place` section above enumerate `transcript`, `media` and `now`, but
+History Import needs one more root-of-grant:
+
+```ts
+export type ChatHandle = { …; imports: Grant; … }
+```
+
+`home` creates `imports/` and vouches that it is a directory. It never lists or reads inside
+it. The History Import handler owns `imports/<archive-sha256>/_chat.txt` and `receipt.json`;
+both are bounded by traffic, so exposing a `Place` reinforces invariant 8 rather than
+weakening it. The handle and its one `plan`/`converge` list are unchanged.

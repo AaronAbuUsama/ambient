@@ -106,6 +106,7 @@ export type TranscriptProblem = { readonly problems: readonly TranscriptProblemD
 export type TranscriptWrite = {
   readonly written: number;
   readonly skipped: number;
+  readonly messages: { readonly written: number; readonly skipped: number };
   readonly lines: readonly TranscriptLine[];
 };
 

@@ -22,8 +22,8 @@ const LIMIT = 250;
  */
 const LONGER: Readonly<Record<string, string>> = {
   "src/modules/home/home.test.ts":
-    "SKELETON's gate — spec §4 verbatim, eighteen numbered assertions with one `it` each. " +
-    "Splitting it for length would put half the gate in a file nobody knows to open.",
+    "SKELETON's gate plus the `home` interface resolutions later areas add. " +
+    "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
 };
 
 /** Directories a repository check has no business walking. */

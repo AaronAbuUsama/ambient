@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { text } from "node:stream/consumers";
+import { buffer } from "node:stream/consumers";
 import { openPromise, type Entry, type ZipFile } from "yauzl";
 
 import type { ArchiveMediaEntry, ArchiveProblem, ArchiveProblemDetail } from "../types.ts";
@@ -7,6 +7,7 @@ import type { ArchiveMediaEntry, ArchiveProblem, ArchiveProblemDetail } from "..
 type OpenedZip = {
   readonly form: "zip-text" | "zip-media";
   readonly text: string;
+  readonly primary: Uint8Array;
   readonly bytes: number;
   readonly media: readonly ArchiveMediaEntry[];
   readonly close: () => void;
@@ -39,11 +40,19 @@ const openedStream = async (
   }
 };
 
-const textOf = async (zip: ZipFile, entry: Entry): Promise<string | ArchiveProblem> => {
+const primaryOf = async (zip: ZipFile, entry: Entry): Promise<Uint8Array | ArchiveProblem> => {
   try {
-    return await text(await zip.openReadStreamPromise(entry));
+    return Uint8Array.from(await buffer(await zip.openReadStreamPromise(entry)));
   } catch (cause: unknown) {
     return failed({ _tag: "InvalidZip", cause: causeOf(cause) });
+  }
+};
+
+const textOf = (primary: Uint8Array): string | ArchiveProblem => {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(primary);
+  } catch {
+    return failed({ _tag: "InvalidText" });
   }
 };
 
@@ -89,7 +98,12 @@ export const openZip = async (path: string): Promise<OpenedZip | ArchiveProblem>
       archive.close();
       return failed({ _tag: "MissingChatText" });
     }
-    const source = await textOf(archive, transcript.entry);
+    const primary = await primaryOf(archive, transcript.entry);
+    if (!(primary instanceof Uint8Array)) {
+      archive.close();
+      return primary;
+    }
+    const source = textOf(primary);
     if (typeof source !== "string") {
       archive.close();
       return source;
@@ -106,6 +120,7 @@ export const openZip = async (path: string): Promise<OpenedZip | ArchiveProblem>
     return {
       form: media.length === 0 ? "zip-text" : "zip-media",
       text: source,
+      primary,
       bytes: stat.size,
       media,
       close: () => archive.close(),

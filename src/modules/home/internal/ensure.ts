@@ -41,6 +41,7 @@ const CHAT_ENTRIES = [
   "skills",
   "transcript.jsonl",
   "media",
+  "imports",
   "now.md",
 ] as const;
 const AGENT_ENTRIES = ["agent.yaml", "SKILL.md"] as const;
@@ -168,6 +169,7 @@ export const chatItems = (h: Layout, slug: string): readonly Ensure[] => {
       detailsOf(readChatConfig(t)),
     ),
     fileItem(h, `${label}/mandate.md`, dir, "mandate.md", template.MANDATE(slug)),
+    dirItem(h, `${label}/imports/`, at(dir, "imports")),
     namesItem(h, `${label}/`, dir, CHAT_ENTRIES),
   ];
 };

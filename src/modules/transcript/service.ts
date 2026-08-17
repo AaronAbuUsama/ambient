@@ -31,6 +31,8 @@ export const writeTranscript: WriteTranscript = async (place, incoming) => {
   const additions: TranscriptLine[] = [];
   let written = 0;
   let skipped = 0;
+  let messagesWritten = 0;
+  let messagesSkipped = 0;
   let changed = false;
 
   for (const line of incoming) {
@@ -44,18 +46,21 @@ export const writeTranscript: WriteTranscript = async (place, incoming) => {
       additions.push(line);
       positions.set(key, [...(positions.get(key) ?? []), next]);
       written++;
+      if (line.kind === "message") messagesWritten++;
       continue;
     }
     skipped++;
+    if (line.kind === "message") messagesSkipped++;
     if (JSON.stringify(lines[index]) !== JSON.stringify(line)) {
       lines[index] = line;
       changed = true;
     }
   }
 
-  if (written === 0 && !changed && !loaded.torn) return { written, skipped, lines };
+  const messages = { written: messagesWritten, skipped: messagesSkipped };
+  if (written === 0 && !changed && !loaded.torn) return { written, skipped, messages, lines };
   const problem = changed ? await replace(place, lines) : await append(place, loaded, additions);
-  return problem === undefined ? { written, skipped, lines } : { problems: [problem] };
+  return problem === undefined ? { written, skipped, messages, lines } : { problems: [problem] };
 };
 
 export const describe: DescribeTranscriptProblem = (problem) => {

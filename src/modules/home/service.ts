@@ -44,6 +44,7 @@ const chatHandle = (h: Layout, slug: string): ChatHandle => {
     cwd: () => grant(),
     transcript: () => grant("transcript.jsonl"),
     media: () => grant("media"),
+    imports: () => grant("imports"),
     now: () => grant("now.md"),
     read: () => readChat(h, slug),
     ...verbs(() => chatItems(h, slug)),

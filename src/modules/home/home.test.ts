@@ -176,6 +176,21 @@ it("13 · chat add is silent and leaves doctor silent", async () => {
   expect(home.plan()).toEqual([]);
 });
 
+it("a Chat grants a foreign imports directory that doctor never reads inside", async () => {
+  const { root, home } = await started();
+  const chat = home.chat("bug-reports");
+  expect(await chat.converge()).toEqual([]);
+  const imports = chat.imports();
+  if ("problems" in imports) throw new Error(said(imports.problems).join("\n"));
+  fs.writeFileSync(`${imports.path}/opaque`, Buffer.alloc(1024 * 1024));
+  expect(home.plan()).toEqual([]);
+
+  fs.rmSync(imports.path, { recursive: true });
+  fs.writeFileSync(imports.path, "wrong kind");
+  expect(said(home.plan())).toContain("chats/bug-reports/imports/: expected a directory");
+  expect(fs.existsSync(`${root}/chats/bug-reports/imports`)).toBe(true);
+});
+
 it("14 · chat add restores a deleted mandate and leaves config.yaml byte-identical", async () => {
   const { root, home } = await started();
   expect(await home.chat("bug-reports").converge()).toEqual([]);

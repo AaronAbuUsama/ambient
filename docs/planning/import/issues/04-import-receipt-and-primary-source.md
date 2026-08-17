@@ -19,7 +19,7 @@ where it came from; before this ticket, *"I imported a file once"* is nowhere on
 **Blocked by:** 01, 03. The receipt records Marker counts, and a receipt that silently omits
 media counts is the exact failure this area exists to prevent.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## The one edit this area makes to SKELETON
 
@@ -50,17 +50,17 @@ Counts, not content. Enough to answer the question without re-reading anything:
 
 ## Acceptance criteria
 
-- [ ] `home` grants `imports`, and `doctor` vouches for the directory without reading inside.
-- [ ] `_chat.txt` is written under `imports/<sha256>/` byte-identical to the Archive's own.
-- [ ] The receipt names the Archive by `sha256` and records every count above.
-- [ ] A line the parser cannot read is **skipped, counted with its line number, and does not
+- [x] `home` grants `imports`, and `doctor` vouches for the directory without reading inside.
+- [x] `_chat.txt` is written under `imports/<sha256>/` byte-identical to the Archive's own.
+- [x] The receipt names the Archive by `sha256` and records every count above.
+- [x] A line the parser cannot read is **skipped, counted with its line number, and does not
       fail the import.** No fourth line variant is added — the primary source on disk is where
       that line survives.
-- [ ] An unresolved-Marker count above zero is printed as a finding, not left in the file.
-- [ ] Importing the same Archive twice produces one `imports/<hash>/` directory, not two.
-- [ ] Importing a *different* export of the same conversation produces a second receipt, so
+- [x] An unresolved-Marker count above zero is printed as a finding, not left in the file.
+- [x] Importing the same Archive twice produces one `imports/<hash>/` directory, not two.
+- [x] Importing a *different* export of the same conversation produces a second receipt, so
       the two runs are distinguishable.
-- [ ] `doctor` still opens no file whose size is bounded by traffic.
+- [x] `doctor` still opens no file whose size is bounded by traffic.
 
 Gate rows 4, 11, 12 of [the spec](../spec.md).
 

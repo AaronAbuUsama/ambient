@@ -37,6 +37,7 @@ export type ArchiveProblemDetail =
   | { readonly _tag: "Unreadable"; readonly cause: string }
   | { readonly _tag: "InvalidZip"; readonly cause: string }
   | { readonly _tag: "InvalidFilename" }
+  | { readonly _tag: "InvalidText" }
   | { readonly _tag: "UnsafeEntry"; readonly name: string }
   | { readonly _tag: "MissingChatText" };
 
@@ -53,7 +54,11 @@ export type ArchiveMediaEntry = {
 
 export type OpenedArchive = {
   readonly form: "text" | "zip-text" | "zip-media";
+  readonly sha256: string;
   readonly bytes: number;
+  readonly readerVersion: 1;
+  /** The Archive's own chat text, byte-for-byte. */
+  readonly primary: Uint8Array;
   readonly read: ArchiveRead;
   readonly media: readonly ArchiveMediaEntry[];
   readonly close: () => void;

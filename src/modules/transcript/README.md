@@ -21,6 +21,8 @@ and reading through a torn trailing line. Blob bytes remain global in `blobs`.
 5. Events are their own line kind. Archive media is either `Stored` or a
    reasoned `NoHandle`; it is never an untyped gap.
 6. Every failure is a value from `types.ts`; nothing throws.
+7. A Write reports both total line counts and Message-only counts so a Receipt
+   never calls an event a Message.
 
 ## How to test it
 

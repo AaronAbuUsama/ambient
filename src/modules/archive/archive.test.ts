@@ -135,6 +135,10 @@ it("reads a one-file ZIP identically to bare text", async () => {
   const opened = await openArchive(fixture("text"), "Africa/Accra");
   if ("problems" in opened) throw new Error("expected the ZIP to be readable");
   expect(opened.form).toBe("zip-text");
+  expect(opened.sha256).toMatch(/^[a-f0-9]{64}$/);
+  expect(new TextDecoder().decode(opened.primary)).toBe(
+    "[14/02/2025, 4:06:10 PM] Rex: one\n[15/02/2025, 4:07:00 PM] Sam: two\n",
+  );
   expect(opened.media).toEqual([]);
   expect(opened.read).toEqual(
     readArchive(

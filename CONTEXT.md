@@ -136,6 +136,12 @@ The one thing that turns Messages from any Reader into a Transcript and Blobs. T
 Readers, one Write path — [ADR 003](docs/adr/003-history-import-is-an-archive.md).
 _Avoid_: writer, sink, ingest pipeline.
 
+**Receipt**:
+A durable account of one completed operation: what source it used, what it changed, and
+what it could not read. History Import's Receipt is specified in
+[docs/planning/import/spec.md](docs/planning/import/spec.md).
+_Avoid_: log, report, provenance (Provenance is a fact's known/witnessed distinction).
+
 **Blob**:
 Media bytes, stored once and addressed by hash, global across every Chat.
 _Avoid_: attachment, file, asset, media (Media is the interpretation of a Blob).

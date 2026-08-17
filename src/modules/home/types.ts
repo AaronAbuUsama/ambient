@@ -171,6 +171,8 @@ export type ChatHandle = {
   transcript: Grant;
   /** → `channel`. */
   media: Grant;
+  /** → the Archive import receipt writer. Foreign: home vouches for the directory only. */
+  imports: Grant;
   /** → the receipt fold. */
   now: Grant;
   read(): Chat | HomeProblem;
