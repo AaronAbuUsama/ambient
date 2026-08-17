@@ -258,3 +258,29 @@ list a human or agent maintains.
 
 That last row is the one genuinely new problem. email-pa never has to decide what it may
 *say* where, because units never talk to each other.
+
+---
+
+## Amendments
+
+**2026-08-17 — §5's "closed vocabulary" claim is wrong; the conclusion survives the
+evidence.** The graphs were counted rather than read
+([ontology-design-space.md](ontology-design-space.md) §1). `schema.yaml` is read by no
+script in `bin/`, so nothing enforced it: `Document` declares 13 properties and carries
+63, `Organization` declares 4 and carries 30, and `Price` — 1353 entities, 72% of the
+graph — is not a declared type at all. The vocabulary drifted in exactly the way this
+section attributes to Ambient's EAV graph. A hand-written closed vocabulary is still the
+right design; it was never actually closed here, and Ambient's `lint` reading the schema
+is the correction.
+
+**2026-08-17 — the 4-people count in §5 and in `knowledge-flow.md` is confounded.**
+`bin/extract` stubs a `Document` per attachment (494) and `bin/prices` creates `Price`
+(1353); nothing stubs `Person`, which is why there are 5. `Thread`, `Deal` and
+`Commitment` are declared and measure **zero** for the same reason. The number measures
+the absence of a stub-creator, not the unsuitability of typed storage for humans.
+
+**2026-08-17 — §4's mechanical/judgment split holds; the graph half of §5 does not.**
+29 `relate` ops across 1880 entities. Relationships were written as string properties
+instead, so 1.5% of the "knowledge graph" is graph — a harder number for
+`knowledge-flow.md`'s *"a separate graph store does not carry over"* than the people count
+it currently rests on.

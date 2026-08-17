@@ -19,7 +19,9 @@ Design repo.
 | Doc | What it is |
 |---|---|
 | [docs/history/research/open-knowledge.md](docs/history/research/open-knowledge.md) | **Read before designing anything touching knowledge, skills or provenance.** Much of it is already solved there. |
-| [docs/history/research/email-pa-teardown.md](docs/history/research/email-pa-teardown.md) | The ten patterns worth stealing, with code. |
+| [docs/history/research/email-pa-teardown.md](docs/history/research/email-pa-teardown.md) | The ten patterns worth stealing, with code. **See its Amendments — §5 was measured and is wrong.** |
+| [docs/history/research/ontology-design-space.md](docs/history/research/ontology-design-space.md) | **Read before designing the ontology.** The traditions (FOAF, DC, schema.org, SKOS, RDFS, OWL, SHACL), email-pa's graph counted, the seven-step flow, and the schema that follows. |
+| [docs/history/research/a-schema-nothing-reads.md](docs/history/research/a-schema-nothing-reads.md) | The same material as prose — the theory, the argument, and why the queue decides what a system knows. |
 | [docs/history/kernel.md](docs/history/kernel.md) | Lessons from the two prior experiments. Defers to `docs/design/`. |
 | [docs/history/grills/](docs/history/grills/) | Dated decision records. `002`'s harness proposal is superseded; its four decisions stand. |
 
