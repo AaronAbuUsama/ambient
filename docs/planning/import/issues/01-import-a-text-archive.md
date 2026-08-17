@@ -44,8 +44,9 @@ real Archive: 1 in 13,134.
 - [x] `archive` reads a bare `.txt` and returns messages, with **a string as the only input**
       — no filesystem, no home, no phone.
 - [x] The grammar handles what was measured: 12- and 24-hour clocks, seconds present or
-      absent, a narrow no-break space before AM/PM, WhatsApp's direction marks, continuation
-      lines (6,473 in one file), and a sender name containing `": "`.
+      absent, a narrow no-break space before AM/PM, WhatsApp's direction marks without losing
+      their body-leading structural position, continuation lines (6,473 in one file), and a
+      sender name containing `": "`.
 - [x] Day-first is detected; when nothing in the file settles it, parsing **fails with a
       declared value** rather than guessing.
 - [x] `transcript` appends lines and tolerates a torn trailing line from a hard kill.

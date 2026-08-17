@@ -41,14 +41,14 @@ it("keeps the primary source and one complete Receipt per Archive hash", async (
       "/nowhere",
     ),
   ).toMatchObject({
-    said: "Imported 2 Messages into fixture using Zone Africa/Accra; 1 unreadable line at 1",
+    said: "Imported 2 Messages and 0 Events (2 Transcript lines) into fixture using Zone Africa/Accra; 1 unreadable line at 1",
   });
   const receiptDir = `${root}/chats/fixture/imports/${hash}`;
   expect(fs.readFileSync(`${receiptDir}/_chat.txt`)).toEqual(Buffer.from(source));
   const first: unknown = JSON.parse(fs.readFileSync(`${receiptDir}/receipt.json`, "utf8"));
   expect(first).toMatchObject({
     archive: { sha256: hash, bytes: Buffer.byteLength(source), form: "text" },
-    reader: { version: 1 },
+    reader: { version: 2 },
     zone: { name: "Africa/Accra", source: "given" },
     transcript: {
       messagesWritten: 2,

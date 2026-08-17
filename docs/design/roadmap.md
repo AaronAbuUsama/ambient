@@ -12,7 +12,9 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **IMPORT closed** — 16/16 gate; `vp check`, 47 tests, shape and zero duplication green.
+> **IMPORT closed** — 16/16 gate; `vp check`, 49 tests, shape and zero duplication green.
+> The real `~/.ambient` holds 13,134 Transcript lines and 980 verified Blobs from the media
+> Archive; its previous contents are preserved beside it in a dated backup.
 > **INGEST is active.** Its first scope must decide how a one-shot full sync resumes after a
 > crash between seven ~4,800-message batches; do not spend another pairing on a tool that
 > cannot durably write them through IMPORT's Transcript path.
@@ -78,6 +80,12 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-17** — **IMPORT correction re-proved on the real default home.** Reader v2 uses
+  WhatsApp's structural mark, preserves rich media on poorer re-imports, and atomically
+  replaces corrected Transcripts; the real ZIP produced 13,134 lines, 1,139 stored refs and
+  980 content-verified Blobs, and its identical re-import was byte-identical.
+  **Learned:** the first closure line's 105 is superseded — prose regex over-classified 73
+  Messages and missed 19 Events; the source-marked answer is 13,083 Messages + 51 Events.
 - **2026-08-17** — **IMPORT closed.** All three Archive forms now produce one Transcript, global deduplicated Blobs, a verbatim primary source and a hash-addressed Receipt; 16/16 gate and all repository checks pass.
   **Learned:** 1,139 media refs collapse to 980 unique Blobs, and the claimed 174 events were word occurrences, not lines — the conservative whole-line Reader records 105 and preserves the source for re-reading.
 - **2026-08-17** — **INTAKE split into IMPORT and INGEST; IMPORT specified.** The halves

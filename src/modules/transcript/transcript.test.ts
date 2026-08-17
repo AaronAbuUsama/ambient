@@ -85,6 +85,29 @@ it("deduplicates by Wall clock while preserving equal-key multiplicity", async (
   ).toBe(true);
 });
 
+it("keeps Stored media when a poorer Archive is imported or rezoned later", async () => {
+  const transcript = await place();
+  const stored: ArchiveMessage = {
+    ...message("caption"),
+    media: { state: "Stored", hash: "a".repeat(64) },
+  };
+  await writeTranscript(transcript, [stored]);
+
+  const poorer: ArchiveMessage = {
+    ...message("caption", stored.wall, "America/New_York"),
+    at: stored.at + 18_000_000,
+    media: { state: "NoHandle", why: "placeholder" },
+  };
+  const result = wrote(await writeTranscript(transcript, [poorer]));
+  expect(result).toMatchObject({ written: 0, skipped: 1 });
+  expect(result.lines).toEqual([{ ...poorer, media: stored.media }]);
+
+  const withoutMedia = { ...poorer, media: undefined };
+  expect(wrote(await writeTranscript(transcript, [withoutMedia])).lines).toEqual([
+    { ...withoutMedia, media: stored.media },
+  ]);
+});
+
 it("ignores and replaces a torn trailing line", async () => {
   const transcript = await place();
   await writeTranscript(transcript, [message("one")]);

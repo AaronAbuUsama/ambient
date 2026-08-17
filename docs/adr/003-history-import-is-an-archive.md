@@ -207,3 +207,17 @@ invent both misses and matches. The settled boundary is a cut: the Archive owns 
 newest Instant; the Live account owns what follows. Within an Archive, the key remains the
 NUL-separated Wall clock, sender label and text, so correcting a Zone updates lines without
 duplicating them.
+
+### 4 — 2026-08-17: the Archive count is Transcript lines, and Events are source-marked
+
+The measurement table and amendment 2 call **13,117** values from the without-media Archive
+"messages". IMPORT's second Reader pass establishes the sharper statement: they are **13,117
+Transcript lines = 13,066 Messages + 51 Events**. The with-media Archive has **13,134 lines =
+13,083 Messages + the same 51 Events**. The reach comparison and Decision 1 are unchanged.
+
+The first Reader tried to infer Events from English words and reported 105. That was not
+source evidence: it over-classified 73 ordinary Messages and missed 19 generated rows.
+WhatsApp's iOS Archive already marks generated bodies with U+200E. Reader version 2 records
+that position before cleaning display marks, recognises marked formal Message shapes first,
+and classifies only the 51 remaining marked values as Events. This correction is why the
+Reader version exists in the Receipt.

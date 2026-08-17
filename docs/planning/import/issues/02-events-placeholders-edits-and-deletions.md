@@ -5,20 +5,16 @@ holds text messages; after this one it holds the shape of the conversation.
 
 Three things stop being flattened into text:
 
-- **Group membership events** become their own line kind, not messages. **105 whole-line
-  events** in one conversation.
+- **Events** become their own line kind, not Messages. **51** in the measured Archive.
 
-  **Corrected on contact.** This ticket first said 174, from `added 109 · removed 22 · left
-  36 · icon 4 · admin 1 · number-changed 2`. Those are **word occurrences over the whole
-  file**, not lines — `re.findall` counts every *"I added the fix"* in ordinary prose. Four
-  instruments give four answers: 177 word occurrences, 172 messages whose body contains a
-  keyword, 105 from the classifier that shipped, 80 from a whole-body-only pattern. **The
-  count is a property of where you draw the line, and none of the earlier numbers said where
-  that was.** The shipped classifier anchors each pattern to the whole body and refuses to
-  classify anything carrying a Marker, a Placeholder, an edit or a deletion — conservative in
-  the ways that matter, and it will still over-classify prose containing `" added "`. That
-  residue is acceptable **because `raw` is preserved on every event line**, so a later pass
-  can re-read it. Incomplete is fine; silently wrong is not.
+  **Corrected twice on contact.** The first count, 174, was raw word occurrence. The second,
+  105, was a prose regex: it turned 73 ordinary Messages such as *"I added the fix"* into
+  Events and missed 19 generated rows including calls, settings, community changes and a
+  rename. The source already carries the boundary: WhatsApp prefixes generated bodies with
+  U+200E. After formal Message shapes are recognised first, the remaining marked rows are
+  Events. On the real Archive, 820 body-leading marks decompose into 692 Markers, 12
+  Placeholders, 61 deletions, 4 polls and **51 Events**. No vocabulary regex decides whether
+  somebody spoke.
 - **Placeholders** — `image omitted` and its siblings — become a line whose media state is
   `NoHandle` with `why: "placeholder"`, never a line with no media at all. Measured: **1,131
   of 1,139** attachments carry one in the without-media export.
@@ -53,6 +49,8 @@ without a re-parse — the same reason the primary source is kept in ticket 04.
 ## Acceptance criteria
 
 - [x] A membership event becomes a line of `kind: "event"`, never a message.
+- [x] Ordinary prose using words such as `added`, `removed` or `left` remains a Message;
+      Event classification uses the Archive's structural mark.
 - [x] Every event carries `raw`, so an unclassified one loses nothing.
 - [x] A Placeholder becomes a line with media state `NoHandle` and `why: "placeholder"`.
 - [x] `media` is total: a line carrying media always states its state, and `Stored` is

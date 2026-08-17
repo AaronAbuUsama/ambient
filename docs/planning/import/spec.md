@@ -53,9 +53,9 @@ it was handed a year of real email. Ambient's equivalent is the principal's pers
 WhatsApp, and Ambient does not live on that account and must never pretend it did.
 
 The live protocol is not the answer on its own. Measured on one conversation: an Archive
-holds **13,117 messages over 19 months and 1,139 media files as bytes**, needs no
-credential, no socket, no lease and no awake service, and cannot be rate-limited. A file
-is the whole dependency.
+holds **13,117 Transcript lines over 19 months and 1,139 media files as bytes**, needs no
+credential, no socket, no lease and no awake service, and cannot be rate-limited. A file is
+the whole dependency.
 
 ## Solution
 
@@ -65,7 +65,7 @@ One command turns an exported Archive into a Transcript and Blobs inside an exis
 ambient import <archive> --into <slug> [--zone <IANA>]
 ```
 
-It parses the export, writes one Transcript line per message, puts media bytes into the
+It parses the export, writes one Transcript line per Reader value, puts media bytes into the
 content-addressed Blob store, keeps the export's own `_chat.txt` as the primary source, and
 writes a receipt saying exactly what it read, what it could not read, and under which Zone.
 
@@ -227,7 +227,7 @@ and optional-field state machines, so illegal states are hard to represent."*
     text: string; edited?: true; deleted?: true
     media?: ArchiveMedia }
 
-| { from: "archive"; kind: "event"              // 105 classified in one conversation
+| { from: "archive"; kind: "event"              // 51 classified in one conversation
     wall: string; at: number; zone: string
     event: "added" | "removed" | "left" | "renamed" | "icon" | "admin"
          | "number-changed" | "other"
@@ -257,7 +257,13 @@ Measured coverage, which is why the two variants differ rather than sharing opti
 | reactions | 3 in 13,134 — noise | a separate `Update` stream |
 | edited | **334** | `flags.edited` |
 | deleted | **61** | `Update` stream |
-| membership events | **105 whole-line events**. Earlier counts — added 109 · removed 22 · left 36 · icon 4 · admin 1 · number 2 — are raw word occurrences, not line counts | present |
+| Events | **51 in 13,134**, identified by WhatsApp's body-leading U+200E after formal Message shapes are removed. Earlier keyword counts were not source evidence. | present |
+
+**An Event is never inferred from prose.** In the measured iOS Archive, WhatsApp prefixes a
+generated body with U+200E. Markers, Placeholders, deletions and polls can carry the same
+structural mark, so those declared Message shapes are recognised first; every remaining
+marked body is an Event. This is why *"I added the fix"* remains a Message while a call or
+group-settings change becomes an Event without a vocabulary regex.
 
 **`alt` is preserved wherever it appears.** It is a `witnessed` LID↔JID join that WhatsApp
 supplies for free and that nothing downstream can rebuild — measured contrast: joining a
@@ -275,9 +281,9 @@ never a fixed offset**, so daylight saving resolves per message rather than per 
 is recorded on every line beside the resolved Instant.
 
 That makes a wrong Zone a **recompute of one number**, never a re-import. Measured cost of
-getting it wrong: 1 hour out moves 143 of 13,134 messages to the wrong calendar date; 7
-hours out moves 4,278. Message **order within an Archive never changes** under any uniform
-shift, and only 8 messages sit within an hour of the Archive/live boundary.
+getting it wrong: 1 hour out moves 143 of 13,134 Transcript lines to the wrong calendar date;
+7 hours out moves 4,278. Line **order within an Archive never changes** under any uniform
+shift, and only 8 lines sit within an hour of the Archive/live boundary.
 
 The Zone defaults to the host's and is **printed and recorded**, never silently assumed.
 
@@ -310,7 +316,7 @@ unresolved count above zero is printed. A truncated Archive is a finding, not 1,
 
 The key is `(wall, sender, text)`, **NUL-separated**, keyed on the **Wall clock and not the
 Instant** so that changing the Zone does not change every key and duplicate the whole file.
-Measured collisions on the real Archive: **1 in 13,134**.
+Measured collisions on the real Archive: **1 in 13,134 Transcript lines**.
 
 Across sources there is **no key matching at all** — the two Readers agree on neither the
 sender field (a label against an Address) nor, for all 1,139 media messages, the text field
@@ -382,16 +388,17 @@ is the model for testing a command through argv.
 **Fixtures.** The measured Archive is personal data and stays in `.spike-private/`, which is
 gitignored. Committed fixtures are small, synthetic, and constructed to carry each measured
 shape: a continuation line, a 12-hour clock, a Marker, a Placeholder, an entry name with a
-typographic dash, a membership event, an edited marker, a deleted marker.
+typographic dash, a structurally marked Event beside unmarked prose using the same words, an
+edited marker, a deleted marker and a marked poll that remains a Message.
 
 ## The gate
 
 The area's §4, made executable. `close-area` runs
 [definition-of-done.md](../../design/definition-of-done.md) over it.
 
-1. Importing the without-media export writes one Transcript line per message, and the count
-   matches the file exactly — for a bare `.txt` **and** for a `.zip` holding one file, with
-   identical results.
+1. Importing the without-media export writes one Transcript line per logical Archive value,
+   and the count matches the file exactly — for a bare `.txt` **and** for a `.zip` holding one
+   file, with identical results.
 2. Importing the with-media export resolves **every** Marker to a Blob — zero unresolved —
    including entry names with a typographic dash or a narrow no-break space.
 3. A Placeholder becomes a line whose media state is `NoHandle` with `why: "placeholder"`,
@@ -405,7 +412,8 @@ The area's §4, made executable. `close-area` runs
    lines — the dedup key is the Wall clock.
 8. Every line carries `wall`, `at`, `zone` and `from`, and no Archive line carries a message
    id, a reply edge, mentions or a reaction.
-9. A membership event becomes a line of `kind: "event"`, not a message.
+9. A structurally marked Event becomes `kind: "event"`; unmarked prose using the same words
+   remains a Message.
 10. `import --into <slug>` for a Chat that does not exist writes nothing, exits non-zero,
     and names `chat add`.
 11. `_chat.txt` is present under `imports/<hash>/` byte-identical to the Archive's own, and
@@ -439,10 +447,12 @@ The area's §4, made executable. `close-area` runs
 
 **Evidence.** Every number here was measured on the principal's real export and the spike
 artefacts in `.spike-private/`, which is gitignored. The load-bearing ones: 13,134 Transcript
-lines and 6,473 continuation lines parsed with zero unreadable; 1,139 Markers against 1,139 files;
-0 of 1,140 zip entries flagged UTF-8; 1 dedup collision in 13,134; 160 of 167 Instants
-matched at a single offset across 19 months; 913 chats of which 757 unnamed; 5 of 14 labels
-joining to a contact.
+lines = 13,083 Messages + 51 Events, and 6,473 continuation lines parsed with zero unreadable;
+1,139 Markers against 1,139 files; 0 of 1,140 zip entries flagged UTF-8; 1 dedup collision in
+13,134; 160 of 167 Instants matched at a single offset across 19 months; 913 chats of which
+757 unnamed; 5 of 14 labels joining to a contact. The Event boundary is structural: 820
+body-leading direction marks decompose into 692 Markers, 12 Placeholders, 61 deletions, 4
+polls and 51 Events.
 
 **The prototype.** `.spike-private/prototype-archive-reader/` proved the grammar and is a
 primary source, not a template. Take the grammar; its shape predates ADR 003. Two defects in

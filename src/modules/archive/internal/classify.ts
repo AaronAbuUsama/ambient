@@ -3,7 +3,7 @@ import type { ArchiveEvent, ArchiveLine, ArchiveMessage } from "~/modules/transc
 export type ArchiveBase = Pick<
   ArchiveMessage,
   "from" | "kind" | "wall" | "at" | "zone" | "who" | "text"
->;
+> & { readonly whatsappMarked: boolean };
 
 const EDITED = /\s*<This message was edited>$/i;
 const DELETED = /(?:^|\s)(?:This message was deleted|deleted this message)\.?$/i;
@@ -13,18 +13,26 @@ const MARKER = /(?:^|\s)<attached:\s*([^<>]+)>$/i;
 
 export type Classified = { readonly line: ArchiveLine; readonly marker?: string };
 
-const eventOf = (raw: string): ArchiveEvent["event"] | undefined => {
-  if (/^.+\sadded\s.+$/i.test(raw) || /joined using .+ invite link$/i.test(raw)) return "added";
-  if (/^.+\sremoved\s.+$/i.test(raw)) return "removed";
-  if (/^.+\sleft$/i.test(raw)) return "left";
-  if (/changed the subject|renamed (?:the )?group/i.test(raw)) return "renamed";
-  if (/changed this group's icon/i.test(raw)) return "icon";
-  if (/you're now an admin/i.test(raw)) return "admin";
-  if (/changed their phone number/i.test(raw)) return "number-changed";
-  if (/created group|end-to-end encrypted|pinned a message|disappearing messages/i.test(raw)) {
+const eventOf = (raw: string): ArchiveEvent["event"] => {
+  if (
+    raw.includes(" added this group to the community") ||
+    raw.includes(" removed this group from the community")
+  )
     return "other";
-  }
-  return undefined;
+  if (raw.includes(" added ") || raw.endsWith(" joined from the community")) return "added";
+  if (raw.includes(" removed ")) return "removed";
+  if (raw.endsWith(" left")) return "left";
+  if (
+    raw.includes(" changed the subject") ||
+    raw.includes(" changed the group name") ||
+    raw.includes(" renamed the group") ||
+    raw.includes(" renamed group")
+  )
+    return "renamed";
+  if (raw.includes(" changed this group's icon")) return "icon";
+  if (raw === "You're now an admin") return "admin";
+  if (raw.includes(" changed their phone number")) return "number-changed";
+  return "other";
 };
 
 export const classify = (base: ArchiveBase): Classified => {
@@ -32,8 +40,15 @@ export const classify = (base: ArchiveBase): Classified => {
   const marker = MARKER.exec(base.text);
   const edited = EDITED.test(base.text);
   const deleted = DELETED.test(base.text);
-  const event = eventOf(base.text);
-  if (placeholder === null && marker === null && !edited && !deleted && event !== undefined) {
+  const poll = base.text === "POLL:" || base.text.startsWith("POLL:\n");
+  if (
+    placeholder === null &&
+    marker === null &&
+    !edited &&
+    !deleted &&
+    !poll &&
+    base.whatsappMarked
+  ) {
     return {
       line: {
         from: "archive",
@@ -41,7 +56,7 @@ export const classify = (base: ArchiveBase): Classified => {
         wall: base.wall,
         at: base.at,
         zone: base.zone,
-        event,
+        event: eventOf(base.text),
         who: base.who,
         raw: base.text,
       },
@@ -59,7 +74,12 @@ export const classify = (base: ArchiveBase): Classified => {
   ).trimEnd();
   return {
     line: {
-      ...base,
+      from: "archive",
+      kind: "message",
+      wall: base.wall,
+      at: base.at,
+      zone: base.zone,
+      who: base.who,
       text,
       ...(edited ? { edited: true as const } : {}),
       ...(deleted ? { deleted: true as const } : {}),

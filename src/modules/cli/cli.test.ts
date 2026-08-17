@@ -94,7 +94,7 @@ it("imports a text Archive idempotently, appends newer Messages, and can re-Zone
   ).toEqual({
     kind: "message",
     ok: true,
-    said: "Imported 2 Messages into fixture using Zone Africa/Accra",
+    said: "Imported 2 Messages and 0 Events (2 Transcript lines) into fixture using Zone Africa/Accra",
   });
   const transcript = `${root}/chats/fixture/transcript.jsonl`;
   const first = fs.readFileSync(transcript);
@@ -140,7 +140,9 @@ it("prints a default Zone and refuses a missing Chat before writing", async () =
   await run(["chat", "add", "fixture", "--home", root], "/nowhere");
   expect(
     await run(["import", input, "--into", "fixture", "--home", root], "/nowhere", "Africa/Accra"),
-  ).toMatchObject({ said: "Imported 2 Messages into fixture using default Zone Africa/Accra" });
+  ).toMatchObject({
+    said: "Imported 2 Messages and 0 Events (2 Transcript lines) into fixture using default Zone Africa/Accra",
+  });
   const hash = createHash("sha256").update(archive()).digest("hex");
   const receipt: unknown = JSON.parse(
     fs.readFileSync(`${root}/chats/fixture/imports/${hash}/receipt.json`, "utf8"),
@@ -175,7 +177,7 @@ it("streams ZIP media into the global Blob store and prints unresolved Markers",
   ).toEqual({
     kind: "message",
     ok: true,
-    said: "Imported 3 Messages into fixture using Zone Africa/Accra; 1 unresolved Marker",
+    said: "Imported 3 Messages and 0 Events (3 Transcript lines) into fixture using Zone Africa/Accra; 2 Markers resolved to 1 Blob; 1 unresolved Marker",
   });
   const transcript = fs.readFileSync(`${root}/chats/fixture/transcript.jsonl`, "utf8");
   const hashes = [...transcript.matchAll(/"hash":"([a-f0-9]{64})"/g)].map((match) => match[1]);

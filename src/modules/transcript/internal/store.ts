@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import * as fs from "node:fs/promises";
 
 import type { Place } from "~/modules/home/types.ts";
@@ -237,10 +238,13 @@ export const replace = async (
   place: Place,
   lines: readonly TranscriptLine[],
 ): Promise<TranscriptProblemDetail | undefined> => {
+  const temporary = `${place.path}.tmp-${randomUUID()}`;
   try {
-    await fs.writeFile(place.path, encoded(lines), "utf8");
+    await fs.writeFile(temporary, encoded(lines), { encoding: "utf8", flag: "wx" });
+    await fs.rename(temporary, place.path);
     return undefined;
   } catch (cause: unknown) {
+    await fs.rm(temporary, { force: true }).catch(() => undefined);
     return { _tag: "Unwritable", cause: causeOf(cause) };
   }
 };

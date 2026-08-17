@@ -98,11 +98,11 @@ it("reports malformed Wall clocks without losing later Messages", () => {
 it("preserves events, Placeholders, edits and deletions as distinct shapes", () => {
   const archive = read(
     [
-      "[14/02/2025, 4:06:10 PM] Rex: Rex added Sam",
-      "[14/02/2025, 4:07:10 PM] Rex: Rex pinned a message",
+      "[14/02/2025, 4:06:10 PM] Sam: \u200eRex added Sam",
+      "[14/02/2025, 4:07:10 PM] Rex: \u200eRex pinned a message",
       "[14/02/2025, 4:08:10 PM] Rex: a caption image omitted",
       "[14/02/2025, 4:09:10 PM] Rex: corrected <This message was edited>",
-      "[14/02/2025, 4:10:10 PM] Rex: This message was deleted",
+      "[14/02/2025, 4:10:10 PM] Rex: \u200eThis message was deleted",
     ].join("\n"),
   );
   expect(archive.lines).toMatchObject([
@@ -129,6 +129,33 @@ it("preserves events, Placeholders, edits and deletions as distinct shapes", () 
   expect(Object.keys(archive.lines[2] ?? {})).not.toEqual(
     expect.arrayContaining(["id", "quoted", "mentions", "reaction"]),
   );
+});
+
+it("uses WhatsApp's structural mark, not words in ordinary prose, to identify Events", () => {
+  const archive = read(
+    [
+      "[14/02/2025, 4:06:10 PM] Rex: I added a dummy address",
+      "[14/02/2025, 4:07:10 PM] Rex: you're the only one left",
+      "[14/02/2025, 4:08:10 PM] Rex: \u200eVoice call, \u200e\u200e28 min • \u200e4 joined",
+      "[14/02/2025, 4:09:10 PM] Rex: \u200eRex changed this group's settings to allow only admins to send messages to this group",
+      "[14/02/2025, 4:10:10 PM] Rex: \u200ePOLL:",
+      "Which one?",
+      "OPTION: one (1 vote)",
+    ].join("\n"),
+  );
+  expect(archive.lines.map((line) => line.kind)).toEqual([
+    "message",
+    "message",
+    "event",
+    "event",
+    "message",
+  ]);
+  expect(messages(archive).map((message) => message.text)).toEqual([
+    "I added a dummy address",
+    "you're the only one left",
+    "POLL:\nWhich one?\nOPTION: one (1 vote)",
+  ]);
+  expect(archive.counts).toMatchObject({ messages: 3, events: 2 });
 });
 
 it("reads a one-file ZIP identically to bare text", async () => {

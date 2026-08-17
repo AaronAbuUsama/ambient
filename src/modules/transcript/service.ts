@@ -9,6 +9,16 @@ import type {
   WriteTranscript,
 } from "./types.ts";
 
+const merged = (stored: TranscriptLine, incoming: TranscriptLine): TranscriptLine =>
+  stored.from === "archive" &&
+  stored.kind === "message" &&
+  stored.media?.state === "Stored" &&
+  incoming.from === "archive" &&
+  incoming.kind === "message" &&
+  incoming.media?.state !== "Stored"
+    ? { ...incoming, media: stored.media }
+    : incoming;
+
 export const readTranscript: ReadTranscript = async (place) => {
   const loaded = await load(place);
   return "problem" in loaded ? { problems: [loaded.problem] } : loaded.lines;
@@ -51,8 +61,9 @@ export const writeTranscript: WriteTranscript = async (place, incoming) => {
     }
     skipped++;
     if (line.kind === "message") messagesSkipped++;
-    if (JSON.stringify(lines[index]) !== JSON.stringify(line)) {
-      lines[index] = line;
+    const next = merged(lines[index]!, line);
+    if (JSON.stringify(lines[index]) !== JSON.stringify(next)) {
+      lines[index] = next;
       changed = true;
     }
   }

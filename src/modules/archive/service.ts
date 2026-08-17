@@ -82,6 +82,7 @@ export const readArchive: ReadArchive = (text, zone) => {
         zone,
         who: { label: sender.sender },
         text: cleanBody(sender.body),
+        whatsappMarked: sender.whatsappMarked,
       };
       continue;
     }
@@ -154,7 +155,7 @@ export const openArchive: OpenArchive = async (path, zone) => {
       opened.close();
       return read;
     }
-    return { ...opened, sha256, readerVersion: 1, read };
+    return { ...opened, sha256, readerVersion: 2, read };
   }
   try {
     const primary = Uint8Array.from(await fs.readFile(path));
@@ -167,7 +168,7 @@ export const openArchive: OpenArchive = async (path, zone) => {
           form: "text",
           sha256: createHash("sha256").update(primary).digest("hex"),
           bytes: primary.byteLength,
-          readerVersion: 1,
+          readerVersion: 2,
           primary,
           read,
           media: [],

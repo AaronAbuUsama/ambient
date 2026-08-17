@@ -1,9 +1,12 @@
 /** The line grammar of an Archive's `_chat.txt`. */
 
-/** Direction marks WhatsApp adds for display, not meaning. */
+/** Direction marks are removed from values after their structural position is recorded. */
 export const withoutDirectionMarks = (text: string): string => text.replace(/[‎‏‪-‮]/g, "");
 
-const ENVELOPE = /^\[([^\]]+)\]\s*(.*)$/;
+const ENVELOPE = /^\[([^\]]+)\]([\s\S]*)$/;
+const LEADING_DIRECTION_MARKS = /^[‎‏‪-‮]+/;
+const AFTER_ENVELOPE = /^[\s‎‏‪-‮]+/;
+const STARTS_WITH_DIRECTION_MARK = /^[‎‏‪-‮]/;
 const WALL =
   /^(\d{1,2})[/.](\d{1,2})[/.](\d{2,4}),\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:[\s  ]*([APap])\.?[Mm]\.?)?$/;
 
@@ -30,18 +33,18 @@ const senderCandidates = (
   ) {
     const after = rest[delimiter + 1];
     if (after !== undefined && after !== " " && after !== "\t") continue;
-    const sender = rest.slice(0, delimiter).trimEnd();
+    const sender = withoutDirectionMarks(rest.slice(0, delimiter)).trimEnd();
     if (sender !== "") candidates.push({ sender, delimiter });
   }
   return candidates;
 };
 
 export const matchLine = (source: string): RawLine | undefined => {
-  const line = withoutDirectionMarks(source);
+  const line = source.replace(LEADING_DIRECTION_MARKS, "");
   const envelope = ENVELOPE.exec(line);
   if (envelope === null) return undefined;
-  const wall = envelope[1] ?? "";
-  const rest = envelope[2] ?? "";
+  const wall = withoutDirectionMarks(envelope[1] ?? "");
+  const rest = (envelope[2] ?? "").replace(AFTER_ENVELOPE, "");
   const matched = WALL.exec(wall);
   if (matched === null) return undefined;
 
@@ -90,7 +93,9 @@ export const senderCounts = (lines: readonly RawLine[]): ReadonlyMap<string, num
 export const splitSender = (
   line: RawLine,
   counts: ReadonlyMap<string, number>,
-): { readonly sender: string; readonly body: string } | undefined => {
+):
+  | { readonly sender: string; readonly body: string; readonly whatsappMarked: boolean }
+  | undefined => {
   let chosen: { readonly sender: string; readonly delimiter: number } | undefined;
   let frequency = -1;
   for (const candidate of line.candidates) {
@@ -104,9 +109,11 @@ export const splitSender = (
     }
   }
   if (chosen === undefined) return undefined;
+  const body = line.rest.slice(chosen.delimiter + 1).replace(/^[ \t]*/, "");
   return {
     sender: chosen.sender,
-    body: line.rest.slice(chosen.delimiter + 1).replace(/^[ \t]/, ""),
+    body,
+    whatsappMarked: STARTS_WITH_DIRECTION_MARK.test(body),
   };
 };
 

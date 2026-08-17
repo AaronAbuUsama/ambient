@@ -101,8 +101,8 @@ The ongoing operation that reads a Live account. Never stops.
 _Avoid_: backfill, sync, polling, streaming.
 
 **Reader**:
-A thing that turns one Source Shape into Messages. Exactly two exist: one for an Archive,
-one for a Live account. A Reader produces values and writes nothing.
+A thing that turns one Source Shape into Transcript values. Exactly two exist: one for an
+Archive, one for a Live account. A Reader produces values and writes nothing.
 _Avoid_: parser (only part of what a Reader does), importer, adapter (an Adapter is the
 code word for a thing filling a seam — see [docs/rules/modules.md](docs/rules/modules.md)).
 
@@ -126,13 +126,18 @@ _Avoid_: offset, checkpoint (`checkpoint` is an OpenKnowledge verb), watermark.
 One thing somebody said in one conversation, as a value, before anything interprets it.
 _Avoid_: event, record, item, row.
 
+**Event**:
+One source-generated change or notice that a Reader preserves alongside Messages, not
+something a person said.
+_Avoid_: system message, activity, record, item, row.
+
 **Transcript**:
-One file per Chat. One Message per line. It grows with traffic, which is why `home` never
-parses it.
+One file per Chat. One Reader value per line. It grows with traffic, which is why `home`
+never parses it.
 _Avoid_: log, history, messages file.
 
 **Write path**:
-The one thing that turns Messages from any Reader into a Transcript and Blobs. Two
+The one thing that turns values from any Reader into a Transcript and Blobs. Two
 Readers, one Write path — [ADR 003](docs/adr/003-history-import-is-an-archive.md).
 _Avoid_: writer, sink, ingest pipeline.
 

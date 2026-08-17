@@ -164,8 +164,13 @@ export const importArchive: Command = async (home, rest, defaultZone) => {
     read.counts.unresolved === 0
       ? ""
       : `; ${read.counts.unresolved} unresolved Marker${read.counts.unresolved === 1 ? "" : "s"}`;
+  const blobCount = new Set(hashes.values()).size;
+  const resolved =
+    read.counts.resolved === 0
+      ? ""
+      : `; ${read.counts.resolved} Marker${read.counts.resolved === 1 ? "" : "s"} resolved to ${blobCount} Blob${blobCount === 1 ? "" : "s"}`;
   return message(
     true,
-    `Imported ${read.counts.messages} Messages into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}${unreadable}${unresolved}`,
+    `Imported ${read.counts.messages} Messages and ${read.counts.events} Events (${read.lines.length} Transcript lines) into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}${resolved}${unreadable}${unresolved}`,
   );
 };

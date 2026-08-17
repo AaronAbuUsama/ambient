@@ -56,7 +56,7 @@ export type OpenedArchive = {
   readonly form: "text" | "zip-text" | "zip-media";
   readonly sha256: string;
   readonly bytes: number;
-  readonly readerVersion: 1;
+  readonly readerVersion: 2;
   /** The Archive's own chat text, byte-for-byte. */
   readonly primary: Uint8Array;
   readonly read: ArchiveRead;
