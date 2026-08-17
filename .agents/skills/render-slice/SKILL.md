@@ -12,9 +12,11 @@ questions, the decisions and ADRs, the diagrams, the plan, the tickets, the evid
 regenerated **as the slice progresses**, so at any moment it is the current state of the whole
 thing in one place, readable together.
 
-**Re-render it whenever something lands.** A question answered, a decision taken, a diagram
-drawn, a ticket closed — regenerate. It is cheap, and a document that is stale between
-milestones is one nobody opens.
+**Every step of [`slices.md`](../../../docs/rules/slices.md) ends by calling this**, and each
+one adds its own sections — that is the rule, not a habit, and each step skill's *Finish*
+names it. Re-render between steps too, whenever something lands: a question answered, a
+decision taken, a ticket closed. It is cheap, and a document that is stale between milestones
+is one nobody opens.
 
 **The diagrams live inside it, inline.** Do not scatter `.svg` files beside it — the whole
 point is one document rather than a directory nobody can navigate. (Separate SVGs become
@@ -42,26 +44,37 @@ language.
 Its first-run branding gate is **already answered** in
 [`setup-abu-usama-skills`](../setup-abu-usama-skills/SKILL.md). Do not ask it again.
 
-## What the page contains, in this order
+## The template — nine sections, and they are not a matter of taste
 
-Read the slice's directory and build only the sections that have content. A slice at step 1
-has three; a closed slice has all eight.
+**The sections are [`slices.md`](../../../docs/rules/slices.md)'s six steps projected**, one
+or two per step. That is why the list is fixed and why it is obvious: a section is missing
+exactly when the step that fills it has not run, so **the page's own completeness is the
+progress bar.** Nothing needs to compute which step a slice is on — you look at it.
 
-| # | Section | Source | Present when |
-|---|---|---|---|
-| 1 | **Destination + where it stands** | `scope.md`, `roadmap.md` | always |
-| 2 | **Decided** | `scope.md` § Decided | always |
-| 3 | **The frontier** — the open-question **DAG**, kinds coloured, AFK roots marked kickable | `scope.md` § Open + Fog | until the frontier clears |
-| 4 | **Design** — the **call-stack sequence diagram**, the **module/interface diagram**, and the interfaces as code | the slice's design | from step 2 |
-| 5 | **Decisions** — every ADR this slice produced or amended, with what each beat | `docs/adr/` | as they land |
-| 6 | **The plan** — problem, solution, program design, the numbered gate | `spec.md` | from step 3 |
-| 7 | **Tickets** — the blocking DAG, each with its status | `issues/*.md` | from step 3 |
-| 8 | **Evidence** — every measured number, with the instrument that produced it | `scope.md`, spec Further Notes | always, once measured |
+| # | Section | Filled by | Source | Grows |
+|---|---|---|---|---|
+| 1 | **Destination + where it stands + what to do next** | 1 Map | `scope.md`, `roadmap.md` | every step |
+| 2 | **Decided** — one line per settled fact, each cited | 1 Map | `scope.md` § Decided | every step |
+| 3 | **Design** — the caller, the **call-stack sequence diagram**, the **module/interface diagram**, the interfaces, the seam delta | 2 Design | `design.md` | corrected at step 4 |
+| 4 | **The frontier** — the question **DAG**, kinds coloured, AFK roots marked kickable | 1 Map | `scope.md` § Open + Fog | **shrinks** to empty at step 3 |
+| 5 | **Decisions** — every ADR this slice produced or amended, with what each beat | 2 Design, 3 Frontier | `docs/adr/` | as they land |
+| 6 | **The plan** — problem, solution, the numbered gate | 4 Plan | `spec.md` | — |
+| 7 | **Tickets** — the blocking DAG, each with its status | 4 Plan | `issues/*.md` | status moves at step 5 |
+| 8 | **Evidence** — every measured number, with the instrument that produced it | every step | `scope.md`, `design.md`, spec Further Notes | every step |
+| 9 | **Done** — the ten definition-of-done rows, pass/fail with the evidence | 6 Close | `close-slice` output | — |
 
-**Section 3 is the one that earns the page.** A flat list of questions cannot show what is
-kickable now; a DAG can. Colour by kind — `research` and `spike` are AFK and dispatchable,
-`task` needs a human, `grilling` needs the principal — and draw the design step as the node
-everything HITL hangs off. Reading it should tell an operator what to start **this minute**.
+**Sections 3 and 4 are the pair that earns the page.** The design is what the frontier hangs
+off — every `grilling` question anchors into a branch point in section 3, so the two are read
+together and neither makes sense alone. That adjacency is the whole reason this is one
+document and not two.
+
+**Section 4 is a DAG, never a list.** Colour by kind — `research` and `spike` are AFK and
+dispatchable, `task` needs a human, `grilling` needs the principal — and draw each question's
+edge to what it waits on. Reading it must tell an operator what to start **this minute**.
+
+**The section contract above is fixed now; the markup settles on the first real render.**
+Once a slice has been drawn end to end, that page is the reference and the layout stops
+drifting — one visual language per project, same as the diagrams.
 
 ## Non-negotiables
 

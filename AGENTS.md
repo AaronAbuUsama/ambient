@@ -13,7 +13,7 @@ rule.
 | Rule | In one line |
 |---|---|
 | [language.md](docs/rules/language.md) | One word, one meaning. The lexicon is [CONTEXT.md](CONTEXT.md); it defines and never decides. |
-| [slices.md](docs/rules/slices.md) | Map → frontier → plan → build → close. Each step has one gate; an open question carries a kind. |
+| [slices.md](docs/rules/slices.md) | Map → design → frontier → plan → build → close. Each step has one gate; an open question carries a kind, an id, and what it waits on. |
 | [modules.md](docs/rules/modules.md) | Every module has all six slots; `main.ts` is the composition root and sits outside them. |
 | [imports.md](docs/rules/imports.md) | Name the module — `~/modules/<name>/…`, never `../..`, never another module's `internal/`. |
 | [errors.md](docs/rules/errors.md) | A failure is a declared value in `types.ts`. Nothing throws. |
@@ -75,16 +75,17 @@ recorded is [decisions.md](docs/rules/decisions.md).
 ## Project skills
 
 Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
-[`.claude/skills/`](.claude/skills/). They run the five steps of
+[`.claude/skills/`](.claude/skills/). They run the six steps of
 [slices.md](docs/rules/slices.md):
 
 | Skill | Step |
 |---|---|
 | `map-slice` | 1 — trace, measure, write `scope.md` with its destination, open questions and fog |
-| `plan-slice` | 3 — write `spec.md` including the **Program design**, then the build tickets |
-| `new-module` | 4 — scaffold a module's six slots. **Refuses a module with no `seams.md` row.** |
-| `close-slice` | 5 — run the definition of done, then move the roadmap |
-| `render-slice` | any time — the whole slice as **one** self-contained HTML page. Composes `diagram-design`; never forks it |
+| `design-slice` | 2 — write the caller first, then `design.md`: call graph, interfaces, seam delta, and the branch points the frontier hangs off |
+| `plan-slice` | 4 — reconcile the design against the answers, write `spec.md`, then the build tickets |
+| `new-module` | 5 — scaffold a module's six slots. **Refuses a module with no `seams.md` row.** |
+| `close-slice` | 6 — run the definition of done, then move the roadmap |
+| `render-slice` | **every step ends here** — the whole slice as **one** self-contained HTML page, nine sections, one or two per step. Composes `diagram-design`; never forks it |
 | `setup-abu-usama-skills` | reference — how this repo answers what the vendored skills ask about trackers, labels and domain docs |
 
 [`.agents/skills/vendor/`](.agents/skills/vendor/) holds **nine** upstream skills —

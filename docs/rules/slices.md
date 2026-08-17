@@ -6,16 +6,20 @@ A **Slice** is one named unit of roadmap work — SKELETON, IMPORT, INGEST. It i
 module and does not map one-to-one onto modules: SKELETON was one Slice and produced two
 modules. Slices have names, not numbers.
 
-Every Slice goes through the same five steps, in order, and each step has one gate. **Do not
+Every Slice goes through the same six steps, in order, and each step has one gate. **Do not
 start a step until its gate passes.**
 
 | # | Step | Produces | Gate — move on when |
 |---|---|---|---|
 | 1 | **Map** | `docs/planning/<slice>/scope.md` | the destination is named, and every open question is either kinded or in the fog |
-| 2 | **Work the frontier** | answers, appended to **Decided** | **Open and Fog are both empty.** That is the way being clear |
-| 3 | **Plan** | `spec.md`, including **Program design** | every build ticket exists and declares its blockers |
-| 4 | **Build** | code | every build ticket is `done` |
-| 5 | **Close** | the roadmap moved on | every row of [definition-of-done.md](../design/definition-of-done.md) passes |
+| 2 | **Design** | `design.md` | every public symbol in it has a call site in it, the seam delta is written, and **every `grilling` question names a block of it** |
+| 3 | **Work the frontier** | answers, appended to **Decided** | **Open and Fog are both empty.** That is the way being clear |
+| 4 | **Plan** | `spec.md` + the build tickets | every build ticket exists and declares its blockers |
+| 5 | **Build** | code | every build ticket is `done` |
+| 6 | **Close** | the roadmap moved on | every row of [definition-of-done.md](../design/definition-of-done.md) passes |
+
+**Every step ends by regenerating the slice's one page** — `render-slice`, below. A step that
+did not update the page did not finish.
 
 ### 1 · Map
 
@@ -39,7 +43,52 @@ graduates when the frontier reaches it. Do not pre-cut fog into question-sized p
 **Out of scope is a scoping act, not a step on the route.** Scope, not sharpness, lands
 something there, and it never graduates.
 
-### 2 · Work the frontier — every open question carries a kind
+**A question about the *shape* is not the map's to ask.** The map asks about the
+destination — what is in this slice, what it must not get wrong. *Which module owns this,
+what does the caller look like, where does composition live* are answered by building the
+shape at step 2, not by asking before one exists.
+
+**Every open question carries an id and what it waits on**, so the frontier is a graph and
+not a list:
+
+```
+R1  research   now                      — <the question>
+G1  grilling   after design.md § Cursor — <the question>
+T1  task       after R1                 — <the question>
+```
+
+`now` means **dispatchable this minute**. Every `research` and most `spike` questions are
+`now`, they are AFK, and nothing serialises them.
+
+### 2 · Design — the shape, before the questions about the shape
+
+`design.md`, and **it is brainstorming, not interrogation.** Put two shapes up, write the
+caller, and let the caller kill one. That is what SKELETON did and nobody wrote it down.
+
+| Part | What it is |
+|---|---|
+| **Production call sites** | the caller's code, written first, failure branches included |
+| **Call graph** | the trace from `main.ts` outward, with the module that owns each step |
+| **Interfaces** | read back **off** the caller, never invented ahead of it |
+| **Seam delta** | the rows added to [seams.md](../design/seams.md), before any module is scaffolded |
+| **Test seams + conformance** | public symbol → its production caller → its test seam |
+| **Alternatives** | where [seams.md](../design/seams.md)'s two-clause bar is met: two shapes, graded, and an ADR |
+| **Branch points** | every place the shape depends on something unanswered. **This is the frontier**, and each one carries the code that raises it |
+| *conditional:* **state and failure sequence** | per durable step: what is written, what a crash leaves, what a retry observes |
+
+Three invariants govern it:
+
+1. **Design the caller before the callee.**
+2. **No implemented public symbol without a current production call site.**
+3. **A design may be built with questions still open** — it designs against what is settled
+   and marks the rest as branch points. Waiting for certainty is what step 3 is for.
+
+**The gate is the branch points.** A `grilling` question that cannot name a block of
+`design.md` is either not a shape question — move it to the map — or the design stopped
+early. This is what makes step 3 answerable: the principal is looking at code, never at a
+paraphrase of it.
+
+### 3 · Work the frontier — every open question carries a kind
 
 The kind says who does the work and what comes back. It is the only classification a
 question gets.
@@ -61,35 +110,23 @@ to. That is the exception, not the shape.
 **One decision per session, except `research`,** which parallelises because nobody is
 waiting on it.
 
-### 3 · Plan
+### 4 · Plan
 
-`spec.md` carries a **`## Program design`** section. Five parts, and a sixth only when
-durable writes exist:
-
-| Part | What it is |
-|---|---|
-| **Production call sites** | the caller's code, written first, failure branches included |
-| **Call graph** | the trace from `main.ts` outward, with the module that owns each step |
-| **Test seams** | the highest useful seam per arrow, and what each test observes |
-| **Conformance table** | public symbol → its production caller → its test seam |
-| **Seam delta** | the rows added to [seams.md](../design/seams.md), before any module is scaffolded |
-| *conditional:* **state and failure sequence** | per durable step: what is written, what a crash leaves, what a retry observes |
-
-Three invariants govern it:
-
-1. **Design the caller before the callee.**
-2. **No implemented public symbol without a current production call site.**
-3. **Ticket blockers come from symbols, call sites and owned files — never narrative order.**
+`spec.md` says what the slice is for and what its gate is. **It does not restate the
+design** — `design.md` holds that, and [decisions.md](./decisions.md) forbids one statement
+having two homes. The spec links to it; the branch points are now answers, so the design is
+re-read and corrected in the same step.
 
 Build tickets are files: `docs/planning/<slice>/issues/NN-<slug>.md`, per
-[issues.md](./issues.md).
+[issues.md](./issues.md). **Ticket blockers come from symbols, call sites and owned files —
+never narrative order**, and `design.md` is where all three are already written down.
 
-### 4 · Build
+### 5 · Build
 
 `new-module` scaffolds; `tdd` builds one red-green step at a time; `code-review` closes.
 One ticket per session.
 
-### 5 · Close
+### 6 · Close
 
 `close-slice` runs [definition-of-done.md](../design/definition-of-done.md) and reports
 before writing anything.
@@ -130,22 +167,46 @@ one context window each, executed end to end.
 `prototype-archive-reader`. Two words for one thing, in one path. One word, one meaning:
 [language.md](./language.md).
 
+**Why Design is a step and not a section.** The first version of this rule had none: the
+Program design was a heading inside `spec.md`, produced at the Plan step, and the Plan step
+was gated on the frontier being empty. So the rule required every question answered before
+anything could be designed, while its own first invariant said *design the caller before the
+callee*. **A circular dependency, in two rows of one table.**
+
+It fired once, on INGEST, and produced exactly what the shape predicts: ten open questions,
+no code, and **four of the five `grilling` questions asking whether something is in the slice
+** — *is the pairing screen in scope, do `contact` events land here, is this a long-running
+process*. Those are size questions, and you cannot size work you have not designed. The fifth
+asked where composition lives for a long-running verb, which
+[import.md](../walkthroughs/import.md) already answers; it read as open only because nobody
+drew the caller next to it.
+
+The dates say the same thing. **SKELETON wrote `seams.md` at 11:32 and its spec at 15:22 —
+design four hours before.** IMPORT wrote its spec at 11:48, code at 12:19 and the interface
+ADR at 16:37 — **five hours after**. The rule was written from IMPORT, which is the slice
+that went wrong.
+
 ## Seeing it
 
-**`render-slice` draws the whole slice as one page** — destination, decided, the open-question DAG, the call
-stack, the interfaces, the plan, the tickets and the evidence. One artefact per slice and no
-others: [artefacts.md](./artefacts.md).
+**`render-slice` draws the whole slice as one page**, and every step ends by regenerating it.
+Its sections are not a matter of taste — they are these six steps projected, one or two
+sections per step, so what is missing from the page names the step that has not run. One
+artefact per slice and no others: [artefacts.md](./artefacts.md).
 
 ## The check
 
-- `vp run shape` — every cross-link in `scope.md` and `spec.md` resolves.
+- `vp run shape` — every cross-link in `scope.md`, `design.md` and `spec.md` resolves. A
+  `grilling` question that names a block of `design.md` is checked here for *resolving*;
+  nothing checks that it is the right block.
 - [definition-of-done.md](../design/definition-of-done.md) row 10, **read not run**: the call
-  graph in the spec's Program design matches the code, or the divergence is recorded as an
-  amendment. It joins rows 7–9, which are also read rather than run.
+  graph in `design.md` matches the code, or the divergence is recorded as an amendment. It
+  joins rows 7–9, which are also read rather than run.
 
 **Not currently checked**, and each is a candidate once two Slices have used this rule:
 
-- that `scope.md` exists before `spec.md`, and that Open and Fog were empty when it did
+- that `scope.md` exists before `design.md`, and `design.md` before `spec.md`
+- that Open and Fog were empty when `spec.md` was written
+- that every `grilling` line in `scope.md` carries a `design.md` anchor
 - that every CLI verb has a walkthrough
 - that every public symbol has a production caller — the one most worth automating, because
   `transcript` shipped live variants no caller originates

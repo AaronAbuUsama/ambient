@@ -8,7 +8,7 @@ against evidence rather than a feeling.
 
 | Deficit | Status |
 |---|---|
-| 1 · the call graph was never drawn | **closed** — Program design in [slices.md](../../rules/slices.md), definition-of-done row 10, and [walkthroughs/import.md](../../walkthroughs/import.md) written |
+| 1 · the call graph was never drawn | **closed** — Design is step 2 of [slices.md](../../rules/slices.md) and produces `design.md`, definition-of-done row 10 reads it, and [walkthroughs/import.md](../../walkthroughs/import.md) is the worked example |
 | 2 · `design-it-twice` skipped where it applied | **closed** — [ADR 004](../../adr/004-transcript-line-is-a-union-on-provenance.md) supplies it late, and `plan-slice` checks the bar from now on |
 | 3 · the pipeline did not know its preconditions | **closed** — `plan-slice` names `new-module`'s seam-row precondition; the seven skills it dispatches to are vendored, so they always resolve |
 | 4 · the grill was not rooted in modules | **closed** — `map-slice` traces callers and dependents before a question is asked |

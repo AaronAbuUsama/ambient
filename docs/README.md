@@ -33,7 +33,7 @@ statement, one home.
 | You are | Read |
 |---|---|
 | new to the codebase | [`walkthroughs/doctor.md`](walkthroughs/doctor.md) — one command, keypress to exit, through every file it touches |
-| about to build something | [`walkthroughs/slice.md`](walkthroughs/slice.md) — what you type at each of the five steps, and how to tell it went well |
+| about to build something | [`walkthroughs/slice.md`](walkthroughs/slice.md) — what you type at each of the six steps, and how to tell it went well |
 | about to write code | [`../AGENTS.md`](../AGENTS.md), then the one rule you are working under |
 | looking for a word | [`../CONTEXT.md`](../CONTEXT.md) — the lexicon |
 | wondering where we are | [`design/roadmap.md`](design/roadmap.md) — the only place that says |

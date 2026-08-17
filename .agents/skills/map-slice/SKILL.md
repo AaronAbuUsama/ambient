@@ -8,8 +8,10 @@ description: Map a roadmap slice in the ambient repo before anything is specifie
 Step 1 of [`slices.md`](../../../docs/rules/slices.md). It produces one file —
 `docs/planning/<slice>/scope.md` — and **decides nothing**.
 
-**Do not write a spec in this session.** The gate to the next step is that every open
-question is either kinded or in the fog; answering them is step 2, and specifying is step 3.
+**Do not write a spec in this session, and do not design one either.** The gate to the next
+step is that every open question is either kinded or in the fog. Designing the shape is
+[`design-slice`](../design-slice/SKILL.md) at step 2, answering questions is step 3, and
+specifying is step 4.
 
 ## Before you start
 
@@ -53,8 +55,17 @@ measure.
 ## Out of scope    ruled beyond the destination; never graduates
 ```
 
-**Open** — each line is `<kind>  <the question>`, kind being `research`, `spike`, `grilling`
-or `task`. Pick by what the answer needs, not by how hard it is:
+**Open** — each line carries an **id**, a **kind**, and **what it waits on**, so the frontier
+is a graph rather than a list:
+
+```
+R1  research   now       — <the question>
+S1  spike      now       — <the question>
+T1  task       after R1  — <the question>
+G1  grilling   after design — <the question about the destination>
+```
+
+`now` means **dispatchable this minute**. Say how many are `now` when you report.
 
 | Kind | Use when |
 |---|---|
@@ -62,6 +73,16 @@ or `task`. Pick by what the answer needs, not by how hard it is:
 | `spike` | you cannot judge it without something concrete to react to |
 | `grilling` | only the principal can decide it |
 | `task` | somebody has to go and do a thing before anything can be decided |
+
+**A question about the *shape* is not yours to ask.** *Which module owns this · what does the
+caller look like · where does composition live · is X big enough to be in this slice* are all
+answered by building the shape at step 2. Ask about the **destination** — what this slice is
+for, what it must never get wrong. Anything shaped goes to `design-slice`, and comes back as
+a `grilling` line anchored to a block of `design.md`.
+
+This is the failure the step exists to prevent. INGEST's map asked five `grilling` questions
+and **four were "is this in the slice?"** — questions that size work nobody had designed, put
+to the principal with no code to look at.
 
 **Fog** — the test is whether you can state the question precisely **now**, never whether
 you can answer it. Anything coarser stays here. **Do not pre-cut fog into question-sized
@@ -78,7 +99,9 @@ nobody is waiting on them, and they are the exception to one-decision-per-sessio
 
 ## Finish
 
-`vp run shape` — every cross-link in `scope.md` resolves. Then report the frontier: which
-questions are answerable now, and which are blocked and by what.
+1. `vp run shape` — every cross-link in `scope.md` resolves.
+2. **Regenerate the page** — `render-slice <SLICE>`. This fills sections 1, 2, 4 and 8.
+3. Report the frontier: how many questions are `now`, and what the rest wait on.
 
-**Stop there.** Mapping is one session's work and it resolves nothing.
+**Stop there.** Mapping is one session's work and it resolves nothing. The next step is
+[`design-slice`](../design-slice/SKILL.md), **not** grilling.

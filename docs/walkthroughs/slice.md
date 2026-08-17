@@ -9,19 +9,24 @@ Worked against **INGEST**, which is the next slice.
 
 ---
 
-## The five steps at a glance
+## The six steps at a glance
 
 ```
-  render-slice INGEST             ← the whole slice as one page, at any moment
-
   1  map-slice INGEST             →  scope.md            you read it, you correct it
-  2  work the frontier            →  Decided grows       one question per session
-  3  plan-slice INGEST            →  spec.md + tickets   you approve the ticket graph
-  4  per ticket: new-module · tdd · code-review          one ticket per session
-  5  close-slice INGEST           →  the roadmap moves
+  2  design-slice INGEST          →  design.md           you react to the caller
+  3  work the frontier            →  Decided grows       one question per session
+  4  plan-slice INGEST            →  spec.md + tickets   you approve the ticket graph
+  5  per ticket: new-module · tdd · code-review          one ticket per session
+  6  close-slice INGEST           →  the roadmap moves
+
+  every step ends with:  render-slice INGEST   ← the one page, brought up to date
 ```
 
-**You are in the loop at steps 1, 2 and 3.** Step 4 is the one that runs unattended.
+**You are in the loop at steps 1 to 4.** Step 5 is the one that runs unattended.
+
+**The page is the thing you look at, not the markdown.** Each step adds its own sections, so
+what is missing from it names the step that has not run — you never have to ask where a slice
+is.
 
 ---
 
@@ -49,7 +54,34 @@ measures against real data, and writes `docs/planning/ingest/scope.md`.
 questions about timezones and dedup and never asked *which modules exist and what calls
 what* — which is how a 176-line handler got built without anyone noticing.
 
-## Step 2 — Work the frontier
+## Step 2 — Design
+
+```
+/design-slice INGEST
+```
+
+**What it does:** writes the caller before anything it calls exists, reads the interfaces back
+off it, draws the call graph from `main.ts` outward, writes the seam delta, and turns every
+undecided place into a **branch point** with two candidate shapes as code.
+
+**What comes back:** `design.md`, two diagrams on the page, and a frontier where every
+`grilling` question points at a block of the design.
+
+**What you actually do here:** react to the caller. Not approve a plan — *read the code and
+say which shape is wrong.* That is the step, and it is the one that has never existed.
+
+| Good | Bad |
+|---|---|
+| The caller is real call expressions with failure branches | boxes, or a nesting tree |
+| Two shapes where the bar is met, one killed by the caller | one shape presented as inevitable |
+| Interfaces read **back off** the caller | interfaces invented first, caller fitted to them |
+| Every branch point carries both candidates as code | a branch point described in prose |
+
+**The one question worth asking out loud:** *"is any module here becoming the composition
+root?"* If a call site is growing arms, the answer is yes — and this is the step where that
+costs nothing to fix.
+
+## Step 3 — Work the frontier
 
 Each open question carries a **kind**, and the kind decides who does it:
 
@@ -63,34 +95,39 @@ Each open question carries a **kind**, and the kind decides who does it:
 **One decision per session, except research.** The answer appends one line to **Decided** and
 the question disappears from **Open**.
 
-**How you tell it went well:** Fog shrinks as Open shrinks. If Open empties while Fog is
-still full, the map was charted too shallow and step 3's gate will refuse.
+**Every `grilling` question arrives with code attached** — it names a branch point in
+`design.md`, and both candidate shapes are written out there. If one reaches you without
+that, step 2 stopped short; send it back rather than answering in the abstract.
 
-## Step 3 — Plan
+**How you tell it went well:** Fog shrinks as Open shrinks. If Open empties while Fog is
+still full, the map was charted too shallow and step 4's gate will refuse.
+
+## Step 4 — Plan
 
 ```
 /plan-slice INGEST
 ```
 
-**It refuses to start unless Open and Fog are both empty.** That refusal is a feature — it is
-the difference between deciding something and letting whoever implements it decide silently.
+**It refuses to start unless `design.md` exists and Open and Fog are both empty.** That
+refusal is a feature — it is the difference between deciding something and letting whoever
+implements it decide silently.
 
-**What comes back:** `spec.md` with a **Program design**, and the build tickets.
+**What comes back:** `spec.md` — which links the design rather than restating it — the
+collapsed `design.md` with its branch points resolved, and the build tickets.
 
-**Read the Program design before you approve anything.** It is the part IMPORT never had:
+**Re-read the design before you approve the tickets.** The answers from step 3 have just been
+folded into it:
 
 | Part | The question you are checking |
 |---|---|
-| Production call sites | does the caller read like one verb, or is it growing arms? |
+| The caller | does it read like one verb, or is it growing arms? |
 | Call graph | does each step's owner match [`seams.md`](../design/seams.md)? |
 | Test seams | is each test at the highest useful seam, or reaching inside? |
 | Conformance table | does every public symbol have a real caller? |
 | Seam delta | are the `seams.md` rows there **before** any module is scaffolded? |
+| Branch points | is the section empty, with each loser recorded under Alternatives? |
 
-**The one question worth asking out loud:** *"is any module here becoming the composition
-root?"* If a handler is much larger than its siblings, the answer is yes.
-
-## Step 4 — Build
+## Step 5 — Build
 
 One ticket per session, fresh context each time:
 
@@ -100,12 +137,12 @@ vp check && vp test && vp run shape && pnpm dlx fallow dupes
 ```
 
 `new-module` **refuses a module with no [`seams.md`](../design/seams.md) row.** That is why the
-seam delta is step 3's job and why IMPORT needed a ticket 00 it should not have needed.
+seam delta is step 2's job and why IMPORT needed a ticket 00 it should not have needed.
 
 **How you tell it went well:** each ticket closes green on its own. A ticket that needs the
 next one to go green is not a tracer bullet.
 
-## Step 5 — Close
+## Step 6 — Close
 
 ```
 /close-slice INGEST
@@ -125,10 +162,12 @@ caught IMPORT: does the code's call graph match the design's.
 /render-slice INGEST
 ```
 
-One self-contained page: where the slice stands, what is decided, the open-question DAG with
-the AFK roots marked kickable, the call stack, the interfaces, the plan, the tickets and the
-evidence. It reads the same markdown you do and holds no state of its own, so it cannot drift
-from reality — and anything it says wrong is a document to fix, never a cache to clear.
+**Every step ends by running this, and each adds its own sections** — nine of them, one or two
+per step, listed in [the skill](../../.agents/skills/render-slice/SKILL.md). So the page's own
+completeness tells you where the slice is: a missing section names the step that has not run.
+
+It reads the same markdown you do and holds no state of its own, so it cannot drift from
+reality — and anything it says wrong is a document to fix, never a cache to clear.
 
 **There is deliberately no script behind this.** A slice lives in markdown that an agent can
 read directly; parsing those files with a regex to tell you which step you are on would be a
@@ -143,11 +182,17 @@ deleted.
 |---|---|
 | Build tickets — tracer bullets, blocking edges, one session each | **proven.** Six of them, executed end to end by an agent, all green |
 | `close-slice` rows 1–9 | **proven.** Two slices closed on them |
-| `slices.md`'s five steps | **unproven.** Written from one slice's failures |
-| `map-slice`, `plan-slice` | **unproven.** Never run |
-| Program design | **unproven.** No slice has one yet |
+| `slices.md`'s six steps | **unproven.** Written from one slice's failures, then corrected once |
+| `map-slice`, `design-slice`, `plan-slice` | **unproven.** `map-slice` ran once and the result is being redone |
+| `design.md` | **unproven.** No slice has one yet |
 | Row 10, the call graph | **unproven**, and read-not-run until two slices have produced the artefact |
 
-**INGEST is the test.** If the map comes back rooted in modules and call graphs rather than
-only mechanisms, the method worked. If it comes back looking like IMPORT's grill, it did not,
-and the deficit is in `map-slice` rather than in whoever ran it.
+**The one correction already made.** The first version of this had five steps and no Design.
+`map-slice` ran once, on INGEST, and returned five `grilling` questions of which **four asked
+whether something was in the slice** — size questions about work nobody had designed. That is
+what Design being a step fixes, and it is why INGEST is being mapped again rather than
+answered.
+
+**INGEST is the test.** If step 2 comes back with a caller you can argue with, the method
+worked. If it comes back with a list of questions, it did not, and the deficit is in the
+skills rather than in whoever ran them.

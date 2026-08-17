@@ -181,7 +181,7 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | Why history import reads an archive — **and its two amendments** | [../adr/003-history-import-is-an-archive.md](../adr/003-history-import-is-an-archive.md) |
 | How `ambient doctor` runs, file by file | [../walkthroughs/doctor.md](../walkthroughs/doctor.md) |
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
-| How a slice is built — the five steps and their gates | [../rules/slices.md](../rules/slices.md) |
+| How a slice is built — the six steps and their gates | [../rules/slices.md](../rules/slices.md) |
 | Running a slice, step by step, from the operator's seat | [../walkthroughs/slice.md](../walkthroughs/slice.md) |
 | The Transcript line, and the two shapes it beat | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
 | Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../planning/method/deficits.md) |

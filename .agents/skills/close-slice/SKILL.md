@@ -5,8 +5,9 @@ description: Close a roadmap slice in the ambient repo — run every row of docs
 
 # Close a slice
 
-Run [`docs/design/definition-of-done.md`](../../../docs/design/definition-of-done.md) and
-report it. Do not update the roadmap until every row passes.
+Step 6 of [`slices.md`](../../../docs/rules/slices.md). Run
+[`docs/design/definition-of-done.md`](../../../docs/design/definition-of-done.md) and report
+it. Do not update the roadmap until every row passes.
 
 ## 1 · Run the rows
 
@@ -25,8 +26,8 @@ Then read, do not run:
 - **row 7** — `docs/design/roadmap.md` status board and **You are here**
 - **row 8** — the ledger entry, and whether the slice's **Active** section is still there
 - **row 9** — any ADR statement the implementation contradicted
-- **row 10 — the call graph.** Compare the spec's **Program design** against the code that
-  now exists. Three questions, each with an answer you can point at:
+- **row 10 — the call graph.** Compare `design.md` against the code that now exists. Three
+  questions, each with an answer you can point at:
   1. **Does the graph match?** Walk the trace from `main.ts` and name any step whose owner
      differs from the design.
   2. **Does every public symbol have a production caller?** A symbol nothing constructs is
@@ -36,8 +37,8 @@ Then read, do not run:
      its spec said it *"wires and does nothing else"*, and every other row was green.
 
   **A divergence is not automatically a failure.** The code may be right and the design
-  wrong. But it must be resolved out loud: either move the code, or amend the spec's Program
-  design saying what changed and why. Silently keeping both is the failure.
+  wrong. But it must be resolved out loud: either move the code, or amend `design.md` saying
+  what changed and why. Silently keeping both is the failure.
 
 ## 2 · Report before writing
 
@@ -60,3 +61,6 @@ Only after every row passes, in one commit:
    `## Amendments` section, never in its body.
 
 Then re-run `vp run shape`: the roadmap edit may have broken a cross-link.
+
+Finally, **regenerate the page** — `render-slice <SLICE>`. This fills section 9, the ten
+rows with their evidence, and it is the last state that page will ever hold.

@@ -18,7 +18,7 @@ runs this list and reports it row by row.
 | 7 | `docs/design/roadmap.md` status board | The slice's row reads `● closed`, and **You are here** names the next slice. |
 | 8 | `docs/design/roadmap.md` ledger | A dated entry, newest first, two lines: what shipped and what was learned. The slice's **Active** detail is deleted in the same commit — the ledger line is what survives. |
 | 9 | ADR **Amendments** | Every statement in an ADR that did not survive contact is corrected in that ADR's `## Amendments` section, with the reason. Never a silent rewrite of the body. |
-| 10 | The **call graph**, read not run | The spec's **Program design** matches the code: the trace from `main.ts` owns each step where the design said it would, every public symbol has a production caller, and no module became the composition root by accident. A divergence is resolved out loud — move the code, or amend the Program design — never left standing in both. |
+| 10 | The **call graph**, read not run | `docs/planning/<slice>/design.md` matches the code: the trace from `main.ts` owns each step where the design said it would, every public symbol has a production caller, and no module became the composition root by accident. A divergence is resolved out loud — move the code, or amend `design.md` — never left standing in both. |
 
 ## The duplication baseline
 
@@ -55,3 +55,7 @@ passed, every check was green, and no row looked at the shape of the program. It
 not run**, like rows 7–9, because the designed graph is prose today. Making it runnable is named as a candidate at the foot of
 [slices.md](../rules/slices.md), once two slices have produced the artefact in a stable
 shape.
+
+**The graph it reads is `design.md`, not the spec.** That moved when Design became step 2 of
+[slices.md](../rules/slices.md): the design is now written before the frontier is worked
+rather than inside the spec afterwards, so this row reads the file that step produces.
