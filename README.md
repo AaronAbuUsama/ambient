@@ -13,7 +13,7 @@ Design repo.
 | [docs/design/product.md](docs/design/product.md) | The nouns and what each owns. **Settled / Open at the bottom is the current truth.** |
 | [docs/design/knowledge-flow.md](docs/design/knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
 | [docs/design/seams.md](docs/design/seams.md) | Every module, what it owns, and the dependency direction. |
-| [docs/design/roadmap.md](docs/design/roadmap.md) | The nine areas, ordered, and the fresh-context handoff. |
+| [docs/design/roadmap.md](docs/design/roadmap.md) | The nine slices, ordered, and the fresh-context handoff. |
 
 ## How we got here
 
@@ -64,13 +64,12 @@ We build the fourth row.
 
 ## Where we are
 
-Nine areas, ordered — see [docs/design/roadmap.md](docs/design/roadmap.md).
+**Which slice is active lives in one place — [docs/design/roadmap.md](docs/design/roadmap.md).**
+This file does not restate it. It said *"Active: Area 1 — Skeleton, specified, not started"*
+for as long as it took two slices to close, because a status written in two documents only
+stays true in one.
 
-**Active: Area 1 — Skeleton** (home layout, `ambient` CLI, config and schema validation).
-Specified, not started. Both interfaces designed twice —
-[ADR 001](docs/adr/001-home-interface.md) (`home`),
-[ADR 002](docs/adr/002-work-interface.md) (`work`, provisional) — and the spec is at
-[docs/planning/skeleton/spec.md](docs/planning/skeleton/spec.md).
+How a slice is built, step by step, is [docs/rules/slices.md](docs/rules/slices.md).
 
 Shape before content: conventions are generated and validated by code before anything
 writes into them.

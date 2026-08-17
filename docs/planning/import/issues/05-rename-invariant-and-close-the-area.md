@@ -38,7 +38,7 @@ Gate rows 14, 15 of [the spec](../spec.md).
 
 ## Then close the area
 
-Run the [`close-area`](../../../../.claude/skills/close-area/SKILL.md) skill. It runs every
+Run the [`close-slice`](../../../../.claude/skills/close-slice/SKILL.md) skill. It runs every
 row of [`definition-of-done.md`](../../../design/definition-of-done.md) and **reports before
 writing** — a failing row is the answer to *"can we close it"*, not something to fix as part
 of closing.

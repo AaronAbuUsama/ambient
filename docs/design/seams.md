@@ -6,7 +6,7 @@ this is a seam map, not an interface design.**
 The distinction matters. The last attempt designed interfaces up front — `conversation/
 contract.ts` (405 lines), `memory/contract.ts` (227), plus worker and evals — and those
 files are exactly where the rot accumulated, because behaviour got bolted onto contracts
-written before anyone had called them. Detailed interfaces are designed for the area about
+written before anyone had called them. Detailed interfaces are designed for the slice about
 to be built, and no further.
 
 Revisable. Expected to change on contact.
@@ -64,7 +64,7 @@ Rules the graph encodes:
 `DESIGN-IT-TWICE` (from the `codebase-design` skill) is expensive, so it is spent only
 where an interface is written through by many callers *and* hard to change later.
 
-**`home`** — every area writes through it. The obvious version came out shallow last time:
+**`home`** — every slice writes through it. The obvious version came out shallow last time:
 nine files, eleven exported functions, twelve interfaces, all over file reading, and every
 caller learned the layout. **Done — [ADR 001](../adr/001-home-interface.md).**
 

@@ -33,7 +33,7 @@ _Avoid_: conversation (that is the Source's own word — see Peer), room, thread
 **Speaker**:
 Ambient present in one Chat, doing that Chat's job. Composed of the global identity, the
 Chat's Mandate, the Chat's skills and the Knowledge base.
-_Avoid_: the mouth (acceptable in prose about the area, not as the noun).
+_Avoid_: the mouth (acceptable in prose about the slice, not as the noun).
 
 **Mandate**:
 What one Chat is for. Two halves: a machine-readable half of capability configuration, and
@@ -60,10 +60,31 @@ The one OpenKnowledge project shared by every Chat and every Source. Knowledge i
 local to a Chat.
 _Avoid_: memory, wiki, store, database, vector store.
 
-**Area**:
+**Slice**:
 One named unit of roadmap work, tracked in [docs/design/roadmap.md](docs/design/roadmap.md).
-An Area is not a module and does not map one-to-one onto modules.
-_Avoid_: phase, milestone, epic, sprint.
+A Slice is not a module and does not map one-to-one onto modules. How one is built is
+[slices.md](docs/rules/slices.md).
+_Avoid_: area, phase, milestone, epic, sprint — and **never** for a tracer-bullet ticket or a
+red-green increment, which are a **ticket** and a **step**.
+
+**Spike**:
+Throwaway code written to answer one design question, kept as evidence rather than deleted.
+_Avoid_: prototype, experiment, POC.
+
+**Kind**:
+What sort of work an open question in a Slice's `scope.md` needs — `research`, `spike`,
+`grilling` or `task`. It says who does the work and what comes back.
+_Avoid_: type, category, label.
+
+**HITL / AFK**:
+Whether a question resolves through live exchange with the principal (`HITL`) or by the agent
+alone (`AFK`). An agent that answers its own `grilling` question has broken this.
+_Avoid_: manual, automated, supervised.
+
+**Fog**:
+A question that is real and in scope but not yet sharp enough to state precisely. The test is
+whether it can be *phrased* now, never whether it can be answered.
+_Avoid_: backlog, unknowns, TBD.
 
 ### Sources, and reading them
 

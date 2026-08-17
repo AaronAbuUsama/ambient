@@ -27,7 +27,7 @@ Where each kind of statement lives:
 | which modules exist and which way they depend | [seams.md](../design/seams.md) |
 | a rule, its argument, and its check | this directory |
 | a decision, and its amendments | [`docs/adr/`](../adr/), per [decisions.md](./decisions.md) |
-| a path, a schema, a config key, a CLI verb | the area's spec under [`docs/planning/`](../planning/) |
+| a path, a schema, a config key, a CLI verb | the slice's spec under [`docs/planning/`](../planning/) |
 
 ## Why
 

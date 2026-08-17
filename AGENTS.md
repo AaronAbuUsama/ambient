@@ -13,6 +13,7 @@ rule.
 | Rule | In one line |
 |---|---|
 | [language.md](docs/rules/language.md) | One word, one meaning. The lexicon is [CONTEXT.md](CONTEXT.md); it defines and never decides. |
+| [slices.md](docs/rules/slices.md) | Map → frontier → plan → build → close. Each step has one gate; an open question carries a kind. |
 | [modules.md](docs/rules/modules.md) | Every module has all six slots; `main.ts` is the composition root and sits outside them. |
 | [imports.md](docs/rules/imports.md) | Name the module — `~/modules/<name>/…`, never `../..`, never another module's `internal/`. |
 | [errors.md](docs/rules/errors.md) | A failure is a declared value in `types.ts`. Nothing throws. |
@@ -28,10 +29,10 @@ Three commands check them: `vp check`, `vp test`, `vp run shape`. What each rule
 checked by is stated at the foot of its own file, and *"not currently checked"* is
 written where nothing does.
 
-## Closing an area
+## Closing a slice
 
 [docs/design/definition-of-done.md](docs/design/definition-of-done.md) — every row a
-command or an observable state. An area is not closed until all of them pass.
+command or an observable state. A slice is not closed until all of them pass.
 
 ## Where the truth is
 
@@ -48,10 +49,10 @@ writing anything, and the file to edit in the same change that invents a noun. I
 [`docs/design/seams.md`](docs/design/seams.md). One statement, one home —
 [language.md](docs/rules/language.md) has the table.
 
-**An area is not a module.** [`docs/design/roadmap.md`](docs/design/roadmap.md) names areas
+**A slice is not a module.** [`docs/design/roadmap.md`](docs/design/roadmap.md) names slices
 of work; [`docs/design/seams.md`](docs/design/seams.md) names modules. They do not map one
-to one and never have: SKELETON was one area and produced two modules, `cli` and `home`,
-with no `skeleton` module. Do not create a module named after an area.
+to one and never have: SKELETON was one slice and produced two modules, `cli` and `home`,
+with no `skeleton` module. Do not create a module named after a slice.
 
 ## Decided — do not re-litigate
 
@@ -71,5 +72,5 @@ recorded is [decisions.md](docs/rules/decisions.md).
 
 ## Project skills
 
-[`.claude/skills/`](.claude/skills/) — `close-area` runs the definition of done and
+[`.claude/skills/`](.claude/skills/) — `close-slice` runs the definition of done and
 updates the roadmap; `new-module` scaffolds a module's six slots.

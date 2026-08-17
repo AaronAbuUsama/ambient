@@ -13,7 +13,7 @@
    the entry point.
 
 There is exactly one declared exception today: `src/modules/home/home.test.ts` at 307
-lines, SKELETON's gate plus the `home` interface resolutions later areas add. Splitting it
+lines, SKELETON's gate plus the `home` interface resolutions later slices add. Splitting it
 for length would put part of the one interface gate in a file nobody knows to open.
 
 ## Why

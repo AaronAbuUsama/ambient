@@ -393,7 +393,7 @@ edited marker, a deleted marker and a marked poll that remains a Message.
 
 ## The gate
 
-The area's §4, made executable. `close-area` runs
+The area's §4, made executable. `close-slice` runs
 [definition-of-done.md](../../design/definition-of-done.md) over it.
 
 1. Importing the without-media export writes one Transcript line per logical Archive value,

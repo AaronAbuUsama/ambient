@@ -3,7 +3,7 @@
 ## The rule
 
 A decision that shapes the codebase is an ADR under `docs/adr/`, named
-`NNN-<slug>.md`. **Read the ADRs that touch an area before working in it** — they are
+`NNN-<slug>.md`. **Read the ADRs that touch a slice before working in it** — they are
 listed in the roadmap's Decision index.
 
 ADRs are created lazily, when a decision is actually made. Do not scaffold empty ones.

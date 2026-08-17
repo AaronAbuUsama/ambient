@@ -4,9 +4,9 @@ The anchor. When you are deep in one thing and need to know where you are, what 
 settled, or what breaks if you go backwards — this is the page.
 
 **Hard cap: 200 lines.** The last attempt's ledger hit 2000 and nobody read it. When an
-area closes, delete its detail and leave two lines in the Ledger.
+slice closes, delete its detail and leave two lines in the Ledger.
 
-**Areas have names, not numbers.** Order changes; identity should not.
+**Slices have names, not numbers.** Order changes; identity should not.
 
 ---
 
@@ -15,19 +15,28 @@ area closes, delete its detail and leave two lines in the Ledger.
 > **IMPORT closed** — 16/16 gate; `vp check`, 49 tests, shape and zero duplication green.
 > The real `~/.ambient` holds 13,134 Transcript lines and 980 verified Blobs from the media
 > Archive; its previous contents are preserved beside it in a dated backup.
-> **INGEST is active.** Its first scope must decide how a one-shot full sync resumes after a
-> crash between seven ~4,800-message batches; do not spend another pairing on a tool that
-> cannot durably write them through IMPORT's Transcript path.
+> **METHOD is active, and it is not product.** IMPORT shipped green while its topology was
+> wrong — a 176-line CLI handler against 8, 8, 12 and 14 for its siblings, making `cli` the
+> composition owner its own spec says it is not; an interface that met the design-it-twice
+> bar and never got it; and a call graph nobody drew. The rule is written
+> ([slices.md](../rules/slices.md)); METHOD turns it into `map-slice`, `plan-slice` and a
+> `close-slice` that reads the graph. Evidence:
+> [../planning/method/deficits.md](../planning/method/deficits.md).
+>
+> **INGEST is next, and METHOD's first real run.** Its scope must decide how a one-shot full
+> sync resumes after a crash between seven ~4,800-message batches; do not spend another
+> pairing on a tool that cannot durably write through IMPORT's Transcript path.
 
 ---
 
 ## Status board
 
-| Area | State | What it is |
+| Slice | State | What it is |
 |---|---|---|
 | **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
 | **IMPORT** | ● closed | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
-| **INGEST** | ◐ active | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
+| **METHOD** | ◐ active | How a slice is built, as skills rather than folklore. `map-slice`, `plan-slice`, `close-slice`, vendored dependencies. **Not product.** |
+| **INGEST** | ○ next | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
 | **KNOWLEDGE** | ○ | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
@@ -71,14 +80,14 @@ blobs, giving real material to shape against without committing to an invented m
 **Operate it by hand until it is good, then automate.** Claude Code plus a human *is* the
 harness during KNOWLEDGE. Pi comes last, not first.
 
-Rejected orderings — thin vertical slice, harness-before-knowledge — are recorded with
+Rejected orderings — breadth-first, harness-before-knowledge — are recorded with
 their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-roadmap-order.md).
 
 ---
 
 ## Ledger
 
-Append-only. Two lines per closed area, or per pivot. Newest first.
+Append-only. Two lines per closed slice, or per pivot. Newest first.
 
 - **2026-08-17** — **IMPORT correction re-proved on the real default home.** Reader v2 uses
   WhatsApp's structural mark, preserves rich media on poorer re-imports, and atomically
@@ -106,7 +115,7 @@ Append-only. Two lines per closed area, or per pivot. Newest first.
   only claimed — file length against a declared exception list, the six slots, `internal/`
   privacy, no `../..`, no `throw`, and every document cross-link. The contract split into
   one file per rule under [../rules/](../rules/), each stating its rule, its argument and
-  the command that enforces it or *"not currently checked"*. Closing an area now has a
+  the command that enforces it or *"not currently checked"*. Closing a slice now has a
   list: [definition-of-done.md](./definition-of-done.md). Duplication baseline **0 lines**.
 - **2026-08-16** — **INTAKE scoped** against the principal's real iOS account. The mirror
   spans four years with no media refs; the accepted log spans ten days and carries them —
@@ -127,14 +136,14 @@ Append-only. Two lines per closed area, or per pivot. Newest first.
   **Grill 002 Q1 amended** — the work key generalises from `chat_id` to `(kind, key)`.
   Layout, CLI verbs, config schemas and the gate written. No code written.
 - **2026-08-16** — Design phase closed. Product model, knowledge flow, seam map and
-  engineering contract agreed across one session; nine areas named and ordered.
+  engineering contract agreed across one session; nine slices named and ordered.
   No code written.
 
 ---
 
 ## Research queue
 
-Answer before the area that needs it — not before.
+Answer before the slice that needs it — not before.
 
 | Question | Blocks | Note |
 |---|---|---|
@@ -161,10 +170,10 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | Why history import reads an archive — **and its two amendments** | [../adr/003-history-import-is-an-archive.md](../adr/003-history-import-is-an-archive.md) |
 | How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
-| What closing an area requires | [definition-of-done.md](./definition-of-done.md) |
+| What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |
-| Area ordering, and what was rejected | [../history/grills/003-roadmap-order.md](../history/grills/003-roadmap-order.md) |
+| Slice ordering, and what was rejected | [../history/grills/003-roadmap-order.md](../history/grills/003-roadmap-order.md) |
 
 ## How to pivot
 
