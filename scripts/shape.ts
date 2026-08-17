@@ -115,7 +115,12 @@ for (const rel of files.filter((f) => f.endsWith(".md"))) {
     .forEach((line, i) => {
       for (const [, link] of line.matchAll(/\]\(([^)\s]+)\)/g)) {
         if (link === undefined || /^(https?:|mailto:|#)/.test(link)) continue;
-        const target = new URL(link.split("#")[0] ?? "", dir);
+        // `#frag` and a trailing `:NN` line anchor are both anchors INTO a file,
+        // not part of its path. `file.md:38` is the citation form this repo asks
+        // for everywhere — the checker rejecting it made the documented style
+        // illegal, which is the checker being wrong rather than the document.
+        const path = (link.split("#")[0] ?? "").replace(/:\d+(-\d+)?$/, "");
+        const target = new URL(path, dir);
         if (target.pathname !== dir.pathname && !fs.existsSync(target)) {
           say(`${rel}:${i + 1}`, `links to \`${link}\`, which does not exist`);
         }
