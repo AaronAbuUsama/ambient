@@ -5,8 +5,20 @@ holds text messages; after this one it holds the shape of the conversation.
 
 Three things stop being flattened into text:
 
-- **Group membership events** become their own line kind, not messages. Measured in one
-  conversation: added 109, removed 22, left 36, icon 4, admin 1, number-changed 2 — **174**.
+- **Group membership events** become their own line kind, not messages. **105 whole-line
+  events** in one conversation.
+
+  **Corrected on contact.** This ticket first said 174, from `added 109 · removed 22 · left
+  36 · icon 4 · admin 1 · number-changed 2`. Those are **word occurrences over the whole
+  file**, not lines — `re.findall` counts every *"I added the fix"* in ordinary prose. Four
+  instruments give four answers: 177 word occurrences, 172 messages whose body contains a
+  keyword, 105 from the classifier that shipped, 80 from a whole-body-only pattern. **The
+  count is a property of where you draw the line, and none of the earlier numbers said where
+  that was.** The shipped classifier anchors each pattern to the whole body and refuses to
+  classify anything carrying a Marker, a Placeholder, an edit or a deletion — conservative in
+  the ways that matter, and it will still over-classify prose containing `" added "`. That
+  residue is acceptable **because `raw` is preserved on every event line**, so a later pass
+  can re-read it. Incomplete is fine; silently wrong is not.
 - **Placeholders** — `image omitted` and its siblings — become a line whose media state is
   `NoHandle` with `why: "placeholder"`, never a line with no media at all. Measured: **1,131
   of 1,139** attachments carry one in the without-media export.
