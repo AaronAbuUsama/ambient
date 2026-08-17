@@ -86,10 +86,11 @@ Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
 | `close-slice` | 5 — run the definition of done, then move the roadmap |
 | `setup-abu-usama-skills` | reference — how this repo answers what the vendored skills ask about trackers, labels and domain docs |
 
-[`.agents/skills/vendor/`](.agents/skills/vendor/) holds **seven** upstream skills —
+[`.agents/skills/vendor/`](.agents/skills/vendor/) holds **nine** upstream skills —
 `codebase-design`, `domain-modeling`, `grilling`, `research`, `prototype`, `tdd`,
-`code-review` — chosen because something here names them, and closed under their own
-dependencies. They are vendored rather than resolved at runtime because
+`code-review`, plus `diagram-design` and `impeccable` (both required by
+[artefacts.md](docs/rules/artefacts.md)) and `install-anti-slop` — each here because something
+in this repo names it, and closed under their own dependencies. They are vendored rather than resolved at runtime because
 [modules.md](docs/rules/modules.md) requires `codebase-design`'s vocabulary *exactly*, and a
 rule must not depend on words that can change without a diff here. **Never edited**, with one
 declared patch recorded in [that directory's README](.agents/skills/vendor/README.md).

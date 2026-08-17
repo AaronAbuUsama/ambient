@@ -53,6 +53,32 @@ needs-triage · needs-info · ready-for-agent · ready-for-human · done · wont
 `CONTEXT.md` follows the `CONTEXT-FORMAT.md` in the vendored
 [`domain-modeling`](../vendor/domain-modeling/SKILL.md) skill.
 
+## Diagrams — the style guide, answered
+
+The vendored [`diagram-design`](../vendor/diagram-design/SKILL.md) skill opens with a
+**first-run gate**: it pauses and asks whether to brand the style guide before drawing
+anything. **That question is answered here, so it never fires mid-work.**
+
+> **Current answer: option (e) — the default skin.** Neutral stone paper, jet ink,
+> atomic-tangerine accent. Ambient has no brand palette yet, and inventing one inside a
+> diagram session is how a palette gets chosen by accident.
+
+**When we do brand it**, run the skill's own onboarding flow **once**, record the tokens in a
+`## Custom tokens` section of the vendored `references/style-guide.md`, and note the change
+here in the same commit. That is the **one** circumstance in which a vendored file is edited,
+and it is declared for the same reason as the `code-review` patch — see
+[`vendor/README.md`](../vendor/README.md).
+
+Until then: **do not ask.** Draw with the default and say so in one line.
+
+**When a diagram is worth drawing at all** is [`artefacts.md`](../../../docs/rules/artefacts.md).
+The two that earn their place in a slice's design step:
+
+| Diagram | Type | Shows |
+|---|---|---|
+| the **call stack** | `sequence` | order, returns, failure branches, loops — what a nesting tree cannot |
+| **modules and interfaces** | boxes with their whole public interface | the seams, and every arrow is also a test seam |
+
 ## The pipeline these plug into
 
 Work here moves through five steps with a gate each —

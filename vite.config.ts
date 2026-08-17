@@ -23,18 +23,11 @@ export default defineConfig({
   // diverges it for no gain, and it must not be edited at all. `.claude/skills/` is the
   // symlinked projection of `.agents/skills/`, so both names are listed — exclude one and
   // the tools find the same files by the other. We format and lint what we author.
-  fmt: {
-    ignorePatterns: ["**/*.md", ".agents/skills/vendor/**", ".agents/skills/install-anti-slop/**"],
-  },
+  fmt: { ignorePatterns: ["**/*.md", ".agents/skills/vendor/**"] },
   lint: {
     // Type-checking an untouched vendored asset would also require its own devDependency
     // (`@oxlint/plugins`), which we do not have and should not add for code we never run.
-    ignorePatterns: [
-      ".agents/skills/vendor/**",
-      ".claude/skills/vendor/**",
-      ".agents/skills/install-anti-slop/**",
-      ".claude/skills/install-anti-slop/**",
-    ],
+    ignorePatterns: [".agents/skills/vendor/**", ".claude/skills/**"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.

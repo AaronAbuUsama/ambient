@@ -2,8 +2,9 @@
 
 **Upstream, unchanged. Do not edit anything in this directory.**
 
-Source: `mattpocock-skills` **1.2.3**, vendored 2026-08-17. **Seven skills**, chosen because
-something here names them — not because they exist.
+Vendored 2026-08-17. **Ten skills**, each here because something in this repo names it — not
+because it exists. Seven from `mattpocock-skills` **1.2.3**, plus `diagram-design`,
+`impeccable` and `install-anti-slop`.
 
 | Skill | Who needs it | Depends on |
 |---|---|---|
@@ -14,6 +15,13 @@ something here names them — not because they exist.
 | `prototype` | the `spike` kind. **Our word is Spike** — see [`CONTEXT.md`](../../../CONTEXT.md) | — |
 | `tdd` | step 4, build | `code-review`, `codebase-design` |
 | `code-review` | step 4, closing a ticket | *`setup-matt-pocock-skills`, deliberately not vendored* |
+| `diagram-design` | the design step's two diagrams — call stack and modules — per [`artefacts.md`](../../../docs/rules/artefacts.md) | — |
+| `impeccable` | [`artefacts.md`](../../../docs/rules/artefacts.md) requires it for any page a human reads — the pairing screen most of all | — |
+| `install-anti-slop` | the Oxlint plugin this repo installs | — |
+
+**`dataviz` is named by `artefacts.md` and is NOT here** — it ships with the harness rather
+than living on disk, so there is nothing to copy. That is a real reproducibility hole: a rule
+citing a skill we cannot vendor. Recorded rather than hidden.
 
 The set is closed under its own dependencies. `tdd` names `code-review` and
 `codebase-design`; both are here.
@@ -28,9 +36,15 @@ are never run, and the Status vocabulary is the six strings in
 [`issues.md`](../../../docs/rules/issues.md).
 
 The patched line carries `<!-- PATCHED: see ../README.md -->` so nobody mistakes it for
-upstream. **It is the only edit in this directory, and it must stay the only one** — a
-declared patch with a reason is a decision, an undeclared one is decay. Same argument as the
-file-length exception list in `scripts/shape.ts`. On the next version bump, re-apply it.
+upstream. A declared patch with a reason is a decision; an undeclared one is decay — the same
+argument as the file-length exception list in `scripts/shape.ts`. On the next version bump,
+re-apply it.
+
+**The only other legitimate edit** is `diagram-design/references/style-guide.md`, when Ambient
+finally has a palette: its first-run gate is answered in
+[`setup-abu-usama-skills`](../setup-abu-usama-skills/SKILL.md), and branding it means writing
+a `## Custom tokens` section there and saying so in the same commit. Nothing else in this tree
+is editable.
 
 ## What was deliberately dropped
 

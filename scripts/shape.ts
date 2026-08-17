@@ -33,7 +33,19 @@ const LONGER: Readonly<Record<string, string>> = {
  * file and reports a document's links as broken purely because the copy sits deeper in the
  * tree — a failure about where a checkout is, not about anything anyone wrote.
  */
-const SKIP = new Set(["node_modules", ".git", ".fallow", ".vscode", "dist", "worktrees"]);
+const SKIP = new Set([
+  "node_modules",
+  ".git",
+  ".fallow",
+  ".vscode",
+  "dist",
+  "worktrees",
+  // Upstream skills, copied whole and never edited. Their cross-links are their author's
+  // business, and one of them is already broken upstream — policing it would leave us
+  // choosing between a red check and editing a file the vendor rule forbids touching.
+  // Same line as `fmt` and `lint` draw: we check what we author.
+  "vendor",
+]);
 
 type Offence = { readonly at: string; readonly said: string };
 
