@@ -130,6 +130,13 @@ one context window each, executed end to end.
 `prototype-archive-reader`. Two words for one thing, in one path. One word, one meaning:
 [language.md](./language.md).
 
+## Seeing it
+
+`vp run slice` says which step the active slice is on and what to type next. **`render-slice`
+draws the whole slice as one page** — destination, decided, the open-question DAG, the call
+stack, the interfaces, the plan, the tickets and the evidence. One artefact per slice and no
+others: [artefacts.md](./artefacts.md).
+
 ## The check
 
 - `vp run shape` — every cross-link in `scope.md` and `spec.md` resolves.

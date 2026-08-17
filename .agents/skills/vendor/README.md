@@ -2,9 +2,9 @@
 
 **Upstream, unchanged. Do not edit anything in this directory.**
 
-Vendored 2026-08-17. **Ten skills**, each here because something in this repo names it — not
-because it exists. Seven from `mattpocock-skills` **1.2.3**, plus `diagram-design`,
-`impeccable` and `install-anti-slop`.
+Vendored 2026-08-17. **Nine skills**, each here because something in this repo names it — not
+because it exists. Seven from `mattpocock-skills` **1.2.3**, plus `diagram-design` and
+`install-anti-slop`.
 
 | Skill | Who needs it | Depends on |
 |---|---|---|
@@ -16,12 +16,14 @@ because it exists. Seven from `mattpocock-skills` **1.2.3**, plus `diagram-desig
 | `tdd` | step 4, build | `code-review`, `codebase-design` |
 | `code-review` | step 4, closing a ticket | *`setup-matt-pocock-skills`, deliberately not vendored* |
 | `diagram-design` | the design step's two diagrams — call stack and modules — per [`artefacts.md`](../../../docs/rules/artefacts.md) | — |
-| `impeccable` | [`artefacts.md`](../../../docs/rules/artefacts.md) requires it for any page a human reads — the pairing screen most of all | — |
 | `install-anti-slop` | the Oxlint plugin this repo installs | — |
 
-**`dataviz` is named by `artefacts.md` and is NOT here** — it ships with the harness rather
-than living on disk, so there is nothing to copy. That is a real reproducibility hole: a rule
-citing a skill we cannot vendor. Recorded rather than hidden.
+**Two skills `artefacts.md` used to name are NOT here, on purpose.** `impeccable` was vendored
+and removed: the only page this repo generates is a slice's own documentation, and
+`render-slice` owns that. `dataviz` cannot be vendored at all — it ships with the harness, so
+there is nothing on disk to copy. If INGEST's pairing screen lands, it is a product UI rather
+than a document and `impeccable` becomes worth vendoring again — that is a decision for that
+slice, recorded here so it is not rediscovered.
 
 The set is closed under its own dependencies. `tdd` names `code-review` and
 `codebase-design`; both are here.

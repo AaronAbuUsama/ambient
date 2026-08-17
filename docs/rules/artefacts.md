@@ -7,9 +7,23 @@ using the installed design skills**. Load the skill before writing the markup, n
 
 | Artefact | Skill |
 |---|---|
-| A report, dashboard, table, or any page a human reads | `impeccable` |
-| Anything showing a distribution, count or comparison | `dataviz` |
-| An architecture, flow, sequence or state diagram | `diagram-design` |
+| **A slice** — its scope, design, spec, tickets and evidence | `render-slice` |
+| An architecture, flow, sequence or state diagram | `diagram-design` (vendored) |
+| A product surface a user touches — the pairing screen | *not vendored; see below* |
+
+**One HTML artefact per slice, and no others.** A slice's whole story — what is decided, what
+is open, the call stack, the interfaces, the tickets, the measurements — renders as **one
+page**, produced by `render-slice`. A directory of loose HTML files is the sprawl this row
+exists to prevent: each one is stale the moment another lands, and nobody knows which to open.
+
+`render-slice` **composes** `diagram-design` rather than replacing it — the diagrams are drawn
+by the vendored skill and embedded inline, so upstream stays untouched.
+
+**Two skills this table used to name are deliberately absent.** `impeccable` was vendored and
+removed: the only page this project generates is a slice, and `render-slice` owns it.
+`dataviz` ships with the harness and cannot be vendored at all. If a real product surface
+lands — INGEST's pairing screen is the candidate — it is a UI rather than a document, and
+vendoring `impeccable` for it is that slice's decision.
 
 Non-negotiables for every generated page:
 

@@ -28,3 +28,6 @@ dist-ssr
 
 # Spike scratch (personal data, never commit)
 .spike-private/
+
+# A slice renders to one page — derived from its markdown, regenerated, never edited
+docs/planning/*/*.html
