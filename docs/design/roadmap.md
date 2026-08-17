@@ -12,9 +12,20 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **INTAKE** — active, not scoped. SKELETON is closed: `ambient init · doctor · chat add ·
-> agent add` work, 18/18 gate, `vp check`, `vp test` and `vp run shape` green. The next act
-> is scoping INTAKE — it has not been planned yet, deliberately.
+> **IMPORT** — specified, not built. [../planning/import/spec.md](../planning/import/spec.md).
+> SKELETON is closed: `ambient init · doctor · chat add · agent add`, 18/18 gate, `vp check`,
+> `vp test` and `vp run shape` green.
+>
+> **INTAKE split in two on 2026-08-17.** **IMPORT** reads an *archive* and needs a file.
+> **INGEST** reads a *live account* and needs a credential, a lease, and an answer nobody has.
+>
+> **The order is forced.** A full history sync arrives **once per credential** — 43,334
+> messages, 1,506 chats, seven batches, measured on a fresh pairing. So the write path must
+> exist **before anyone scans another QR**.
+>
+> **[ADR 003](../adr/003-history-import-is-an-archive.md)** settles the mechanism; **read its
+> two amendments** — the one-year ceiling was measured with the full-history request
+> disabled, and decision 1 survives on a narrowed reason.
 
 ---
 
@@ -23,7 +34,8 @@ area closes, delete its detail and leave two lines in the Ledger.
 | Area | State | What it is |
 |---|---|---|
 | **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
-| **INTAKE** | ◐ active | whatsappd adapter. Sources, modes, allowlist, sync → transcripts + blob refs. Raw only. |
+| **IMPORT** | ◐ active | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
+| **INGEST** | ○ | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
 | **KNOWLEDGE** | ○ | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
@@ -37,12 +49,15 @@ area closes, delete its detail and leave two lines in the Ledger.
 ## Dependencies — read before pivoting
 
 ```
-SKELETON ──> INTAKE ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> CAPABILITIES ──> MOUTH
-                 │                        │
+SKELETON ──> IMPORT ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> CAPABILITIES ──> MOUTH
+                 │  └──> INGEST           │
                  └──> MEDIA               └──> EVALS
 ```
 
-- **SKELETON is under everything.** Changing the home layout after INTAKE means rewriting
+- **IMPORT before INGEST is forced.** A full sync is one-shot per credential, so `transcript`
+  must exist before the next pairing. IMPORT builds it; INGEST uses it. KNOWLEDGE needs
+  material rather than currency, so one archive unblocks it and INGEST keeps it fresh.
+- **SKELETON is under everything.** Changing the home layout after IMPORT means rewriting
   what is on disk. This is why it goes first and why its interfaces get designed twice.
 - **KNOWLEDGE is not trustworthy without MEDIA.** An unprocessed voice note is a hole, not
   a degraded entry. MEDIA can land any time after INTAKE, but must precede *trusting* the
@@ -69,36 +84,28 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 ---
 
-## Active — INTAKE
+## Active — IMPORT
 
-**Scoped — [docs/planning/intake/scope.md](../planning/intake/scope.md).** Six open
-questions must be answered before a spec is written. The decisive finding: `whatsappd`
-holds **two stores that do not cover the same time** — the mirror has four years and no
-media refs, the accepted log has ten days and does carry them. History import and
-continuous ingestion therefore read different stores and cannot share a reader.
+**Specified — [../planning/import/spec.md](../planning/import/spec.md).** Sixteen gate rows.
+Scoping evidence and its six corrections stay at
+[../planning/intake/scope.md](../planning/intake/scope.md).
 
-**The question.** Can Ambient read a real WhatsApp account and land raw transcripts and
-media blobs on disk, in the shape SKELETON defined, with nothing interpreted?
+**The question.** Can Ambient turn a file the principal exported from WhatsApp into a
+transcript and blobs on disk, with nothing interpreted, and say honestly what it could not
+read?
 
-**The account is the principal's own**, already paired, at
-`~/projects/whatsapp-agent-tui/.proof-private/ios/whatsapp.db`. 1,560 contacts · 913 chats ·
-143 groups · 2,417 aliases · 2,739 messages · 266 blobs.
+**The frame — incomplete is fine, silently wrong is not.** IMPORT feeds KNOWLEDGE, so it
+need not be complete; 9 of 14 sender labels join to no contact and that is acceptable. It
+must never imply it looked and saw nothing.
 
-**What is already known.**
+**Three modules, plus one CLI verb.** `archive` (a file → messages, tested with a string),
+`transcript` (the one write path), `blobs`. **There is no `intake` module** — an area is not
+a module, and an orchestrator fails the deletion test.
 
-- **No device pairing is needed.** The previous build's paired credential exists and is
-  backed up at `~/ambient-backups/ambient-home-20260816-161025` (`whatsapp.db`, 8.1 MB).
-- Raw only. No interpretation, no knowledge, no model call.
-- Two source modes exist in the config schema already: `ingest` never speaks, `speak` reads
-  and speaks. The allowlist is opt-in per conversation and empty by default.
-- `home` owns every path. `channel` asks `home` for a chat's `transcript` and `media`
-  places; it never builds one.
-
-**Watch for.** SKELETON's layout was decided without real data. One revision was budgeted
-and this area spends it. Three candidates, in the scope: the chat ↔ source binding; where
-account-level identity lands (1,560 contacts and 2,417 aliases exist independently of any
-chat, and the layout has no home for account material that is not knowledge); and slugs —
-913 chats, many with emoji subjects, against `^[a-z0-9][a-z0-9-]{0,63}$`.
+**Watch for.** SKELETON budgeted one layout revision. IMPORT **does not spend it**: an
+archive carries no account-level identity, so `sources/<name>/` waits for INGEST. Slugs are
+settled the other way — a human names a chat, because 757 of 913 have no subject to derive
+from and 5.8% of the named ones collide.
 
 ---
 
@@ -106,6 +113,20 @@ chat, and the layout has no home for account material that is not knowledge); an
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-17** — **INTAKE split into IMPORT and INGEST; IMPORT specified.** The halves
+  share only an output type — one needs a file, the other a credential and an open question.
+  The order is forced: a full sync is **one-shot per credential** (43,334 msgs, 1,506 chats,
+  7 batches), so the write path ships first. **ADR 003 gained two amendments** — the one-year
+  ceiling was measured with the full-history request *deleted* by a gate (whatsappd
+  `cf44458`), and decision 1 survives on a narrower reason. Settled by measurement, not
+  argument: zip names decode as UTF-8 (**0 of 1,140** flagged; a conformant decode loses 4
+  documents), the dedup key is the **wall clock** (1 collision in 13,134), and the transcript
+  line is a **union on provenance** so *"this reader cannot see replies"* is unrepresentable.
+- **2026-08-17** — **The lexicon exists.** [../../CONTEXT.md](../../CONTEXT.md), governed by
+  [../rules/language.md](../rules/language.md): 28 nouns, one meaning each, plus the words
+  not to use. Written because *"backfill"* named two operations and produced four wrong
+  answers in one session — and a warning inside `product.md` only reaches a reader already
+  in `product.md`.
 - **2026-08-16** — **Conventions made runnable.** `vp run shape` checks what AGENTS.md
   only claimed — file length against a declared exception list, the six slots, `internal/`
   privacy, no `../..`, no `throw`, and every document cross-link. The contract split into
@@ -120,20 +141,11 @@ Append-only. Two lines per closed area, or per pivot. Newest first.
   conversations. Six open questions block the spec; the highest-value one is whether
   `whatsappd` can pull deeper history.
 - **2026-08-16** — **SKELETON closed.** `ambient init · doctor · chat add · agent add`;
-  18/18 gate against real temp directories; `vp check` and `vp test` green repo-wide.
-  Restructured to the module shape before closing — 696-line `index.ts` became a 212-line
-  `types.ts` plus an 86-line `service.ts`; 26 repetitions of one error idiom and 8
-  non-empty-tuple gymnastics both to zero. **OpenKnowledge is vendored, not called**: `ok
-  init` writes a nested `.git` and six editor directories to deliver one file whose every
-  key is a default, so we write those files ourselves; `ok preview` confirms the format
-  matches. `HomeDeps` deleted — with the spawn gone it had no members. Six ADR 001
-  statements were wrong on contact and are recorded in that ADR's Amendments section.
-- **2026-08-16** — Two observations parked from the spec review, **neither blocking**:
-  (a) `capabilities` may already be dead — ADR 001's `Chat` returns `mcpServers` and
-  `agents` already RESOLVED, which is the job seams.md gave that module; decide at
-  CAPABILITIES, not now. (b) ADR 002 falsifier #2 (`Loop.spec → RunSpec` assumes every
-  unit is an agent session; Whisper is a plain API call) is rated most likely and lands at
-  MEDIA/LOOPS — `work` is not built in SKELETON, so it does not block.
+  18/18 gate against real temp directories. **OpenKnowledge is vendored, not called** — `ok
+  init` writes a nested `.git` and six editor directories to deliver one file of defaults,
+  so we write it ourselves. Six ADR 001 statements were wrong on contact and are in that
+  ADR's Amendments. Two things parked, neither blocking: `capabilities` may already be dead
+  (decide at CAPABILITIES), and ADR 002 falsifier #2 lands at MEDIA/LOOPS.
 - **2026-08-16** — SKELETON specified. Design-it-twice run on both load-bearing seams:
   `home` → ADR 001 (unit handles; no cache, so hot-reload is structural), `work` → ADR 002
   (**provisional**; loops are declarations, `claim/complete/fail/nextDue` rejected).
@@ -169,6 +181,9 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The `home` interface, and why the alternatives lost | [../adr/001-home-interface.md](../adr/001-home-interface.md) |
 | The `work` interface — **provisional** | [../adr/002-work-interface.md](../adr/002-work-interface.md) |
 | The home layout, CLI verbs, config schemas, the gate | [../planning/skeleton/spec.md](../planning/skeleton/spec.md) |
+| Every domain noun, and the word not to use for it | [../../CONTEXT.md](../../CONTEXT.md) |
+| The archive reader, the transcript line, the import verb | [../planning/import/spec.md](../planning/import/spec.md) |
+| Why history import reads an archive — **and its two amendments** | [../adr/003-history-import-is-an-archive.md](../adr/003-history-import-is-an-archive.md) |
 | How `ambient doctor` runs, file by file | [../walkthrough-doctor.md](../walkthrough-doctor.md) |
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
 | What closing an area requires | [definition-of-done.md](./definition-of-done.md) |
