@@ -20,7 +20,9 @@ Revisable. Expected to change on contact.
 | `cli` | Command wiring only. **No logic.** | `init` · `doctor` · `chat add` · `agent add` | no |
 | `home` | The home on disk: layout, validation, health, scaffolding, change hints. **The only thing that knows a path.** | designed — [ADR 001](../adr/001-home-interface.md). `openHome(root)` → unit handles; read · plan · converge. **No ports** — see that ADR's Amendments | no |
 | `blobs` | Content-addressed binary store. Dedup by hash. | put · get · exists, all by hash | no |
-| `channel` | A source of messages and a bound destination. Accounts, source modes, allowlist, cursors. **Hides `whatsappd` entirely.** | sync a source → transcript entries + blob refs; send, pre-bound to one chat | no |
+| `archive` | An Archive file → Messages. No network, no home, no path building. | read an Archive → Message values | no |
+| `transcript` | The one Write path. Line format, dedup key, append, read. | append · read Messages and Blob refs | no |
+| `channel` | A Live account Reader and a bound destination. Accounts, source modes, allowlist, cursors. **Hides `whatsappd` entirely.** | read a Live account → Message values; send, pre-bound to one Chat | no |
 | `media` | Interpreting a blob: speech-to-text, vision, extraction. Keyed by hash, cached. | `process(ref) → Interpretation` | later |
 | `knowledge` | The OpenKnowledge project and the ontology. **Hides the OK MCP client.** Frontmatter validation, the work queue, the derived index. | read · search · write · validate · next · index | no |
 | `harness` | Constructing and running **one** agent session: cwd, model policy, MCP list, skills, receipt. **Hides Pi entirely.** | `run(spec) → Receipt` | no |
@@ -39,7 +41,9 @@ composition root ─> everything (the ONLY place wiring happens)
 work ────────────> harness ──┬─> knowledge
                              ├─> capabilities
                              └─> home
-channel ─────────> blobs
+archive ────┐
+            ├─> transcript ─> blobs
+channel ────┘
 media ───────────> blobs, knowledge
 speaker ─────────> harness, channel (send, pre-bound)
 evals ───────────> harness (replay)
@@ -49,6 +53,8 @@ Rules the graph encodes:
 
 - **Nothing depends on `cli`.** It is a leaf.
 - **`home` and `blobs` depend on nothing.** They are the floor.
+- **Both Readers produce Message values; the composition root feeds both through
+  `transcript`.** Neither Reader writes on its own.
 - **`harness` runs a session; `work` decides that a session should run.** Two seams, not
   one. Conflating them is what produced four drifted copies last time.
 - **Only the composition root wires.** No module resolves its own dependencies.
@@ -74,7 +80,7 @@ Everything else: sketch now, design when built.
 - **`capabilities`** may not be a module. It has one adapter today, which by the skill's own
   rule is a hypothetical seam. It may collapse into `harness`. Revisit when a second chat
   configuration actually exists.
-- **`blobs`** may collapse into `channel` if `whatsappd`'s own hash-addressed media
-  directory turns out to be sufficient as-is.
+- **`blobs`** no longer may collapse into `channel`: `transcript` is the caller shared by
+  both Readers, and Blob bytes are global rather than owned by a Live account.
 - **`media`** and **`knowledge`** may want a shared notion of "a document produced from
   evidence". Do not extract it until both exist.

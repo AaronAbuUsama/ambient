@@ -12,7 +12,7 @@ It also corrects `channel`'s row, which currently claims the history job that
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## What changes
 
@@ -34,14 +34,14 @@ It also corrects `channel`'s row, which currently claims the history job that
 
 ## Acceptance criteria
 
-- [ ] `seams.md` has one row each for `archive` and `transcript`, in the same shape as the
+- [x] `seams.md` has one row each for `archive` and `transcript`, in the same shape as the
       existing eleven.
-- [ ] `channel`'s row no longer claims history import.
-- [ ] The dependency graph shows both Readers writing through `transcript`, and `transcript`
+- [x] `channel`'s row no longer claims history import.
+- [x] The dependency graph shows both Readers writing through `transcript`, and `transcript`
       depending on `blobs`.
-- [ ] The stale `blobs`-may-collapse note is corrected rather than left standing.
-- [ ] No file under `src/` changes.
-- [ ] `vp run shape` clean — every cross-link in the edited documents still resolves.
+- [x] The stale `blobs`-may-collapse note is corrected rather than left standing.
+- [x] No file under `src/` changes.
+- [x] `vp run shape` clean — every cross-link in the edited documents still resolves.
 
 ## Governed by
 
