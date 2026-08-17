@@ -21,6 +21,10 @@ export default defineConfig({
   // Same argument either way: we format what we author.
   fmt: { ignorePatterns: ["**/*.md", ".agents/skills/install-anti-slop/**"] },
   lint: {
+    // The anti-slop skill is vendored source, not this project's program. `.claude` is its
+    // symlinked projection, so both names are explicit: lint what we author once, and do not
+    // require the vendor-only `@oxlint/plugins` dependency to type-check an untouched asset.
+    ignorePatterns: [".agents/skills/install-anti-slop/**", ".claude/skills/install-anti-slop/**"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.

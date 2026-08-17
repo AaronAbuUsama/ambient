@@ -12,20 +12,10 @@ area closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **IMPORT** — specified, not built. [../planning/import/spec.md](../planning/import/spec.md).
-> SKELETON is closed: `ambient init · doctor · chat add · agent add`, 18/18 gate, `vp check`,
-> `vp test` and `vp run shape` green.
->
-> **INTAKE split in two on 2026-08-17.** **IMPORT** reads an *archive* and needs a file.
-> **INGEST** reads a *live account* and needs a credential, a lease, and an answer nobody has.
->
-> **The order is forced.** A full history sync arrives **once per credential** — 43,334
-> messages, 1,506 chats, seven batches, measured on a fresh pairing. So the write path must
-> exist **before anyone scans another QR**.
->
-> **[ADR 003](../adr/003-history-import-is-an-archive.md)** settles the mechanism; **read its
-> two amendments** — the one-year ceiling was measured with the full-history request
-> disabled, and decision 1 survives on a narrowed reason.
+> **IMPORT closed** — 16/16 gate; `vp check`, 47 tests, shape and zero duplication green.
+> **INGEST is active.** Its first scope must decide how a one-shot full sync resumes after a
+> crash between seven ~4,800-message batches; do not spend another pairing on a tool that
+> cannot durably write them through IMPORT's Transcript path.
 
 ---
 
@@ -34,8 +24,8 @@ area closes, delete its detail and leave two lines in the Ledger.
 | Area | State | What it is |
 |---|---|---|
 | **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
-| **IMPORT** | ◐ active | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
-| **INGEST** | ○ | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
+| **IMPORT** | ● closed | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
+| **INGEST** | ◐ active | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
 | **KNOWLEDGE** | ○ | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
@@ -84,35 +74,12 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 ---
 
-## Active — IMPORT
-
-**Specified — [../planning/import/spec.md](../planning/import/spec.md).** Sixteen gate rows.
-Scoping evidence and its six corrections stay at
-[../planning/intake/scope.md](../planning/intake/scope.md).
-
-**The question.** Can Ambient turn a file the principal exported from WhatsApp into a
-transcript and blobs on disk, with nothing interpreted, and say honestly what it could not
-read?
-
-**The frame — incomplete is fine, silently wrong is not.** IMPORT feeds KNOWLEDGE, so it
-need not be complete; 9 of 14 sender labels join to no contact and that is acceptable. It
-must never imply it looked and saw nothing.
-
-**Three modules, plus one CLI verb.** `archive` (a file → messages, tested with a string),
-`transcript` (the one write path), `blobs`. **There is no `intake` module** — an area is not
-a module, and an orchestrator fails the deletion test.
-
-**Watch for.** SKELETON budgeted one layout revision. IMPORT **does not spend it**: an
-archive carries no account-level identity, so `sources/<name>/` waits for INGEST. Slugs are
-settled the other way — a human names a chat, because 757 of 913 have no subject to derive
-from and 5.8% of the named ones collide.
-
----
-
 ## Ledger
 
 Append-only. Two lines per closed area, or per pivot. Newest first.
 
+- **2026-08-17** — **IMPORT closed.** All three Archive forms now produce one Transcript, global deduplicated Blobs, a verbatim primary source and a hash-addressed Receipt; 16/16 gate and all repository checks pass.
+  **Learned:** 1,139 media refs collapse to 980 unique Blobs, and the claimed 174 events were word occurrences, not lines — the conservative whole-line Reader records 105 and preserves the source for re-reading.
 - **2026-08-17** — **INTAKE split into IMPORT and INGEST; IMPORT specified.** The halves
   share only an output type — one needs a file, the other a credential and an open question.
   The order is forced: a full sync is **one-shot per credential** (43,334 msgs, 1,506 chats,

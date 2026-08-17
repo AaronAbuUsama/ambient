@@ -14,7 +14,7 @@ here and not earlier.
 
 **Blocked by:** 01, 02, 03, 04.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## The invariant
 
@@ -27,11 +27,11 @@ mechanism to keep in sync.
 
 ## Acceptance criteria
 
-- [ ] `chat add x` → import an Archive with media → `mv chats/x chats/y` → `doctor` exits `0`.
-- [ ] After the rename the Transcript is still readable and the Blob refs still resolve.
-- [ ] Re-importing the same Archive into the renamed Chat appends nothing.
-- [ ] Grepping the home for the old slug finds it **only** inside that Chat's own folder.
-- [ ] `doctor` opens no file whose size is bounded by traffic — SKELETON gate assertion 17
+- [x] `chat add x` → import an Archive with media → `mv chats/x chats/y` → `doctor` exits `0`.
+- [x] After the rename the Transcript is still readable and the Blob refs still resolve.
+- [x] Re-importing the same Archive into the renamed Chat appends nothing.
+- [x] Grepping the home for the old slug finds it **only** inside that Chat's own folder.
+- [x] `doctor` opens no file whose size is bounded by traffic — SKELETON gate assertion 17
       still passes with `imports/`, `transcript.jsonl` and `media/` all populated.
 
 Gate rows 14, 15 of [the spec](../spec.md).

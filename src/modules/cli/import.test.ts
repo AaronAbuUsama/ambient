@@ -5,6 +5,9 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import { afterEach, expect, it } from "vite-plus/test";
 
+import { openBlobs } from "~/modules/blobs/service.ts";
+import { openHome } from "~/modules/home/service.ts";
+import { readTranscript } from "~/modules/transcript/service.ts";
 import { run } from "./service.ts";
 
 const made: string[] = [];
@@ -86,4 +89,49 @@ it("keeps the primary source and one complete Receipt per Archive hash", async (
     "/nowhere",
   );
   expect(fs.readdirSync(`${root}/chats/fixture/imports`)).toHaveLength(2);
+});
+
+it("a populated Chat is only a folder label and survives a rename", async () => {
+  const root = home();
+  const old = "old-chat-label";
+  const renamed = "better-label";
+  const input = `${root}.zip`;
+  const encoded = fs.readFileSync(
+    `${import.meta.dirname}/../archive/fixtures/media.zip.base64`,
+    "utf8",
+  );
+  fs.writeFileSync(input, Buffer.from(encoded.trim(), "base64"));
+  await run(["init", "--home", root], "/nowhere");
+  await run(["chat", "add", old, "--home", root], "/nowhere");
+  await run(["import", input, "--into", old, "--zone", "Africa/Accra", "--home", root], "/nowhere");
+  fs.renameSync(`${root}/chats/${old}`, `${root}/chats/${renamed}`);
+
+  expect(await run(["doctor", "--home", root], "/nowhere")).toEqual({
+    kind: "report",
+    problems: [],
+  });
+  const opened = openHome(root);
+  if ("problems" in opened) throw new Error("expected the renamed home to open");
+  const place = opened.chat(renamed).transcript();
+  if ("problems" in place) throw new Error("expected the renamed Transcript Place");
+  const transcript = await readTranscript(place);
+  if ("problems" in transcript) throw new Error("expected the renamed Transcript to read");
+  expect(transcript).toHaveLength(3);
+  const hashes = transcript.flatMap((line) =>
+    line.kind === "message" && line.media?.state === "Stored" ? [line.media.hash] : [],
+  );
+  const blobs = openBlobs(opened.blobs);
+  expect(await Promise.all(hashes.map((hash) => blobs.exists(hash)))).toEqual([true, true]);
+
+  const before = fs.readFileSync(place.path);
+  await run(
+    ["import", input, "--into", renamed, "--zone", "Africa/Accra", "--home", root],
+    "/nowhere",
+  );
+  expect(fs.readFileSync(place.path)).toEqual(before);
+  const mentions = fs
+    .readdirSync(root, { recursive: true, encoding: "utf8" })
+    .filter((relative) => fs.statSync(`${root}/${relative}`).isFile())
+    .filter((relative) => fs.readFileSync(`${root}/${relative}`).includes(old));
+  expect(mentions).toEqual([`chats/${renamed}/mandate.md`]);
 });

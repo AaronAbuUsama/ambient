@@ -1,7 +1,6 @@
 # IMPORT — spec
 
-**Area:** IMPORT · **State:** specified, not built · **Specified:** 2026-08-17
-**Status:** ready-for-agent
+**Area:** IMPORT · **State:** built and closed, 2026-08-17 · **Specified:** 2026-08-17
 
 Settled by [ADR 003](../../adr/003-history-import-is-an-archive.md) and its two amendments.
 Vocabulary is [CONTEXT.md](../../../CONTEXT.md) — *Archive, Reader, Write path, Transcript,
@@ -228,7 +227,7 @@ and optional-field state machines, so illegal states are hard to represent."*
     text: string; edited?: true; deleted?: true
     media?: ArchiveMedia }
 
-| { from: "archive"; kind: "event"              // 174 measured in one conversation
+| { from: "archive"; kind: "event"              // 105 classified in one conversation
     wall: string; at: number; zone: string
     event: "added" | "removed" | "left" | "renamed" | "icon" | "admin"
          | "number-changed" | "other"
@@ -258,7 +257,7 @@ Measured coverage, which is why the two variants differ rather than sharing opti
 | reactions | 3 in 13,134 — noise | a separate `Update` stream |
 | edited | **334** | `flags.edited` |
 | deleted | **61** | `Update` stream |
-| membership events | added 109 · removed 22 · left 36 · icon 4 · admin 1 · number 2 | present |
+| membership events | **105 whole-line events**. Earlier counts — added 109 · removed 22 · left 36 · icon 4 · admin 1 · number 2 — are raw word occurrences, not line counts | present |
 
 **`alt` is preserved wherever it appears.** It is a `witnessed` LID↔JID join that WhatsApp
 supplies for free and that nothing downstream can rebuild — measured contrast: joining a
@@ -439,8 +438,8 @@ The area's §4, made executable. `close-area` runs
 ## Further Notes
 
 **Evidence.** Every number here was measured on the principal's real export and the spike
-artefacts in `.spike-private/`, which is gitignored. The load-bearing ones: 13,134 messages
-and 6,473 continuation lines parsed with zero unreadable; 1,139 Markers against 1,139 files;
+artefacts in `.spike-private/`, which is gitignored. The load-bearing ones: 13,134 Transcript
+lines and 6,473 continuation lines parsed with zero unreadable; 1,139 Markers against 1,139 files;
 0 of 1,140 zip entries flagged UTF-8; 1 dedup collision in 13,134; 160 of 167 Instants
 matched at a single offset across 19 months; 913 chats of which 757 unnamed; 5 of 14 labels
 joining to a contact.

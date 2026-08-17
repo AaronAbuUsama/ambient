@@ -192,3 +192,18 @@ and another agent active in it, and `socket.ts` there matched neither the pre- n
 post-`cf44458` shape. Reading it would have been measuring a tree mid-edit — the same error
 as the six corrections at the foot of
 [scope.md](../planning/intake/scope.md). The commit and its date are the primary source.*
+
+### 3 — 2026-08-17: IMPORT settles the command, Zone and cross-Reader cut
+
+The two items under *Left open* are closed by the implemented
+[IMPORT spec](../planning/import/spec.md): History Import is the `ambient import` command,
+and every Archive Wall clock is resolved under an IANA Zone that is given or host-defaulted,
+printed, and recorded on every line and in the Receipt.
+
+One Consequence above did not survive measurement: Archive/live deduplication does **not**
+key on content and time. The Readers share neither sender identity (label versus Address)
+nor media text (Marker filename versus no filename), so cross-Reader key matching would
+invent both misses and matches. The settled boundary is a cut: the Archive owns through its
+newest Instant; the Live account owns what follows. Within an Archive, the key remains the
+NUL-separated Wall clock, sender label and text, so correcting a Zone updates lines without
+duplicating them.
