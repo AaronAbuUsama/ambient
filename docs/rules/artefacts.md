@@ -19,11 +19,16 @@ exists to prevent: each one is stale the moment another lands, and nobody knows 
 `render-slice` **composes** `diagram-design` rather than replacing it — the diagrams are drawn
 by the vendored skill and embedded inline, so upstream stays untouched.
 
-**Two skills this table used to name are deliberately absent.** `impeccable` was vendored and
-removed: the only page this project generates is a slice, and `render-slice` owns it.
-`dataviz` ships with the harness and cannot be vendored at all. If a real product surface
-lands — INGEST's pairing screen is the candidate — it is a UI rather than a document, and
-vendoring `impeccable` for it is that slice's decision.
+**Two skills this table used to name are deliberately absent, and one of them is a tool rather
+than a dependency.** `impeccable` **designed `render-slice`'s template once** and is not
+vendored: the layout is now decided and lives in `assets/shell.html`, so rendering a slice needs
+the template, not the skill that shaped it. It was vendored briefly on 2026-08-17 and removed
+again the same day for exactly this reason — 3.2 MB of design playbooks to re-derive a layout
+that is already fixed. `dataviz` ships with the harness and cannot be vendored at all.
+
+If a real product surface lands — INGEST's pairing screen is the candidate — it is a UI rather
+than a document, it has no template yet, and reaching for `impeccable` there is that slice's
+decision.
 
 Non-negotiables for every generated page:
 

@@ -85,7 +85,7 @@ Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
 | `plan-slice` | 4 — reconcile the design against the answers, write `spec.md`, then the build tickets |
 | `new-module` | 5 — scaffold a module's six slots. **Refuses a module with no `seams.md` row.** |
 | `close-slice` | 6 — run the definition of done, then move the roadmap |
-| `render-slice` | **every step ends here** — the whole slice as **one** self-contained HTML page, nine sections, one or two per step. Composes `diagram-design`; never forks it |
+| `render-slice` | **every step ends here** — the whole slice as **one** self-contained HTML page: twelve sections in three groups, its chrome a fixed template and its diagrams drawn with `diagram-design` from solved geometry |
 | `setup-abu-usama-skills` | reference — how this repo answers what the vendored skills ask about trackers, labels and domain docs |
 
 [`.agents/skills/vendor/`](.agents/skills/vendor/) holds **nine** upstream skills —

@@ -73,12 +73,16 @@ Inherited from [`artefacts.md`](../../../docs/rules/artefacts.md) and not restat
 ## Finish
 
 1. Splice, and report the byte size.
-2. Run the mechanical detector once:
-   `node .agents/skills/vendor/impeccable/scripts/detect.mjs --json <path>`
-   Fix what is mechanical. **`overused-font` on Geist is expected and overridden** — it is
-   `diagram-design`'s committed face, and a pinned world beats a saturated-pattern warning.
-3. **Open the page and look at it.** Not the DOM, not a regex over the file — the rendered page,
-   every diagram. Numeric self-checks have passed on diagrams whose legend ran straight through a
-   row of nodes.
+2. Check self-containment: the only `http` in the file is the SVG namespace, four times.
+   `grep -o 'https\?://[^" )]*' <path> | sort | uniq -c`
+3. **Open the page and look at every diagram.** Not the DOM, not a regex over the file — the
+   rendered page. Numeric self-checks have passed on a diagram whose legend ran straight through
+   a row of nodes; looking at it caught that in one second.
 4. Report which sections rendered, which are empty and which step fills them, and then the one
    thing the page says: **what is startable right now.**
+
+**The design of this template was done with `impeccable`, which is not vendored** and is not a
+dependency of this repo — it shaped `assets/shell.html` once. What is vendored is
+[`diagram-design`](../vendor/diagram-design/SKILL.md) and the template itself. Do not reach for
+`impeccable` to render a slice; the layout is already decided, and the geometry is in
+[`references/diagrams.md`](references/diagrams.md).

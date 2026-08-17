@@ -189,8 +189,8 @@ that went wrong.
 ## Seeing it
 
 **`render-slice` draws the whole slice as one page**, and every step ends by regenerating it.
-Its sections are not a matter of taste — they are these six steps projected, one or two
-sections per step, so what is missing from the page names the step that has not run. One
+Its twelve sections are not a matter of taste — they are these six steps projected, grouped
+**Plan · Design · Record**, so what is missing from the page names the step that has not run. One
 artefact per slice and no others: [artefacts.md](./artefacts.md).
 
 ## The check

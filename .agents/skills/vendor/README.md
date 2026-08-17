@@ -18,12 +18,15 @@ because it exists. Seven from `mattpocock-skills` **1.2.3**, plus `diagram-desig
 | `diagram-design` | the design step's two diagrams — call stack and modules — per [`artefacts.md`](../../../docs/rules/artefacts.md) | — |
 | `install-anti-slop` | the Oxlint plugin this repo installs | — |
 
-**Two skills `artefacts.md` used to name are NOT here, on purpose.** `impeccable` was vendored
-and removed: the only page this repo generates is a slice's own documentation, and
-`render-slice` owns that. `dataviz` cannot be vendored at all — it ships with the harness, so
-there is nothing on disk to copy. If INGEST's pairing screen lands, it is a product UI rather
-than a document and `impeccable` becomes worth vendoring again — that is a decision for that
-slice, recorded here so it is not rediscovered.
+**Two skills `artefacts.md` used to name are NOT here, on purpose.** `impeccable` **designed
+`render-slice`'s template and is a tool, not a dependency.** The layout it produced is fixed in
+`render-slice/assets/shell.html`; rendering a slice needs that file, not the 3.2 MB of design
+playbooks that shaped it. It was vendored on 2026-08-17 and removed the same day once the
+template existed — vendoring it would mean re-deriving a decided layout on every run. `dataviz`
+cannot be vendored at all: it ships with the harness, so there is nothing on disk to copy.
+
+If INGEST's pairing screen lands, it is a product UI with no template yet, and reaching for
+`impeccable` there is that slice's decision — recorded here so it is not rediscovered.
 
 The set is closed under its own dependencies. `tdd` names `code-review` and
 `codebase-design`; both are here.
