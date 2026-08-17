@@ -1,10 +1,26 @@
 # The method — what is missing, and the evidence
 
 Recorded 2026-08-17, straight after IMPORT closed. **This is a scope, not a spec.** It
-records what the build process does not have, and what that cost, so the fix is designed
+records what the build process did not have, and what that cost, so the fix was designed
 against evidence rather than a feeling.
 
-The area name is **open** — METHOD, FOUNDRY, WORKBENCH. Naming it is part of scoping it.
+**The slice is METHOD, and most of this is now closed.** What each deficit became:
+
+| Deficit | Status |
+|---|---|
+| 1 · the call graph was never drawn | **closed** — Program design in [slices.md](../../rules/slices.md), definition-of-done row 10, and [walkthroughs/import.md](../../walkthroughs/import.md) written |
+| 2 · `design-it-twice` skipped where it applied | **closed** — [ADR 004](../../adr/004-transcript-line-is-a-union-on-provenance.md) supplies it late, and `plan-slice` checks the bar from now on |
+| 3 · the pipeline did not know its preconditions | **closed** — `plan-slice` names `new-module`'s seam-row precondition; the seven skills it dispatches to are vendored, so they always resolve |
+| 4 · the grill was not rooted in modules | **closed** — `map-slice` traces callers and dependents before a question is asked |
+| 5 · the documentation layout mixed three kinds of thing | **closed** — six directories, one statement per home, decided by [docs/README.md](../../README.md); nothing loose at the docs root |
+| 6 · the conventions were not cohesive enough to hand over | **closed** — [walkthroughs/slice.md](../../walkthroughs/slice.md) is the operator's page, and `vp run slice` answers "where am I" from the files |
+| **carried** · the Receipt described the last run | **closed** — it now keeps the run that wrote the lines and appends to `reruns` |
+| **carried** · `cli` was the composition owner | **closed** — the operation moved to the `import` module; the handler is 74 lines, from 176 |
+
+**Still open, deliberately:** the **template repo**. It is a plan, not a need — deriving it
+before the method has been used on a real slice would freeze conventions from one-and-a-half.
+
+The rest of this document is the evidence, kept as written.
 
 ---
 
@@ -27,17 +43,18 @@ defends it. The process degraded, because nothing does.
 |---|---|---|
 | Interfaces designed before code | **yes** — design-it-twice on two seams | **no** |
 | ADR for a load-bearing interface | **two** (001 `home`, 002 `work`) | **none.** ADR 003 is about a *mechanism*, not an interface |
-| Call-graph artefact | [`walkthrough-doctor.md`](../../walkthrough-doctor.md) | **none** |
+| Call-graph artefact | [`walkthroughs/doctor.md`](../../walkthroughs/doctor.md) | **none** |
 | Seam rows existed before scaffolding | yes | **no — it became ticket 00** |
 | Tests derived from | the spec's §4 gate, written first | the model's judgement, per ticket |
 
 ### Deficit 1 — the call-graph artefact exists, and was skipped
 
-[`README.md`](../../../README.md) calls `walkthrough-doctor.md` *"the shortest path to owning
+[`README.md`](../../../README.md) calls `walkthroughs/doctor.md` *"the shortest path to owning
 this codebase"* — it traces one command from keypress to output through every file it
 touches. **That is the call graph, and this repo invented it, praised it, and then did not
-require it.** There is no `walkthrough-import.md`, and `import` is now a real verb with three
-modules behind it.
+require it.** There was no walkthrough for `import` when this was written, and `import` is a
+real verb with four modules behind it. [walkthroughs/import.md](../../walkthroughs/import.md)
+now exists — written after the code, which is the wrong order and says so.
 
 **And it is where tests come from.** Every arrow in a trace is a seam; every seam is a test
 point. Letting the model decide what to test, per ticket, is what replaced this.
@@ -71,8 +88,11 @@ returning what** — arrived because they were forced in, not because the skill 
 ### Deficit 5 — the documentation layout mixes three kinds of thing
 
 `docs/design/` holds settled truth (`product.md`, `seams.md`) beside method
-(`roadmap.md`, `definition-of-done.md`). Walkthroughs sit loose at `docs/`. Per-area material
-is split across `docs/planning/<area>/` and `docs/adr/`. Three kinds, two-and-a-half folders.
+(`roadmap.md`, `definition-of-done.md`). Walkthroughs sat loose at `docs/`. Per-slice material
+was split across `docs/planning/<slice>/` and `docs/adr/`. Three kinds, two-and-a-half folders.
+
+**Closed.** Six directories, each holding one kind of statement, with the test that decides
+which in [docs/README.md](../../README.md). Nothing at the docs root but that map.
 
 ### Deficit 6 — the conventions are not cohesive enough to hand over
 
@@ -107,7 +127,7 @@ Proposed kinds, each with a hard output:
 
 Wanted: *"this is how I want to start all of these sorts of projects."*
 
-**Derive it, do not design it.** Extracting a template now — from one-and-a-half good areas —
+**Derive it, do not design it.** Extracting a template now — from one-and-a-half good slices —
 freezes conventions that have not been used twice. INGEST is the test: drive it with the new
 pipeline, and extract whatever survives. That is this repo's own principle applied to itself
 — *operate it by hand until it is good, then automate.*

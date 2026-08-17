@@ -24,7 +24,7 @@ had made `cli` the composition owner this file says it is not. The operation now
 [`import`](../import/README.md), which owns the order of its writes; this handler parses
 argv, resolves two `Place`s and renders. Caught by
 [definition-of-done.md](../../../docs/design/definition-of-done.md) row 10, and traced in
-[walkthrough-import.md](../../../docs/walkthrough-import.md).
+[walkthrough-import.md](../../../docs/walkthroughs/import.md).
 
 `service.ts` does the mapping. Each verb is one file under
 [`internal/commands/`](./internal/commands), owning its own usage line — so

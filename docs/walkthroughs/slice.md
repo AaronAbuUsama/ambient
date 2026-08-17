@@ -1,8 +1,8 @@
 # Walkthrough — building a slice
 
-**This is the operator's page.** [`slices.md`](rules/slices.md) is the rule; this is what you
+**This is the operator's page.** [`slices.md`](../rules/slices.md) is the rule; this is what you
 actually type, what comes back, and how you tell whether it is going well. It is the
-counterpart to [`walkthrough-doctor.md`](walkthrough-doctor.md), which traces one command
+counterpart to [`walkthroughs/doctor.md`](./doctor.md), which traces one command
 through the code.
 
 Worked against **INGEST**, which is the next slice.
@@ -82,7 +82,7 @@ the difference between deciding something and letting whoever implements it deci
 | Part | The question you are checking |
 |---|---|
 | Production call sites | does the caller read like one verb, or is it growing arms? |
-| Call graph | does each step's owner match [`seams.md`](design/seams.md)? |
+| Call graph | does each step's owner match [`seams.md`](../design/seams.md)? |
 | Test seams | is each test at the highest useful seam, or reaching inside? |
 | Conformance table | does every public symbol have a real caller? |
 | Seam delta | are the `seams.md` rows there **before** any module is scaffolded? |
@@ -99,7 +99,7 @@ read the ticket → /new-module if it adds one → /tdd → /code-review → com
 vp check && vp test && vp run shape && pnpm dlx fallow dupes
 ```
 
-`new-module` **refuses a module with no [`seams.md`](design/seams.md) row.** That is why the
+`new-module` **refuses a module with no [`seams.md`](../design/seams.md) row.** That is why the
 seam delta is step 3's job and why IMPORT needed a ticket 00 it should not have needed.
 
 **How you tell it went well:** each ticket closes green on its own. A ticket that needs the
@@ -111,7 +111,7 @@ next one to go green is not a tracer bullet.
 /close-slice INGEST
 ```
 
-Runs [`definition-of-done.md`](design/definition-of-done.md) and **reports before writing**.
+Runs [`definition-of-done.md`](../design/definition-of-done.md) and **reports before writing**.
 A failing row is the answer to *"can we close it"* — not something to fix as part of closing.
 
 Rows 1–6 run. Rows 7–10 are read. **Row 10 is the new one**, and the one that would have

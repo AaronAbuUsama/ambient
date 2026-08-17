@@ -102,7 +102,7 @@ was watching it.** Eleven other rules in this directory say what a *file* must l
 fell back to generic skills that do not know this repository. Three things followed:
 
 - **The call graph was never designed.** [README.md](../../README.md) calls
-  [walkthrough-doctor.md](../walkthrough-doctor.md) *"the shortest path to owning this
+  [walkthrough-doctor.md](../walkthroughs/doctor.md) *"the shortest path to owning this
   codebase"* — a trace of one command through every file it touches. There is no
   walkthrough for `import`, and its handler is **176 lines against 8, 8, 12 and 14** for its
   siblings, which makes `cli` the composition owner while its own spec says the handler

@@ -28,6 +28,9 @@ Where each kind of statement lives:
 | a rule, its argument, and its check | this directory |
 | a decision, and its amendments | [`docs/adr/`](../adr/), per [decisions.md](./decisions.md) |
 | a path, a schema, a config key, a CLI verb | the slice's spec under [`docs/planning/`](../planning/) |
+| how to follow something start to finish | [`docs/walkthroughs/`](../walkthroughs/) |
+
+Which directory a document belongs in is decided by [`docs/README.md`](../README.md).
 
 ## Why
 

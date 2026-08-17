@@ -57,7 +57,7 @@ needs-triage · needs-info · ready-for-agent · ready-for-human · done · wont
 
 Work here moves through five steps with a gate each —
 [`slices.md`](../../../docs/rules/slices.md), and
-[`walkthrough-slice.md`](../../../docs/walkthrough-slice.md) is the operator's page:
+[`walkthroughs/slice.md`](../../../docs/walkthroughs/slice.md) is the operator's page:
 
 ```
 map-slice → work the frontier → plan-slice → new-module · tdd · code-review → close-slice

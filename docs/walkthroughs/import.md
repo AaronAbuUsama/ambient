@@ -1,12 +1,12 @@
 # Walkthrough — `ambient import`
 
 `ambient import <archive> --into <slug> [--zone <IANA>]`, from keypress to exit, through
-every file it touches. The sibling of [walkthrough-doctor.md](walkthrough-doctor.md).
+every file it touches. The sibling of [walkthrough-doctor.md](./doctor.md).
 
-**Written after the fact, which is the wrong order** — [slices.md](rules/slices.md) now
+**Written after the fact, which is the wrong order** — [slices.md](../rules/slices.md) now
 requires the call graph before the code, and this is the artefact IMPORT never had. Drawing
 it late is what exposed a 176-line handler; drawing it early is what
-[definition-of-done.md](design/definition-of-done.md) row 10 exists to enforce.
+[definition-of-done.md](../design/definition-of-done.md) row 10 exists to enforce.
 
 ---
 
@@ -89,11 +89,11 @@ provenance record implying the lines came from somewhere else.
 `cli/internal/commands/import.ts` was **176 lines** against 8, 8, 12 and 14 for its
 siblings. It opened the Archive, stored the Blobs, wrote the Transcript, persisted the
 Receipt and built the outcome string — so `cli` was the composition owner its own
-[README](../src/modules/cli/README.md) says it is not, and `seams.md`'s *"only the
+[README](../../src/modules/cli/README.md) says it is not, and `seams.md`'s *"only the
 composition root wires"* was false.
 
 It is now **73 lines**: parse, resolve two Places, one call, render. The operation lives in
-[`import`](../src/modules/import/README.md), which owns the one thing no other module can —
+[`import`](../../src/modules/import/README.md), which owns the one thing no other module can —
 the order above.
 
 The earlier reasoning failed because the deletion test was run against a **guess** (four

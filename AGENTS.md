@@ -36,8 +36,10 @@ command or an observable state. A slice is not closed until all of them pass.
 
 ## Where the truth is
 
-[README.md](README.md) is the doc map. [`docs/design/`](docs/design/) is what is true
-now; [`docs/history/`](docs/history/) is how we got here and defers to it.
+[docs/README.md](docs/README.md) is the doc map — six directories, and the test that decides
+which one a document goes in. Nothing sits at that root but the map itself.
+[`docs/design/`](docs/design/) is what is true now; [`docs/history/`](docs/history/) is how we
+got here and defers to it.
 [`docs/design/roadmap.md`](docs/design/roadmap.md) is the anchor — where we are, what is
 settled, what breaks if you go backwards.
 

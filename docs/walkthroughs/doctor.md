@@ -36,8 +36,8 @@ The rule that makes `internal/` mean something: **no module imports another
 module's `internal/`.** `cli` may import `home/types.ts` and `home/service.ts`.
 It may not import `home/internal/anything`.
 
-Both are rules rather than habits — [rules/modules.md](./rules/modules.md) and
-[rules/imports.md](./rules/imports.md), checked by `vp run shape`.
+Both are rules rather than habits — [rules/modules.md](../rules/modules.md) and
+[rules/imports.md](../rules/imports.md), checked by `vp run shape`.
 
 ---
 
@@ -241,11 +241,11 @@ single fact.
 
 ## Where to look next
 
-- [`src/modules/home/README.md`](../src/modules/home/README.md) — the module's own
+- [`src/modules/home/README.md`](../../src/modules/home/README.md) — the module's own
   page: what it owns, its ten invariants, how to test it.
-- [`src/modules/home/types.ts`](../src/modules/home/types.ts) — the interface. If
+- [`src/modules/home/types.ts`](../../src/modules/home/types.ts) — the interface. If
   you can read one file, read this one.
-- [`docs/planning/skeleton/spec.md`](./planning/skeleton/spec.md) — the authority
+- [`docs/planning/skeleton/spec.md`](../planning/skeleton/spec.md) — the authority
   on behaviour, path by path, with the gate at §4.
-- [`docs/adr/001-home-interface.md`](./adr/001-home-interface.md) — why the
+- [`docs/adr/001-home-interface.md`](../adr/001-home-interface.md) — why the
   interface is a handle, and the two designs that lost.
