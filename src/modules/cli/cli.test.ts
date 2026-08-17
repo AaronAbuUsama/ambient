@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 const said = (outcome: Outcome): string =>
-  outcome.kind === "misuse" ? outcome.said : outcome.problems.map(render).join("\n");
+  outcome.kind === "report" ? outcome.problems.map(render).join("\n") : outcome.said;
 
 it("init then doctor is silent; a broken home is not", async () => {
   const root = tmp();
@@ -73,13 +73,94 @@ it("`--home` beats the default root", async () => {
   expect(fs.existsSync(`${root}/identity.md`)).toBe(true);
 });
 
+const archive = (last = ""): string =>
+  ["[14/02/2025, 4:06:10 PM] Rex: one", "[15/02/2025, 4:07:00 PM] Sam: two", last]
+    .filter(Boolean)
+    .join("\n");
+
+it("imports a text Archive idempotently, appends newer Messages, and can re-Zone", async () => {
+  const root = tmp();
+  const input = `${root}.txt`;
+  await run(["init", "--home", root], "/nowhere");
+  await run(["chat", "add", "fixture", "--home", root], "/nowhere");
+  fs.writeFileSync(input, archive());
+
+  expect(
+    await run(
+      ["import", input, "--into", "fixture", "--zone", "Africa/Accra", "--home", root],
+      "/nowhere",
+    ),
+  ).toEqual({
+    kind: "message",
+    ok: true,
+    said: "Imported 2 Messages into fixture using Zone Africa/Accra",
+  });
+  const transcript = `${root}/chats/fixture/transcript.jsonl`;
+  const first = fs.readFileSync(transcript);
+
+  await run(
+    ["import", input, "--into", "fixture", "--zone", "Africa/Accra", "--home", root],
+    "/nowhere",
+  );
+  expect(fs.readFileSync(transcript)).toEqual(first);
+
+  fs.writeFileSync(input, archive("[16/02/2025, 4:08:00 PM] Rex: three"));
+  await run(
+    ["import", input, "--into", "fixture", "--zone", "Africa/Accra", "--home", root],
+    "/nowhere",
+  );
+  expect(fs.readFileSync(transcript, "utf8").trim().split("\n")).toHaveLength(3);
+
+  await run(
+    ["import", input, "--into", "fixture", "--zone", "America/New_York", "--home", root],
+    "/nowhere",
+  );
+  const rezoned = fs.readFileSync(transcript, "utf8").trim().split("\n");
+  expect(rezoned).toHaveLength(3);
+  expect(rezoned.every((line) => line.includes('"zone":"America/New_York"'))).toBe(true);
+});
+
+it("prints a default Zone and refuses a missing Chat before writing", async () => {
+  const root = tmp();
+  const input = `${root}.txt`;
+  await run(["init", "--home", root], "/nowhere");
+  fs.writeFileSync(input, archive());
+
+  expect(
+    await run(["import", input, "--into", "missing", "--home", root], "/nowhere", "Africa/Accra"),
+  ).toEqual({
+    kind: "message",
+    ok: false,
+    said: 'Chat "missing" does not exist; run `ambient chat add missing` first',
+  });
+  expect(fs.existsSync(`${root}/chats/missing/transcript.jsonl`)).toBe(false);
+  expect(ambient(root, "import", input, "--into", "missing")).toMatchObject({ code: 1 });
+
+  await run(["chat", "add", "fixture", "--home", root], "/nowhere");
+  expect(
+    await run(["import", input, "--into", "fixture", "--home", root], "/nowhere", "Africa/Accra"),
+  ).toMatchObject({ said: "Imported 2 Messages into fixture using default Zone Africa/Accra" });
+  expect(
+    await run(
+      ["import", input, "--into", "fixture", "--zone", "+00:00", "--home", root],
+      "/nowhere",
+    ),
+  ).toMatchObject({ kind: "message", ok: false });
+});
+
 // ── the exit codes the gate is written in ────────────────────────────
 
 const ambient = (root: string, ...args: readonly string[]) => {
-  const run = spawnSync(process.execPath, [`${import.meta.dirname}/../../main.ts`, ...args], {
-    encoding: "utf8",
-    env: { ...process.env, AMBIENT_HOME: root },
-  });
+  const run = spawnSync(
+    process.execPath,
+    [
+      "--import",
+      `${import.meta.dirname}/../../../scripts/module-aliases.ts`,
+      `${import.meta.dirname}/../../main.ts`,
+      ...args,
+    ],
+    { encoding: "utf8", env: { ...process.env, AMBIENT_HOME: root } },
+  );
   return { code: run.status, out: run.stdout };
 };
 

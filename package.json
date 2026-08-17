@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ambient": "node src/main.ts",
+    "ambient": "node --import ./scripts/module-aliases.ts src/main.ts",
     "shape": "node scripts/shape.ts"
   },
   "dependencies": {

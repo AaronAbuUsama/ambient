@@ -4,13 +4,14 @@
  * or from the usage text below.
  */
 
-import { openHome } from "../home/service.ts";
+import { openHome } from "~/modules/home/service.ts";
 import type { Command } from "./internal/command.ts";
 import { misuse, report } from "./internal/command.ts";
 import { agentAdd } from "./internal/commands/agent-add.ts";
 import { chatAdd } from "./internal/commands/chat-add.ts";
 import { doctor } from "./internal/commands/doctor.ts";
 import { init } from "./internal/commands/init.ts";
+import { importArchive } from "./internal/commands/import.ts";
 import type { Run } from "./types.ts";
 
 const USAGE = `ambient — a durable conversational home
@@ -19,6 +20,7 @@ const USAGE = `ambient — a durable conversational home
   ambient doctor               report everything wrong with it
   ambient chat add <slug>      scaffold a chat
   ambient agent add <name>     scaffold a background agent
+  ambient import <archive> --into <slug> [--zone <IANA>]
 
   --home <path>                override $AMBIENT_HOME (default ~/.ambient)
 `;
@@ -28,9 +30,10 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   doctor,
   chat: chatAdd,
   agent: agentAdd,
+  import: importArchive,
 };
 
-export const run: Run = async (argv, defaultRoot) => {
+export const run: Run = async (argv, defaultRoot, givenZone) => {
   const args = [...argv];
   const flag = args.indexOf("--home");
   const override = flag === -1 ? undefined : args.splice(flag, 2)[1];
@@ -43,5 +46,6 @@ export const run: Run = async (argv, defaultRoot) => {
 
   const home = openHome(override ?? defaultRoot);
   if ("problems" in home) return report(home.problems);
-  return await command(home, rest);
+  const defaultZone = givenZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return await command(home, rest, defaultZone);
 };

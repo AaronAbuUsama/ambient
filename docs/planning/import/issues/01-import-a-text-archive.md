@@ -15,7 +15,7 @@ new. A slug with no Chat folder is refused, and the message names `chat add`.
 
 **Blocked by:** 00 — the seam-map rows.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## The line format
 
@@ -41,23 +41,23 @@ real Archive: 1 in 13,134.
 
 ## Acceptance criteria
 
-- [ ] `archive` reads a bare `.txt` and returns messages, with **a string as the only input**
+- [x] `archive` reads a bare `.txt` and returns messages, with **a string as the only input**
       — no filesystem, no home, no phone.
-- [ ] The grammar handles what was measured: 12- and 24-hour clocks, seconds present or
+- [x] The grammar handles what was measured: 12- and 24-hour clocks, seconds present or
       absent, a narrow no-break space before AM/PM, WhatsApp's direction marks, continuation
       lines (6,473 in one file), and a sender name containing `": "`.
-- [ ] Day-first is detected; when nothing in the file settles it, parsing **fails with a
+- [x] Day-first is detected; when nothing in the file settles it, parsing **fails with a
       declared value** rather than guessing.
-- [ ] `transcript` appends lines and tolerates a torn trailing line from a hard kill.
-- [ ] Every line carries `wall`, `at`, `zone` and `from`.
-- [ ] `--zone` takes an IANA name; an offset is refused. It defaults to the host's Zone and
+- [x] `transcript` appends lines and tolerates a torn trailing line from a hard kill.
+- [x] Every line carries `wall`, `at`, `zone` and `from`.
+- [x] `--zone` takes an IANA name; an offset is refused. It defaults to the host's Zone and
       the default is **printed**, never silently assumed.
-- [ ] Re-running the same import appends nothing and leaves the Transcript byte-identical.
-- [ ] Re-running under a different `--zone` appends nothing.
-- [ ] Importing a newer export of the same conversation appends only the new messages.
-- [ ] `import --into <slug>` for a Chat that does not exist writes nothing, exits non-zero,
+- [x] Re-running the same import appends nothing and leaves the Transcript byte-identical.
+- [x] Re-running under a different `--zone` appends nothing.
+- [x] Importing a newer export of the same conversation appends only the new messages.
+- [x] `import --into <slug>` for a Chat that does not exist writes nothing, exits non-zero,
       and names `chat add`.
-- [ ] Nothing under `src/` throws.
+- [x] Nothing under `src/` throws.
 
 Gate rows 1 (bare `.txt`), 5, 6, 7, 10, 16 of [the spec](../spec.md).
 

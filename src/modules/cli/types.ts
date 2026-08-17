@@ -7,12 +7,14 @@
  * `home.describe`, and the process edge is `src/main.ts`.
  */
 
-import type { Problem } from "../home/types.ts";
+import type { Problem } from "~/modules/home/types.ts";
 
 /** What a command decided. The process edge turns this into output and an exit code. */
 export type Outcome =
   /** What is wrong with the home. Empty means healthy: exit 0, else exit 1. */
   | { readonly kind: "report"; readonly problems: readonly Problem[] }
+  /** One command result. `ok: false` is an operational failure and exits 1. */
+  | { readonly kind: "message"; readonly ok: boolean; readonly said: string }
   /** The command line itself was wrong. Exit 2 — never confusable with an unhealthy home. */
   | { readonly kind: "misuse"; readonly said: string };
 
@@ -20,4 +22,8 @@ export type Outcome =
  * `defaultRoot` is where the home is when `--home` does not say. The caller
  * resolves it, because `cli` reads no environment.
  */
-export type Run = (argv: readonly string[], defaultRoot: string) => Promise<Outcome>;
+export type Run = (
+  argv: readonly string[],
+  defaultRoot: string,
+  defaultZone?: string,
+) => Promise<Outcome>;

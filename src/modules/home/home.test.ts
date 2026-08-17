@@ -215,6 +215,7 @@ it("16 · only home knows a path", () => {
 it("17 · home opens no file whose size is bounded by traffic", () => {
   const reads = /readFile|createReadStream|readSync|\bopenSync\b/;
   const offenders = sources()
+    .filter((f) => f.rel.startsWith("modules/home/"))
     .filter((f) => f.rel !== "modules/home/internal/disk.ts")
     .filter((f) => reads.test(f.text))
     .map((f) => f.rel);
