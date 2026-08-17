@@ -5,13 +5,25 @@ description: Render one slice as a single self-contained HTML page — its desti
 
 # Render a slice
 
-**One slice, one page.** Everything about a slice — scope, design, spec, tickets, evidence —
-composed into a single self-contained HTML file. It is the artefact rule for this project:
-[`artefacts.md`](../../../docs/rules/artefacts.md).
+**One slice, one document — and it is where the work happens, not a report at the end.**
+
+This is a **living, multi-section HTML document** for the slice: the destination, the open
+questions, the decisions and ADRs, the diagrams, the plan, the tickets, the evidence. It is
+regenerated **as the slice progresses**, so at any moment it is the current state of the whole
+thing in one place, readable together.
+
+**Re-render it whenever something lands.** A question answered, a decision taken, a diagram
+drawn, a ticket closed — regenerate. It is cheap, and a document that is stale between
+milestones is one nobody opens.
+
+**The diagrams live inside it, inline.** Do not scatter `.svg` files beside it — the whole
+point is one document rather than a directory nobody can navigate. (Separate SVGs become
+worth having when this repo has a remote and diagrams go in pull requests. It has none, so
+they do not.)
 
 Output: `docs/planning/<slice>/<slice>.html`. **Gitignored and regenerated**, never
-hand-edited — it is derived from the markdown, so the markdown stays the source of truth and
-the page never becomes a second place to keep things true.
+hand-edited — the markdown and the ADRs stay the source of truth, and the document never
+becomes a second place to keep things true.
 
 ## Why one page and not several
 
@@ -33,7 +45,7 @@ Its first-run branding gate is **already answered** in
 ## What the page contains, in this order
 
 Read the slice's directory and build only the sections that have content. A slice at step 1
-has three; a closed slice has all seven.
+has three; a closed slice has all eight.
 
 | # | Section | Source | Present when |
 |---|---|---|---|
@@ -41,9 +53,10 @@ has three; a closed slice has all seven.
 | 2 | **Decided** | `scope.md` § Decided | always |
 | 3 | **The frontier** — the open-question **DAG**, kinds coloured, AFK roots marked kickable | `scope.md` § Open + Fog | until the frontier clears |
 | 4 | **Design** — the **call-stack sequence diagram**, the **module/interface diagram**, and the interfaces as code | the slice's design | from step 2 |
-| 5 | **The plan** — problem, solution, program design, the numbered gate | `spec.md` | from step 3 |
-| 6 | **Tickets** — the blocking DAG, each with its status | `issues/*.md` | from step 3 |
-| 7 | **Evidence** — every measured number, with the instrument that produced it | `scope.md`, spec Further Notes | always, once measured |
+| 5 | **Decisions** — every ADR this slice produced or amended, with what each beat | `docs/adr/` | as they land |
+| 6 | **The plan** — problem, solution, program design, the numbered gate | `spec.md` | from step 3 |
+| 7 | **Tickets** — the blocking DAG, each with its status | `issues/*.md` | from step 3 |
+| 8 | **Evidence** — every measured number, with the instrument that produced it | `scope.md`, spec Further Notes | always, once measured |
 
 **Section 3 is the one that earns the page.** A flat list of questions cannot show what is
 kickable now; a DAG can. Colour by kind — `research` and `spike` are AFK and dispatchable,
