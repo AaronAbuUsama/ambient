@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "ambient": "node --import ./scripts/module-aliases.ts src/main.ts",
-    "shape": "node scripts/shape.ts",
-    "slice": "node scripts/slice.ts"
+    "shape": "node scripts/shape.ts"
   },
   "dependencies": {
     "yaml": "^2.9.0",

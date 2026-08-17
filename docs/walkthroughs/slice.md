@@ -12,7 +12,7 @@ Worked against **INGEST**, which is the next slice.
 ## The five steps at a glance
 
 ```
-  vp run slice                    ← where am I, at any moment
+  render-slice INGEST             ← the whole slice as one page, at any moment
 
   1  map-slice INGEST             →  scope.md            you read it, you correct it
   2  work the frontier            →  Decided grows       one question per session
@@ -119,14 +119,21 @@ caught IMPORT: does the code's call graph match the design's.
 
 ---
 
-## Where am I? — `vp run slice`
+## Where am I? — `render-slice`
 
-```bash
-vp run slice
+```
+/render-slice INGEST
 ```
 
-Prints, for the active slice: which step it is on, what is blocking, and what to type next.
-It reads the same files you do — no state of its own — so it cannot drift from reality.
+One self-contained page: where the slice stands, what is decided, the open-question DAG with
+the AFK roots marked kickable, the call stack, the interfaces, the plan, the tickets and the
+evidence. It reads the same markdown you do and holds no state of its own, so it cannot drift
+from reality — and anything it says wrong is a document to fix, never a cache to clear.
+
+**There is deliberately no script behind this.** A slice lives in markdown that an agent can
+read directly; parsing those files with a regex to tell you which step you are on would be a
+second, more fragile definition of what a slice is. One existed for about an hour and was
+deleted.
 
 ## What is proven, and what is not
 

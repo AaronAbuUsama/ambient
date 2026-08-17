@@ -57,7 +57,7 @@ This file does not restate it, and that is deliberate — it claimed *"Active: A
 Skeleton, specified, not started"* for as long as it took two slices to close, because a
 status written in two documents only stays true in one.
 
-`vp run slice` answers the same question from the files themselves.
+How a slice is built, step by step, is [docs/rules/slices.md](docs/rules/slices.md).
 
 ## What is true now
 

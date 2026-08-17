@@ -132,8 +132,7 @@ one context window each, executed end to end.
 
 ## Seeing it
 
-`vp run slice` says which step the active slice is on and what to type next. **`render-slice`
-draws the whole slice as one page** — destination, decided, the open-question DAG, the call
+**`render-slice` draws the whole slice as one page** — destination, decided, the open-question DAG, the call
 stack, the interfaces, the plan, the tickets and the evidence. One artefact per slice and no
 others: [artefacts.md](./artefacts.md).
 

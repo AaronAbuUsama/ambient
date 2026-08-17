@@ -13,7 +13,7 @@ against evidence rather than a feeling.
 | 3 · the pipeline did not know its preconditions | **closed** — `plan-slice` names `new-module`'s seam-row precondition; the seven skills it dispatches to are vendored, so they always resolve |
 | 4 · the grill was not rooted in modules | **closed** — `map-slice` traces callers and dependents before a question is asked |
 | 5 · the documentation layout mixed three kinds of thing | **closed** — six directories, one statement per home, decided by [docs/README.md](../../README.md); nothing loose at the docs root |
-| 6 · the conventions were not cohesive enough to hand over | **closed** — [walkthroughs/slice.md](../../walkthroughs/slice.md) is the operator's page, and `vp run slice` answers "where am I" from the files |
+| 6 · the conventions were not cohesive enough to hand over | **closed** — [walkthroughs/slice.md](../../walkthroughs/slice.md) is the operator's page, and `render-slice` draws a slice as one page |
 | **carried** · the Receipt described the last run | **closed** — it now keeps the run that wrote the lines and appends to `reruns` |
 | **carried** · `cli` was the composition owner | **closed** — the operation moved to the `import` module; the handler is 74 lines, from 176 |
 

@@ -37,7 +37,7 @@ has three; a closed slice has all seven.
 
 | # | Section | Source | Present when |
 |---|---|---|---|
-| 1 | **Destination + where it stands** | `scope.md`, `roadmap.md`, `vp run slice` | always |
+| 1 | **Destination + where it stands** | `scope.md`, `roadmap.md` | always |
 | 2 | **Decided** | `scope.md` § Decided | always |
 | 3 | **The frontier** — the open-question **DAG**, kinds coloured, AFK roots marked kickable | `scope.md` § Open + Fog | until the frontier clears |
 | 4 | **Design** — the **call-stack sequence diagram**, the **module/interface diagram**, and the interfaces as code | the slice's design | from step 2 |
