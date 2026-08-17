@@ -20,10 +20,41 @@ export type ArchiveMessage = {
   /** A display label, never an Address. */
   readonly who: { readonly label: string };
   readonly text: string;
+  readonly edited?: true;
+  readonly deleted?: true;
+  readonly media?: ArchiveMedia;
 };
 
+export type StoredMedia = { readonly state: "Stored"; readonly hash: string };
+
+export type ArchiveMedia =
+  | StoredMedia
+  | { readonly state: "NoHandle"; readonly why: "placeholder" | "not-in-archive" };
+
+export type ArchiveEvent = {
+  readonly from: "archive";
+  readonly kind: "event";
+  readonly wall: string;
+  readonly at: number;
+  readonly zone: string;
+  readonly event:
+    | "added"
+    | "removed"
+    | "left"
+    | "renamed"
+    | "icon"
+    | "admin"
+    | "number-changed"
+    | "other";
+  readonly who: { readonly label: string };
+  readonly subject?: string;
+  readonly raw: string;
+};
+
+export type ArchiveLine = ArchiveMessage | ArchiveEvent;
+
 export type LiveMedia =
-  | { readonly state: "Stored"; readonly blob: string }
+  | StoredMedia
   | { readonly state: "NoHandle" }
   | { readonly state: "Expired" }
   | { readonly state: "Failed" }
@@ -63,7 +94,7 @@ export type LiveReaction = {
   readonly emoji: string | null;
 };
 
-export type TranscriptLine = ArchiveMessage | LiveMessage | LiveReaction;
+export type TranscriptLine = ArchiveLine | LiveMessage | LiveReaction;
 
 export type TranscriptProblemDetail =
   | { readonly _tag: "Unreadable"; readonly cause: string }

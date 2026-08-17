@@ -61,12 +61,12 @@ export const importArchive: Command = async (home, rest, defaultZone) => {
   if ("problems" in read) return message(false, read.problems.map(describeArchive).join("; "));
   const place = home.chat(args.slug).transcript();
   if ("problems" in place) return message(false, place.problems.map(describeHome).join("; "));
-  const written = await writeTranscript(place, read.messages);
+  const written = await writeTranscript(place, read.lines);
   if ("problems" in written) {
     return message(false, written.problems.map(describeTranscript).join("; "));
   }
   return message(
     true,
-    `Imported ${read.messages.length} Messages into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}`,
+    `Imported ${read.counts.messages} Messages into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}`,
   );
 };

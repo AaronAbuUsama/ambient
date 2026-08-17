@@ -1,7 +1,14 @@
 import * as fs from "node:fs/promises";
 
 import type { Place } from "~/modules/home/types.ts";
-import type { LiveMedia, LiveWho, TranscriptLine, TranscriptProblemDetail } from "../types.ts";
+import type {
+  ArchiveEvent,
+  ArchiveMedia,
+  LiveMedia,
+  LiveWho,
+  TranscriptLine,
+  TranscriptProblemDetail,
+} from "../types.ts";
 
 type Loaded = {
   readonly lines: readonly TranscriptLine[];
@@ -31,10 +38,10 @@ const whoOf = (value: unknown): LiveWho | undefined => {
   };
 };
 
-const mediaOf = (value: unknown): LiveMedia | undefined => {
+const liveMediaOf = (value: unknown): LiveMedia | undefined => {
   if (!record(value) || typeof value.state !== "string") return undefined;
-  if (value.state === "Stored" && typeof value.blob === "string") {
-    return { state: "Stored", blob: value.blob };
+  if (value.state === "Stored" && typeof value.hash === "string") {
+    return { state: "Stored", hash: value.hash };
   }
   if (
     value.state === "NoHandle" ||
@@ -46,6 +53,29 @@ const mediaOf = (value: unknown): LiveMedia | undefined => {
   return undefined;
 };
 
+const archiveMediaOf = (value: unknown): ArchiveMedia | undefined => {
+  if (!record(value)) return undefined;
+  if (value.state === "Stored" && typeof value.hash === "string") {
+    return { state: "Stored", hash: value.hash };
+  }
+  return value.state === "NoHandle" &&
+    (value.why === "placeholder" || value.why === "not-in-archive")
+    ? { state: "NoHandle", why: value.why }
+    : undefined;
+};
+
+const archiveEventOf = (value: unknown): ArchiveEvent["event"] | undefined =>
+  value === "added" ||
+  value === "removed" ||
+  value === "left" ||
+  value === "renamed" ||
+  value === "icon" ||
+  value === "admin" ||
+  value === "number-changed" ||
+  value === "other"
+    ? value
+    : undefined;
+
 const optionalTrue = (value: unknown): boolean => value === undefined || value === true;
 
 const quotedOf = (value: unknown): { readonly id: string; readonly from: string } | undefined =>
@@ -55,23 +85,52 @@ const quotedOf = (value: unknown): { readonly id: string; readonly from: string 
 
 const lineOf = (value: unknown): TranscriptLine | undefined => {
   if (!record(value) || typeof value.at !== "number") return undefined;
-  if (
-    value.from === "archive" &&
-    value.kind === "message" &&
-    typeof value.wall === "string" &&
-    typeof value.zone === "string" &&
-    record(value.who) &&
-    typeof value.who.label === "string" &&
-    typeof value.text === "string"
-  ) {
-    return {
-      from: "archive",
-      kind: "message",
+  if (value.from === "archive") {
+    if (
+      typeof value.wall !== "string" ||
+      typeof value.zone !== "string" ||
+      !record(value.who) ||
+      typeof value.who.label !== "string"
+    )
+      return undefined;
+    const common = {
+      from: "archive" as const,
       wall: value.wall,
       at: value.at,
       zone: value.zone,
       who: { label: value.who.label },
+    };
+    const event = archiveEventOf(value.event);
+    if (
+      value.kind === "event" &&
+      event !== undefined &&
+      typeof value.raw === "string" &&
+      (value.subject === undefined || typeof value.subject === "string")
+    ) {
+      return {
+        ...common,
+        kind: "event",
+        event,
+        raw: value.raw,
+        ...(value.subject === undefined ? {} : { subject: value.subject }),
+      };
+    }
+    if (
+      value.kind !== "message" ||
+      typeof value.text !== "string" ||
+      !optionalTrue(value.edited) ||
+      !optionalTrue(value.deleted)
+    )
+      return undefined;
+    const media = value.media === undefined ? undefined : archiveMediaOf(value.media);
+    if (value.media !== undefined && media === undefined) return undefined;
+    return {
+      ...common,
+      kind: "message",
       text: value.text,
+      ...(value.edited === undefined ? {} : { edited: true as const }),
+      ...(value.deleted === undefined ? {} : { deleted: true as const }),
+      ...(media === undefined ? {} : { media }),
     };
   }
   if (value.from !== "live") return undefined;
@@ -105,7 +164,7 @@ const lineOf = (value: unknown): TranscriptLine | undefined => {
     (value.quoted !== undefined && quotedOf(value.quoted) === undefined)
   )
     return undefined;
-  const media = value.media === undefined ? undefined : mediaOf(value.media);
+  const media = value.media === undefined ? undefined : liveMediaOf(value.media);
   const quoted = value.quoted === undefined ? undefined : quotedOf(value.quoted);
   if (value.media !== undefined && media === undefined) return undefined;
   return {

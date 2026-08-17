@@ -15,7 +15,9 @@ resolution, continuation lines, and the list of lines it could not read.
 3. The Wall clock is kept as written and resolved under an IANA Zone per
    Message. A fixed offset is refused.
 4. Sender labels remain labels; no identity is inferred.
-5. Every unreadable line is numbered, and every failure is a value in
+5. Events, Placeholders, edits and deletions are distinct values, never flags
+   that flatten an event into a Message or hide missing media.
+6. Every unreadable line is numbered, and every failure is a value in
    `types.ts`.
 
 ## How to test it
@@ -29,5 +31,6 @@ resolution, continuation lines, and the list of lines it could not read.
 | `types.ts` | read result, entry signature, failure vocabulary |
 | `service.ts` | read assembly and problem rendering |
 | `internal/line.ts` | exported line grammar and sender split |
+| `internal/classify.ts` | event, Placeholder, edit and deletion shapes |
 | `internal/time.ts` | Wall clock validation and IANA Zone resolution |
 | `archive.test.ts` | the string-only interface gate |

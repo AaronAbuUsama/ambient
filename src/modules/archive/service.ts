@@ -8,8 +8,9 @@ import {
   splitSender,
   type RawLine,
 } from "./internal/line.ts";
+import { classify, type ArchiveBase } from "./internal/classify.ts";
 import { formatterFor, instantOf } from "./internal/time.ts";
-import type { ArchiveMessage } from "~/modules/transcript/types.ts";
+import type { ArchiveLine } from "~/modules/transcript/types.ts";
 import type { ArchiveRead, DescribeArchiveProblem, ReadArchive, UnparsedLine } from "./types.ts";
 
 const physicalLines = (text: string): readonly string[] => {
@@ -32,13 +33,13 @@ export const readArchive: ReadArchive = (text, zone) => {
   if (dayFirst === undefined) return { problems: [{ _tag: "AmbiguousDateOrder" }] };
 
   const counts = senderCounts(messageRows);
-  const messages: ArchiveMessage[] = [];
+  const resultLines: ArchiveLine[] = [];
   const unparsed: UnparsedLine[] = [];
   let continuations = 0;
-  let open: ArchiveMessage | undefined;
+  let open: ArchiveBase | undefined;
 
   const close = (): void => {
-    if (open !== undefined) messages.push({ ...open, text: open.text.trimEnd() });
+    if (open !== undefined) resultLines.push(classify({ ...open, text: open.text.trimEnd() }));
     open = undefined;
   };
 
@@ -75,14 +76,24 @@ export const readArchive: ReadArchive = (text, zone) => {
   }
   close();
 
-  const first = messages[0];
-  const last = messages.at(-1);
+  const first = resultLines[0];
+  const last = resultLines.at(-1);
+  const messages = resultLines.filter((line) => line.kind === "message");
   return {
-    messages,
+    lines: resultLines,
     continuations,
     unparsed,
     span:
       first === undefined || last === undefined ? undefined : { oldest: first.at, newest: last.at },
+    counts: {
+      messages: messages.length,
+      events: resultLines.length - messages.length,
+      placeholders: messages.filter(
+        (line) => line.media?.state === "NoHandle" && line.media.why === "placeholder",
+      ).length,
+      edits: messages.filter((line) => line.edited === true).length,
+      deletions: messages.filter((line) => line.deleted === true).length,
+    },
   } satisfies ArchiveRead;
 };
 

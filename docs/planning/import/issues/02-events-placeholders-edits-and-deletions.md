@@ -18,7 +18,7 @@ media.
 
 **Blocked by:** 01.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Shape
 
@@ -40,15 +40,15 @@ without a re-parse — the same reason the primary source is kept in ticket 04.
 
 ## Acceptance criteria
 
-- [ ] A membership event becomes a line of `kind: "event"`, never a message.
-- [ ] Every event carries `raw`, so an unclassified one loses nothing.
-- [ ] A Placeholder becomes a line with media state `NoHandle` and `why: "placeholder"`.
-- [ ] `media` is total: a line carrying media always states its state, and `Stored` is
+- [x] A membership event becomes a line of `kind: "event"`, never a message.
+- [x] Every event carries `raw`, so an unclassified one loses nothing.
+- [x] A Placeholder becomes a line with media state `NoHandle` and `why: "placeholder"`.
+- [x] `media` is total: a line carrying media always states its state, and `Stored` is
       representable (ticket 03 produces it).
-- [ ] Edited and deleted messages carry their flags.
-- [ ] An Archive line still cannot carry a message id, a reply edge, mentions or a reaction —
+- [x] Edited and deleted messages carry their flags.
+- [x] An Archive line still cannot carry a message id, a reply edge, mentions or a reaction —
       those fields are **absent from the variant's type**, not optional in it.
-- [ ] Counts for events and Placeholders are available to the caller for ticket 04's receipt.
+- [x] Counts for events and Placeholders are available to the caller for ticket 04's receipt.
 
 Gate rows 3, 8, 9 of [the spec](../spec.md).
 

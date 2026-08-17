@@ -7,7 +7,7 @@ import { afterEach, expect, it } from "vite-plus/test";
 import { openHome } from "~/modules/home/service.ts";
 import type { Place } from "~/modules/home/types.ts";
 import { readTranscript, writeTranscript } from "./service.ts";
-import type { ArchiveMessage, TranscriptWrite } from "./types.ts";
+import type { ArchiveEvent, ArchiveMessage, TranscriptWrite } from "./types.ts";
 
 const made: string[] = [];
 
@@ -96,4 +96,26 @@ it("ignores and replaces a torn trailing line", async () => {
     ),
   ).toMatchObject({ written: 1, skipped: 1 });
   expect(fs.readFileSync(transcript.path, "utf8")).not.toContain('{"from":"archive"{"from"');
+});
+
+it("round-trips Archive event, media, edit and deletion variants", async () => {
+  const transcript = await place();
+  const event: ArchiveEvent = {
+    from: "archive",
+    kind: "event",
+    wall: "14/02/2025, 4:05:10 PM",
+    at: Date.parse("2025-02-14T16:05:10Z"),
+    zone: "Africa/Accra",
+    event: "added",
+    who: { label: "Rex" },
+    raw: "Rex added Sam",
+  };
+  const shaped: ArchiveMessage = {
+    ...message("caption"),
+    edited: true,
+    deleted: true,
+    media: { state: "NoHandle", why: "placeholder" },
+  };
+  expect(wrote(await writeTranscript(transcript, [event, shaped])).lines).toEqual([event, shaped]);
+  expect(await readTranscript(transcript)).toEqual([event, shaped]);
 });

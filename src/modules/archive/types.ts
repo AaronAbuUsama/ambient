@@ -4,7 +4,7 @@
  * THE interface: what a read yields and every way it can fail.
  */
 
-import type { ArchiveMessage } from "~/modules/transcript/types.ts";
+import type { ArchiveLine } from "~/modules/transcript/types.ts";
 
 export type UnparsedLine = {
   /** 1-based line number in the Archive's `_chat.txt`. */
@@ -13,10 +13,17 @@ export type UnparsedLine = {
 };
 
 export type ArchiveRead = {
-  readonly messages: readonly ArchiveMessage[];
+  readonly lines: readonly ArchiveLine[];
   readonly continuations: number;
   readonly unparsed: readonly UnparsedLine[];
   readonly span: { readonly oldest: number; readonly newest: number } | undefined;
+  readonly counts: {
+    readonly messages: number;
+    readonly events: number;
+    readonly placeholders: number;
+    readonly edits: number;
+    readonly deletions: number;
+  };
 };
 
 export type ArchiveProblemDetail =

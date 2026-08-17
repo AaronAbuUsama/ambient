@@ -18,7 +18,9 @@ and reading through a torn trailing line. Blob bytes remain global in `blobs`.
    line. A repeated identical Archive does not touch the file.
 4. A hard kill may leave one torn trailing line; reads ignore it and the next
    write replaces it.
-5. Every failure is a value from `types.ts`; nothing throws.
+5. Events are their own line kind. Archive media is either `Stored` or a
+   reasoned `NoHandle`; it is never an untyped gap.
+6. Every failure is a value from `types.ts`; nothing throws.
 
 ## How to test it
 
