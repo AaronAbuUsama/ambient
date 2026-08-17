@@ -73,7 +73,7 @@ session or run AFK in parallel.
 ## 4 · Fire the research
 
 For each `research` question, dispatch a subagent using the vendored
-[`research`](../vendor/engineering/research/SKILL.md) skill. They are AFK and parallel —
+[`research`](../vendor/research/SKILL.md) skill. They are AFK and parallel —
 nobody is waiting on them, and they are the exception to one-decision-per-session.
 
 ## Finish

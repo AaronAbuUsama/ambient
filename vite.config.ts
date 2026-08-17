@@ -10,7 +10,11 @@ export default defineConfig({
   // `src/`. Collecting its tests made `vp test` report a failing FILE while every
   // test passed — a suite that is red for a reason unrelated to the code is a
   // suite people learn to ignore. Spikes are evidence, not tests.
-  test: { exclude: ["**/node_modules/**", "**/dist/**", ".spike-private/**"] },
+  // `.claude/worktrees/` is a whole second checkout: collecting it runs every test twice and
+  // reports doubled counts that look like new coverage.
+  test: {
+    exclude: ["**/node_modules/**", "**/dist/**", ".spike-private/**", ".claude/worktrees/**"],
+  },
   // Markdown is hand-wrapped prose: every doc here is an authority someone reads
   // top to bottom, and reflowing them makes every future diff unreadable. Source
   // is formatted; documents are written.

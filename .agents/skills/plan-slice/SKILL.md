@@ -16,8 +16,8 @@ gets made silently by whoever implements it.
 
 ## 1 · The spec
 
-Sections, in this order. Use [`import/spec.md`](../../../docs/planning/import/spec.md) as
-the worked example and the vendored `to-spec` skill for the product half.
+Sections, in this order. [`import/spec.md`](../../../docs/planning/import/spec.md) is the
+worked example — read it before writing a new one.
 
 ```markdown
 # <SLICE> — spec

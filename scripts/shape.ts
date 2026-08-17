@@ -26,8 +26,14 @@ const LONGER: Readonly<Record<string, string>> = {
     "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
 };
 
-/** Directories a repository check has no business walking. */
-const SKIP = new Set(["node_modules", ".git", ".fallow", ".vscode", "dist"]);
+/**
+ * Directories a repository check has no business walking.
+ *
+ * `worktrees` is a whole second checkout under `.claude/`. Walking it double-counts every
+ * file and reports a document's links as broken purely because the copy sits deeper in the
+ * tree — a failure about where a checkout is, not about anything anyone wrote.
+ */
+const SKIP = new Set(["node_modules", ".git", ".fallow", ".vscode", "dist", "worktrees"]);
 
 type Offence = { readonly at: string; readonly said: string };
 
