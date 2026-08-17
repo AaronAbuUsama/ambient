@@ -8,6 +8,7 @@ Design repo.
 
 | Doc | What it is |
 |---|---|
+| [CONTEXT.md](CONTEXT.md) | **The lexicon — one word, one meaning.** Read it first. It defines nouns and decides nothing. |
 | [docs/design/thesis.md](docs/design/thesis.md) | What Ambient is, the category, the opinions. The front door. |
 | [docs/design/product.md](docs/design/product.md) | The nouns and what each owns. **Settled / Open at the bottom is the current truth.** |
 | [docs/design/knowledge-flow.md](docs/design/knowledge-flow.md) | How knowledge gets built. Mechanical vs reasoning, media, the schema, `now`. |
@@ -29,6 +30,7 @@ Design repo.
 
 ```
 AGENTS.md          the engineering contract
+CONTEXT.md         the lexicon — every domain noun, one meaning each
 docs/design/       what is true now
 docs/history/      how we got here — kernel, grills, research
 docs/planning/     per-feature specs and issues

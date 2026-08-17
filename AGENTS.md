@@ -12,6 +12,7 @@ rule.
 
 | Rule | In one line |
 |---|---|
+| [language.md](docs/rules/language.md) | One word, one meaning. The lexicon is [CONTEXT.md](CONTEXT.md); it defines and never decides. |
 | [modules.md](docs/rules/modules.md) | Every module has all six slots; `main.ts` is the composition root and sits outside them. |
 | [imports.md](docs/rules/imports.md) | Name the module — `~/modules/<name>/…`, never `../..`, never another module's `internal/`. |
 | [errors.md](docs/rules/errors.md) | A failure is a declared value in `types.ts`. Nothing throws. |
@@ -38,6 +39,19 @@ command or an observable state. An area is not closed until all of them pass.
 now; [`docs/history/`](docs/history/) is how we got here and defers to it.
 [`docs/design/roadmap.md`](docs/design/roadmap.md) is the anchor — where we are, what is
 settled, what breaks if you go backwards.
+
+**The words come first.** [CONTEXT.md](CONTEXT.md) is the lexicon — one entry per domain
+noun, one or two sentences, plus the words not to use for it. It is the file to read before
+writing anything, and the file to edit in the same change that invents a noun. It is
+**not** the product model: what each noun *owns*, and what is settled or open about it, is
+[`docs/design/product.md`](docs/design/product.md); which modules exist is
+[`docs/design/seams.md`](docs/design/seams.md). One statement, one home —
+[language.md](docs/rules/language.md) has the table.
+
+**An area is not a module.** [`docs/design/roadmap.md`](docs/design/roadmap.md) names areas
+of work; [`docs/design/seams.md`](docs/design/seams.md) names modules. They do not map one
+to one and never have: SKELETON was one area and produced two modules, `cli` and `home`,
+with no `skeleton` module. Do not create a module named after an area.
 
 ## Decided — do not re-litigate
 
