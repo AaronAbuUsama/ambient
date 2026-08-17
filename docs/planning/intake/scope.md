@@ -171,6 +171,48 @@ media messages against 266 blobs on disk** is almost certainly "the downloader w
 driven" rather than expiry — and that is now the spike's primary question, because unlike
 the history question it is expected to *succeed*.
 
+#### Corrected a third time 2026-08-16 — the gap is 63, not 258
+
+**The "266 blobs" was one of two blob stores.** The baseline holds two disjoint
+content-addressed trees, and every earlier count saw only the first:
+
+```
+.proof-private/ios/.whatsappd-media/<account>/<sha>.bin        266
+.proof-private/ios/media/.whatsappd-media/<account>/<sha>.bin  495
+                                       distinct shas, 0 overlap  761   (975 MB)
+```
+
+Counting files was the wrong instrument anyway — **761 blobs against 524 media messages**,
+because 300 of them belong to no message in the mirror. The message row states its own
+media state, and that is the measurement:
+
+| `media.state` | count | carries |
+|---|---|---|
+| `stored` | **461** | `media:v1:<sha>` — **all 461 resolve to a file on disk, 0 missing** |
+| `failed` | **63** | no ref at all; `reason: download_failed` for every one |
+
+So **the gap is 63, and it was never 258.** Media is in far better shape than this document
+has said at any point.
+
+**And the 63 are `NoHandle`, not `Failed`.** No media row in the mirror retains a
+`mediaKey` or a `directPath` — not the 63 failures, and not the 461 successes either:
+
+```sql
+SELECT state, SUM(mediaKey IS NOT NULL), SUM(directPath IS NOT NULL), COUNT(*) …
+failed   0  0   63
+stored   0  0  461
+```
+
+The projection discards the handle once it has used it. That places all 63 in the
+**NoHandle** row of the media table below — *"we never recorded how to fetch it"* — and it
+means the remedy is **not** the retry that `Failed` implies. Nothing in the mirror can
+re-fetch them. They return only if WhatsApp *redelivers the message* with a fresh handle,
+which is precisely what the `requestHistory` pass tests. **Media recovery and history depth
+are therefore the same question, not two.**
+
+*Method: `media.state` histogram over the baseline, plus a ref→disk join across both stores.
+The baseline was copied out and queried; the original was never opened for writing.*
+
 #### The original, wrong reasoning
 
 `baileys/history.ts` defaults the download thunk to `noDownloader`:
@@ -316,12 +358,14 @@ ingested. 913 exist; roughly 31 matter today.**
 ### The seed today
 
 ```
-THE CALL · THE CALL DEV TEAM · THE CALL Team · THE CALL UX/UI · THE CALL ADVISORY
+THE CALL · THE CALL Team · THE CALL UX/UI · THE CALL ADVISORY
 The Call - Weekly Checkins · Bug Reports · EXTERNAL DEV · INTERNAL DEV
-Capxul Devs · Capxul April Launch · Paynest
+Capxul Devs · Capxul April Launch
 light:   Cpx · Check-ins
-dropped: STORAGE
-open:    the ~7 `X <> Capxul` partnership groups
+dropped: STORAGE · THE CALL DEV TEAM (no longer exists)
+same:    Paynest IS Capxul Devs — renamed, one chat, not two. Corrected by the
+         principal 2026-08-16; the earlier list double-counted it.
+in:      the ~7 `X <> Capxul` partnership groups — settled, see the close of scoping below
 ```
 
 ### Two findings this depends on
@@ -409,3 +453,249 @@ distinct remedy — so each is a named value in `types.ts`, never a silent gap
 A Media doc records *which*, so the knowledge base can say "this image existed and could not
 be read, for this reason" rather than implying it looked and saw nothing. The same
 discipline as `[assumed]`: record the uncertainty rather than hide it.
+
+---
+
+## The spike reported (2026-08-16, 05:23 wall clock)
+
+Fresh pairing, reconnect on the stored credential, one chat paged to exhaustion.
+**Baseline byte-identical afterwards. Zero refusals, zero throttles.**
+
+### 1. `requestHistory` is NON-ZERO on an iPhone primary — the day's most important result
+
+```
+chat 120363428464069244@g.us
+  recovered  419 messages      requests 17, of which 9 answered
+  reached    2026-07-12        251s      then 8 consecutive silent replies
+```
+
+The credential confirms the primary is an iPhone (`creds.platform = "iphone"`), so this is
+the case `whatsappd/docs/architecture/history-semantics.md` documents as silent. **It is not silent.** §1's settled
+position stands corrected a third time, and this is the one that changes the build.
+
+**But the depth is weeks, not years.** 419 messages reached back about five weeks and then
+stopped dead — the mirror already held messages to 2022-06-27. Paging deepens a chat's
+*recent* history; it does not open the archive. INTAKE is therefore a resumable,
+rate-limited backfill **with a bounded floor**, not an unbounded one — and 17 requests for
+9 answers, at ~28s each, is the cost line.
+
+### 2. Media downloads — and expiry is real but rare
+
+```
+attempted 29   landed 26 (8.9 MB)   already had 1   failed 2
+                                    of those 2: 1 EXPIRED/GONE, 1 transport failure
+```
+
+Only the 29 messages *redelivered this run* could be attempted, because the mirror keeps no
+handle (see §2's third correction). Media is fetchable when it arrives with a fresh handle,
+one blob in twenty-nine had already expired on WhatsApp's side, and **the 63 `NoHandle`
+messages remain unrecovered** — reaching them means paging their own chats.
+
+### 3. A passive reconnect adds almost nothing
+
+420 delivered, 293 novel — but the sources say where they came from:
+
+```
+on_demand = 9 batches      unknown = 1
+```
+
+Every one of the 420 arrived through `requestHistory`. The 60-second settle window after
+`online` yielded **one** message. **Reconnecting does not backfill; asking does.**
+
+### Corrected by a second run the same day — `requestHistory` is a gap-filler, not a drill
+
+Run 5 paged one chat and got 9 answers; run 6 paged two chats, from the mirror's own
+oldest, and got **0 answers in 16 requests**. The difference is not the chat and not the
+platform:
+
+| | run 5 | run 6 |
+|---|---|---|
+| Initial history sync | **never completed** — killed mid-sync by the spin bug | **completed first**: 4,474 delivered, 3,704 novel, `source: "recent"` |
+| `requestHistory` | 9 answered, 419 recovered | **0 answered, both chats stalled** |
+
+**`requestHistory` returns what the initial sync has not already delivered, and nothing
+more.** Run 5 had a hole to fill; run 6 had none. The reachable ceiling is identical either
+way — it is a property of the account, not of how you ask.
+
+So §1's "the history ceiling is the phone" was closer to right than run 5 made it look. The
+capability exists and answers; it just cannot exceed the sync window.
+
+### What the account actually contains
+
+The mirror was never "2,739 messages back to 2022". Measured across the baseline:
+
+| Per-chat history span | Chats (5+ msgs) | Messages |
+|---|---|---|
+| 1 year or more | **0** | 0 |
+| 3–12 months | 6 | 66 |
+| 1–3 months | 6 | 216 |
+| **1–4 weeks** | 12 | **1,168** |
+| under 1 week | 18 | 476 |
+
+The 2022 date is one outlier chat. The busiest group holds **11 days**; the busiest DM holds
+**5**. And the corpus is concentrated to a degree that settles the allowlist argument:
+
+- **505 of 913 chats hold zero messages** (408 DMs, 97 groups) — empty shells.
+- Of the 407 with any, **365 hold 1–4 messages**.
+- **5 chats hold 1,170 messages — 43% of the corpus.** Fifteen chats hold 69%.
+
+### Media and voice, from the run that actually had handles
+
+A completed sync delivers media handles in bulk — 569 queued, against 29 in run 5:
+
+```
+attempted 728   landed 343 (315.6 MB)   already had 10   failed 375
+failures: 353 transport ("FAILED"), 22 EXPIRED/GONE
+voice notes landed 112        voice notes seen, 2026: 387
+```
+
+**The principal was right about voice notes.** The mirror counts 78 account-wide; a
+completed sync surfaced **387 in 2026 alone**, and 112 downloaded. Question 2 of the spike
+brief is answered, and the mirror's audio count was never the real number.
+
+The 353 transport failures are **not** expiry — only 22 were. They need one retry pass
+before any conclusion; a 48% failure rate on a live CDN is more likely throttling than loss.
+
+### Still open — do not write these up as answered
+
+- **The 353 transport failures.** Not classified as expiry, never retried. Until a retry
+  pass runs, the media story has a 48% hole in it.
+- **Group membership.** The `groupMetadata(jid)` call added to the spike at the close of the
+  allowlist section was not exercised.
+- **Whether a second, later sync deepens the window.** Every measurement here is one link on
+  one day. Whether the reachable window slides forward and strands the middle — the question
+  that decides whether INTAKE must run on a cadence — is untested.
+
+### What it cost to learn
+
+Three bugs in the spike, each of which produced a confident wrong number before it was
+found: a `while (drainers < 4)` top-up loop that spun the process at 96% CPU and blocked
+`whatsappd`'s event pipeline so the session could never reach `online`; a blob count taken
+from the working copy instead of the baseline; and a file count used where a state histogram
+was the right instrument. **The first was diagnosed as a protocol fault (515) and was not
+one** — the sampler's stack decided it, not the reading. Same lesson as §1 and §2, third
+occurrence in two days: *measure the layer you are accusing.*
+
+---
+
+## Pairing and first sync are one screen
+
+Added 2026-08-16, out of the spike. **This is the first genuinely user-facing surface
+Ambient has**, and it arrived by accident: `pair.ts` rendered its QR to the terminal, to
+`qr.txt`, and to a `qr.html` it opened in a browser — built as a spike convenience, and it
+turned out to be the shape the CLI needs.
+
+A QR printed to a terminal is unscannable the moment the output is piped, and stale within
+about twenty seconds. Every user of Ambient pairs once; this is the whole of their first
+impression.
+
+The principal, watching the spike pair and then sit there:
+
+> *"it's syncing now but nothing's happening on the screen."*
+
+**The socket knows all of it. Nothing renders it.** That is the entire defect.
+
+### What the screen must show
+
+1. **A QR that refreshes itself** as the code rotates, without a reload.
+2. **Live status** — waiting → scanned → authenticating → syncing.
+3. **Sync progress** — chats seen, messages arriving, oldest date reached.
+
+### Every one of those is already a typed value
+
+This is not new instrumentation; it is a subscription that nobody has written. `whatsappd`
+already publishes each state the screen needs
+(`packages/whatsappd/src/model/status.ts`):
+
+| Screen state | The value it renders |
+|---|---|
+| waiting, with a live code | `phase: "pairing"`, `pairing.step: "challenge_live"` — carries `qr` **and `expiresAt`**, which is the refresh clock |
+| scanned | `pairing.step: "restart_pending"` — WhatsApp confirmed, the expected 515 restart is pending |
+| authenticating | `phase: "connecting"` / `phase: "authenticated"`, `sync.step: "draining"` |
+| syncing, with a bar | `sync.step: "syncing"`, carrying `progress` |
+| counts and oldest-date | the `conversationSync` batches, which is where the chats, contacts and messages actually arrive |
+| stalled, not dead | `phase: "backing_off"` — carries `reason`, `retryAttempt`, `nextRetryAt` |
+| dead, re-pair | `phase: "logged_out"` / `"suspended"` |
+
+The `backing_off` and `logged_out` rows matter as much as the happy path: a first sync that
+hits a retry currently looks identical to one that has hung, which is exactly the complaint.
+
+### How it gets built
+
+Per [../../rules/artefacts.md](../../rules/artefacts.md) it is **designed with `impeccable`,
+not improvised** — theme-aware, self-contained, a local file. The rule exists because the
+one artefact that skipped it was called *"absolute garbage"*, and this surface has a far
+lower tolerance than a report: it is the first thing a user ever sees, and it is what they
+stare at while nothing appears to happen.
+
+
+---
+
+## Measured 2026-08-17 — the mechanism, settled
+
+The spike questions from the previous handoff are answered. Method and evidence are in
+`.spike-private/history/page-*.{log,json}`; the decision they produced is
+[ADR 003](../../adr/003-history-import-is-an-archive.md).
+
+### Live paging works, and reaches one year
+
+Driven against `Capxul Devs` with the **phone locked**, on a whatsappd patched for
+[#207](https://github.com/AaronAbuUsama/whatsappd/issues/207):
+
+```
+168 requests · 165 answered · 2 silent · 0 refusals
+7,908 messages recovered (the mirror held 15)
+oldest reached 2025-08-17 — exactly 364 days
+terminated on WhatsApp's own "nothing older", correlated to the exact request
+```
+
+**The loop that works**, per [ADR-0010](../../../../whatsappd/docs/adr) in whatsappd:
+
+```
+1  walk the STORED MIRROR to its oldest message for this chat   <- the step everyone skips
+2  anchor = that message's { ref, timestamp }
+3  requestHistory(anchor, { count: 50 })
+4  wait for a conversationSync batch with source "on_demand"
+5  messages?  -> re-anchor on the new oldest, repeat
+6  EMPTY batch whose requestSessionId === your requestId  -> EXHAUSTED, stop
+7  nothing    -> silence; back off and retry. NEVER read as exhausted.
+```
+
+**Constraints:** ~48 messages per reply — a real server cap, proven twice (`count: 200`
+with a 45s drain window still returns 48). ~2.7s per request; a 13k chat is ~12 minutes.
+**Rate limiting is silent and recovers**: after ~220 requests in an hour the account
+returned 6 consecutive silences, then answered normally minutes later. No error, no refusal.
+
+**Unsettled:** the 364-day boundary rests on **one chat**. A phone-awake arm was run and is
+**inconclusive** — its silences coincided with rate limiting.
+
+### The archive is more complete than the protocol
+
+| | Live paging | Archive export |
+|---|---|---|
+| Reach | 7,908, back 364 days | **13,117, back 19 months** |
+| Media | 343 of 728 fetched first-pass | **1,139 files in the zip** |
+| Needs | credential, socket, lease | **a file** |
+
+Format verified against 19,607 lines — see ADR 003 for the grammar and the
+`<attached: NNNNNNNN-TYPE-date-time.ext>` marker convention.
+
+### Corrections to the sections above
+
+Assert these over anything earlier in this document:
+
+1. **"The history ceiling is the phone / iOS never answers."** Wrong — 165 of 168 answered.
+2. **"requestHistory only fills an interrupted sync."** Wrong — it pages a fully-synced
+   account for a year.
+3. **"The ceiling is ~3 months."** Wrong — 364 days.
+4. **"The media gap is 258."** Wrong — **63**. Two disjoint blob stores made a file count
+   the wrong instrument; `media.state` is the measurement (461 `stored`, 63 `failed`). No
+   message retains a `mediaKey`, so the 63 are `NoHandle` — redelivery only, never retry.
+5. **"Voice notes are 78."** Wrong — 387 in 2026 alone; the with-media export carries 95 as
+   actual bytes.
+6. **The 515 stream error was never the cause of anything.** A `while (drainers < 4)` spin
+   in the spike blocked whatsappd's event pipeline so `synced` could never be applied.
+
+Each was asserted confidently and each came from reading one layer and stopping. **Three
+times the principal said a measurement contradicted what he knows about his own account,
+and three times he was right.**

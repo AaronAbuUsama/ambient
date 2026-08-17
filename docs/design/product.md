@@ -33,6 +33,20 @@ Every source has a **mode**:
 | `ingest` | read continuously, build knowledge, **never speak** |
 | `speak` | read and speak |
 
+Every source also has a **shape** — how it is read:
+
+| Shape | Meaning |
+|---|---|
+| `live account` | a paired WhatsApp Account, read over a socket. Can be `ingest` or `speak`. |
+| `archive` | a file the principal exported from WhatsApp. Always `ingest`, never speaks. |
+
+**Amended 2026-08-17 ([ADR 003](../adr/003-history-import-is-an-archive.md)).** History
+Import is satisfied by an **archive**, not by pairing the account it came from. Measured on
+one chat: the live protocol reaches **364 days** and stops; the export holds **19 months**
+and every media file. The cold start therefore does not depend on a protocol we do not
+control. Continuous Ingestion still requires a live account — the two operations below are
+unchanged, and reading them as one is still the mistake.
+
 Settled:
 
 - **Aaron's personal WhatsApp is `ingest`.** Ongoing, not a one-time import — it keeps
@@ -317,6 +331,11 @@ get a knowledge base that is worth anything on day one.
 
 So history import is not a nice-to-have. **The architecture has to support ingesting from
 an account Ambient does not live on, without pretending it was there.**
+
+**Amended 2026-08-17 ([ADR 003](../adr/003-history-import-is-an-archive.md)):** the way it
+does that is an **exported archive**, not a second pairing. No credential, no lease, nothing
+revocable — and strictly more complete than the live protocol, which caps at one year.
+Point 4 below is exactly why: a fact from an archive is **known, not witnessed**.
 
 What that requires:
 

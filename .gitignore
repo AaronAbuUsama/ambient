@@ -25,3 +25,6 @@ dist-ssr
 !.vscode/
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Spike scratch (personal data, never commit)
+.spike-private/
