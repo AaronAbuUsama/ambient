@@ -55,7 +55,9 @@ function tickets(dir: string): readonly Ticket[] {
     });
 }
 
-const say = (s: string): void => process.stdout.write(`${s}\n`);
+const say = (s: string): void => {
+  process.stdout.write(`${s}\n`);
+};
 
 const slice = activeSlice();
 if (slice === undefined) {
