@@ -9,6 +9,9 @@ const EDITED = /\s*<This message was edited>$/i;
 const DELETED = /(?:^|\s)(?:This message was deleted|deleted this message)\.?$/i;
 const PLACEHOLDER =
   /(?:^|\s)(<Media omitted>|image omitted|video omitted|audio omitted|sticker omitted|document omitted|GIF omitted|Contact card omitted)$/i;
+const MARKER = /(?:^|\s)<attached:\s*([^<>]+)>$/i;
+
+export type Classified = { readonly line: ArchiveLine; readonly marker?: string };
 
 const eventOf = (raw: string): ArchiveEvent["event"] | undefined => {
   if (/^.+\sadded\s.+$/i.test(raw) || /joined using .+ invite link$/i.test(raw)) return "added";
@@ -24,38 +27,48 @@ const eventOf = (raw: string): ArchiveEvent["event"] | undefined => {
   return undefined;
 };
 
-export const classify = (base: ArchiveBase): ArchiveLine => {
+export const classify = (base: ArchiveBase): Classified => {
   const placeholder = PLACEHOLDER.exec(base.text);
+  const marker = MARKER.exec(base.text);
   const edited = EDITED.test(base.text);
   const deleted = DELETED.test(base.text);
   const event = eventOf(base.text);
-  if (placeholder === null && !edited && !deleted && event !== undefined) {
+  if (placeholder === null && marker === null && !edited && !deleted && event !== undefined) {
     return {
-      from: "archive",
-      kind: "event",
-      wall: base.wall,
-      at: base.at,
-      zone: base.zone,
-      event,
-      who: base.who,
-      raw: base.text,
+      line: {
+        from: "archive",
+        kind: "event",
+        wall: base.wall,
+        at: base.at,
+        zone: base.zone,
+        event,
+        who: base.who,
+        raw: base.text,
+      },
     };
   }
 
   const text = (
-    placeholder === null
-      ? edited
-        ? base.text.replace(EDITED, "")
-        : base.text
-      : base.text.slice(0, placeholder.index)
+    marker !== null
+      ? base.text.slice(0, marker.index)
+      : placeholder === null
+        ? edited
+          ? base.text.replace(EDITED, "")
+          : base.text
+        : base.text.slice(0, placeholder.index)
   ).trimEnd();
   return {
-    ...base,
-    text,
-    ...(edited ? { edited: true as const } : {}),
-    ...(deleted ? { deleted: true as const } : {}),
-    ...(placeholder === null
-      ? {}
-      : { media: { state: "NoHandle" as const, why: "placeholder" as const } }),
+    line: {
+      ...base,
+      text,
+      ...(edited ? { edited: true as const } : {}),
+      ...(deleted ? { deleted: true as const } : {}),
+      ...(marker !== null
+        ? { media: { state: "NoHandle" as const, why: "not-in-archive" as const } }
+        : placeholder === null
+          ? {}
+          : { media: { state: "NoHandle" as const, why: "placeholder" as const } }),
+    },
+    ...(marker === null ? {} : { marker: marker[1]!.trim() }),
   };
 };

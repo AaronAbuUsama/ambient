@@ -1,5 +1,9 @@
 /** `archive` assembly. The interface is `types.ts`. */
 
+import * as fs from "node:fs/promises";
+
+import type { ArchiveLine } from "~/modules/transcript/types.ts";
+import { classify, type ArchiveBase } from "./internal/classify.ts";
 import {
   cleanBody,
   detectDayFirst,
@@ -8,10 +12,17 @@ import {
   splitSender,
   type RawLine,
 } from "./internal/line.ts";
-import { classify, type ArchiveBase } from "./internal/classify.ts";
 import { formatterFor, instantOf } from "./internal/time.ts";
-import type { ArchiveLine } from "~/modules/transcript/types.ts";
-import type { ArchiveRead, DescribeArchiveProblem, ReadArchive, UnparsedLine } from "./types.ts";
+import { looksLikeZip, openZip } from "./internal/zip.ts";
+import type {
+  ArchiveProblem,
+  ArchiveRead,
+  DescribeArchiveProblem,
+  OpenArchive,
+  ReadArchive,
+  ResolveMedia,
+  UnparsedLine,
+} from "./types.ts";
 
 const physicalLines = (text: string): readonly string[] => {
   const lines = text.split(/\r?\n/);
@@ -34,12 +45,17 @@ export const readArchive: ReadArchive = (text, zone) => {
 
   const counts = senderCounts(messageRows);
   const resultLines: ArchiveLine[] = [];
+  const markers: { line: number; name: string }[] = [];
   const unparsed: UnparsedLine[] = [];
   let continuations = 0;
   let open: ArchiveBase | undefined;
 
   const close = (): void => {
-    if (open !== undefined) resultLines.push(classify({ ...open, text: open.text.trimEnd() }));
+    if (open !== undefined) {
+      const classified = classify({ ...open, text: open.text.trimEnd() });
+      const line = resultLines.push(classified.line) - 1;
+      if (classified.marker !== undefined) markers.push({ line, name: classified.marker });
+    }
     open = undefined;
   };
 
@@ -81,6 +97,7 @@ export const readArchive: ReadArchive = (text, zone) => {
   const messages = resultLines.filter((line) => line.kind === "message");
   return {
     lines: resultLines,
+    markers,
     continuations,
     unparsed,
     span:
@@ -93,8 +110,66 @@ export const readArchive: ReadArchive = (text, zone) => {
       ).length,
       edits: messages.filter((line) => line.edited === true).length,
       deletions: messages.filter((line) => line.deleted === true).length,
+      markers: markers.length,
+      resolved: 0,
+      unresolved: markers.length,
     },
   } satisfies ArchiveRead;
+};
+
+const failed = (cause: unknown): ArchiveProblem => ({
+  problems: [{ _tag: "Unreadable", cause: cause instanceof Error ? cause.message : String(cause) }],
+});
+
+export const openArchive: OpenArchive = async (path, zone) => {
+  const zip = await looksLikeZip(path);
+  if (typeof zip !== "boolean") return zip;
+  if (zip) {
+    const opened = await openZip(path);
+    if ("problems" in opened) return opened;
+    const read = readArchive(opened.text, zone);
+    if ("problems" in read) {
+      opened.close();
+      return read;
+    }
+    return { ...opened, read };
+  }
+  try {
+    const text = await fs.readFile(path, "utf8");
+    const read = readArchive(text, zone);
+    return "problems" in read
+      ? read
+      : {
+          form: "text",
+          bytes: Buffer.byteLength(text),
+          read,
+          media: [],
+          close: () => undefined,
+        };
+  } catch (cause: unknown) {
+    return failed(cause);
+  }
+};
+
+export const resolveMedia: ResolveMedia = (read, hashes) => {
+  const lines = [...read.lines];
+  let resolved = 0;
+  for (const marker of read.markers) {
+    const line = lines[marker.line];
+    const hash = hashes.get(marker.name);
+    if (line?.kind !== "message" || hash === undefined) continue;
+    lines[marker.line] = { ...line, media: { state: "Stored", hash } };
+    resolved++;
+  }
+  return {
+    ...read,
+    lines,
+    counts: {
+      ...read.counts,
+      resolved,
+      unresolved: read.markers.length - resolved,
+    },
+  };
 };
 
 export const describe: DescribeArchiveProblem = (problem) => {
@@ -105,5 +180,15 @@ export const describe: DescribeArchiveProblem = (problem) => {
       return "The Archive does not settle whether dates are day-first";
     case "InvalidZone":
       return `The Zone "${problem.zone}" is not an IANA name`;
+    case "Unreadable":
+      return `Archive is unreadable: ${problem.cause}`;
+    case "InvalidZip":
+      return `Archive ZIP is invalid: ${problem.cause}`;
+    case "InvalidFilename":
+      return "Archive ZIP has a filename that is not UTF-8";
+    case "UnsafeEntry":
+      return `Archive ZIP entry "${problem.name}" is not flat`;
+    case "MissingChatText":
+      return "Archive ZIP has no _chat.txt";
   }
 };

@@ -1,9 +1,26 @@
-/** `archive` through its string-only interface. */
+/** `archive` through its interface. */
 
-import { expect, it } from "vite-plus/test";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import { afterEach, expect, it } from "vite-plus/test";
 
-import { readArchive } from "./service.ts";
+import { openArchive, readArchive, resolveMedia } from "./service.ts";
 import type { ArchiveRead } from "./types.ts";
+
+const made: string[] = [];
+
+const fixture = (name: "media" | "text"): string => {
+  const dir = fs.mkdtempSync(`${os.tmpdir()}/ambient-archive-`);
+  made.push(dir);
+  const target = `${dir}/${name}.zip`;
+  const encoded = fs.readFileSync(`${import.meta.dirname}/fixtures/${name}.zip.base64`, "utf8");
+  fs.writeFileSync(target, Buffer.from(encoded.trim(), "base64"));
+  return target;
+};
+
+afterEach(() => {
+  for (const dir of made.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+});
 
 const read = (text: string, zone = "Africa/Accra"): ArchiveRead => {
   const result = readArchive(text, zone);
@@ -105,8 +122,47 @@ it("preserves events, Placeholders, edits and deletions as distinct shapes", () 
     placeholders: 1,
     edits: 1,
     deletions: 1,
+    markers: 0,
+    resolved: 0,
+    unresolved: 0,
   });
   expect(Object.keys(archive.lines[2] ?? {})).not.toEqual(
     expect.arrayContaining(["id", "quoted", "mentions", "reaction"]),
   );
+});
+
+it("reads a one-file ZIP identically to bare text", async () => {
+  const opened = await openArchive(fixture("text"), "Africa/Accra");
+  if ("problems" in opened) throw new Error("expected the ZIP to be readable");
+  expect(opened.form).toBe("zip-text");
+  expect(opened.media).toEqual([]);
+  expect(opened.read).toEqual(
+    readArchive(
+      "[14/02/2025, 4:06:10 PM] Rex: one\n[15/02/2025, 4:07:00 PM] Sam: two\n",
+      "Africa/Accra",
+    ),
+  );
+  opened.close();
+});
+
+it("decodes raw UTF-8 media names and preserves a missing Marker", async () => {
+  const opened = await openArchive(fixture("media"), "Africa/Accra");
+  if ("problems" in opened) throw new Error("expected the ZIP to be readable");
+  expect(opened.form).toBe("zip-media");
+  expect(opened.media.map((entry) => entry.name)).toEqual(["photo–one.jpg", "photo two.jpg"]);
+  const hash = "a".repeat(64);
+  const resolved = resolveMedia(
+    opened.read,
+    new Map([
+      ["photo–one.jpg", hash],
+      ["photo two.jpg", hash],
+    ]),
+  );
+  expect(resolved.lines.map((line) => (line.kind === "message" ? line.media : undefined))).toEqual([
+    { state: "Stored", hash },
+    { state: "Stored", hash },
+    { state: "NoHandle", why: "not-in-archive" },
+  ]);
+  expect(resolved.counts).toMatchObject({ markers: 3, resolved: 2, unresolved: 1 });
+  opened.close();
 });

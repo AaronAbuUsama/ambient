@@ -1,8 +1,11 @@
 /** Wire one Archive read into the one Write path. No parsing or path building. */
 
-import * as fs from "node:fs/promises";
-
-import { describe as describeArchive, readArchive } from "~/modules/archive/service.ts";
+import {
+  describe as describeArchive,
+  openArchive,
+  resolveMedia,
+} from "~/modules/archive/service.ts";
+import { describe as describeBlob, openBlobs } from "~/modules/blobs/service.ts";
 import { describe as describeHome } from "~/modules/home/service.ts";
 import { describe as describeTranscript, writeTranscript } from "~/modules/transcript/service.ts";
 import type { Command } from "../command.ts";
@@ -37,9 +40,6 @@ const argsOf = (rest: readonly string[], defaultZone: string): ImportArgs | unde
   return slug === undefined ? undefined : { input, slug, zone, defaulted };
 };
 
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
-
 export const importArchive: Command = async (home, rest, defaultZone) => {
   const args = argsOf(rest, defaultZone);
   if (args === undefined) return usage();
@@ -50,23 +50,41 @@ export const importArchive: Command = async (home, rest, defaultZone) => {
     );
   }
 
-  let text: string;
-  try {
-    text = await fs.readFile(args.input, "utf8");
-  } catch (cause: unknown) {
-    return message(false, `Archive is unreadable: ${causeOf(cause)}`);
+  const opened = await openArchive(args.input, args.zone);
+  if ("problems" in opened) {
+    return message(false, opened.problems.map(describeArchive).join("; "));
   }
-
-  const read = readArchive(text, args.zone);
-  if ("problems" in read) return message(false, read.problems.map(describeArchive).join("; "));
+  const wanted = new Set(opened.read.markers.map((marker) => marker.name));
+  const hashes = new Map<string, string>();
+  const blobs = openBlobs(home.blobs);
+  for (const entry of opened.media) {
+    if (!wanted.has(entry.name)) continue;
+    const source = await entry.open();
+    if ("problems" in source) {
+      opened.close();
+      return message(false, source.problems.map(describeArchive).join("; "));
+    }
+    const stored = await blobs.put(source);
+    if ("problems" in stored) {
+      opened.close();
+      return message(false, stored.problems.map(describeBlob).join("; "));
+    }
+    hashes.set(entry.name, stored.hash);
+  }
+  const read = resolveMedia(opened.read, hashes);
+  opened.close();
   const place = home.chat(args.slug).transcript();
   if ("problems" in place) return message(false, place.problems.map(describeHome).join("; "));
   const written = await writeTranscript(place, read.lines);
   if ("problems" in written) {
     return message(false, written.problems.map(describeTranscript).join("; "));
   }
+  const unresolved =
+    read.counts.unresolved === 0
+      ? ""
+      : `; ${read.counts.unresolved} unresolved Marker${read.counts.unresolved === 1 ? "" : "s"}`;
   return message(
     true,
-    `Imported ${read.counts.messages} Messages into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}`,
+    `Imported ${read.counts.messages} Messages into ${args.slug} using ${args.defaulted ? "default " : ""}Zone ${args.zone}${unresolved}`,
   );
 };

@@ -148,6 +148,36 @@ it("prints a default Zone and refuses a missing Chat before writing", async () =
   ).toMatchObject({ kind: "message", ok: false });
 });
 
+it("streams ZIP media into the global Blob store and prints unresolved Markers", async () => {
+  const root = tmp();
+  const input = `${root}.zip`;
+  const encoded = fs.readFileSync(
+    `${import.meta.dirname}/../archive/fixtures/media.zip.base64`,
+    "utf8",
+  );
+  fs.writeFileSync(input, Buffer.from(encoded.trim(), "base64"));
+  await run(["init", "--home", root], "/nowhere");
+  await run(["chat", "add", "fixture", "--home", root], "/nowhere");
+
+  expect(
+    await run(
+      ["import", input, "--into", "fixture", "--zone", "Africa/Accra", "--home", root],
+      "/nowhere",
+    ),
+  ).toEqual({
+    kind: "message",
+    ok: true,
+    said: "Imported 3 Messages into fixture using Zone Africa/Accra; 1 unresolved Marker",
+  });
+  const transcript = fs.readFileSync(`${root}/chats/fixture/transcript.jsonl`, "utf8");
+  const hashes = [...transcript.matchAll(/"hash":"([a-f0-9]{64})"/g)].map((match) => match[1]);
+  expect(hashes).toHaveLength(2);
+  expect(new Set(hashes).size).toBe(1);
+  expect(transcript).toContain('"media":{"state":"NoHandle","why":"not-in-archive"}');
+  expect(fs.readdirSync(`${root}/blobs`)).toEqual([hashes[0]]);
+  expect(fs.existsSync(`${root}/chats/fixture/media`)).toBe(false);
+});
+
 // ── the exit codes the gate is written in ────────────────────────────
 
 const ambient = (root: string, ...args: readonly string[]) => {

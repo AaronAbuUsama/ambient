@@ -14,7 +14,7 @@ to a bare `.txt` — the caller never says which of the three input forms it has
 
 **Blocked by:** 01.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## The decoding invariant — this is the one that silently loses data
 
@@ -33,20 +33,20 @@ class of defect that comes back later as *"the import worked, why is that contra
 
 ## Acceptance criteria
 
-- [ ] `archive` accepts all three input forms — a bare `.txt`, a `.zip` of one file, a `.zip`
+- [x] `archive` accepts all three input forms — a bare `.txt`, a `.zip` of one file, a `.zip`
       of `_chat.txt` plus flat media — and the caller declares nothing.
-- [ ] A `.zip` of one file produces a Transcript identical to the bare `.txt` of the same
+- [x] A `.zip` of one file produces a Transcript identical to the bare `.txt` of the same
       conversation.
-- [ ] Every Marker resolves to a Blob; the line's media state is `Stored` and carries the
+- [x] Every Marker resolves to a Blob; the line's media state is `Stored` and carries the
       hash.
-- [ ] Entry names are decoded as UTF-8 regardless of the flag, and a fixture with a
+- [x] Entry names are decoded as UTF-8 regardless of the flag, and a fixture with a
       typographic dash and a narrow no-break space in its filename resolves.
-- [ ] A Marker naming a file the Archive does not contain becomes `NoHandle` with
+- [x] A Marker naming a file the Archive does not contain becomes `NoHandle` with
       `why: "not-in-archive"`, and the unresolved count is **printed**, not swallowed.
-- [ ] `blobs` stores two identical byte sequences once.
-- [ ] Bytes go to the **global** Blob store, never inside the Chat folder. The Chat holds refs
+- [x] `blobs` stores two identical byte sequences once.
+- [x] Bytes go to the **global** Blob store, never inside the Chat folder. The Chat holds refs
       only.
-- [ ] A 306 MB Archive is read without holding it all in memory.
+- [x] A 306 MB Archive is read without holding it all in memory.
 
 Gate rows 1 (zip form), 2, 13 of [the spec](../spec.md).
 
