@@ -16,7 +16,7 @@ current state as one page is [`ingest.html`](./ingest.html) — gitignored, rege
 | 2 · Design | done | [`design.md`](./design.md) — **the first time `design-slice` ever ran** |
 | 3 · Frontier | done | 13 answered · 4 dissolved · 1 retired to the roadmap |
 | 4 · Plan | done | [`spec.md`](./spec.md), 16 gate rows, and 5 tickets in [`issues/`](./issues/) |
-| **5 · Build** | **running** | `00` **done** · `01` next · then `02 → 03 → 04` |
+| **5 · Build** | **running** | `00` **done** · `01` **done** · `02` next, then `03 → 04` |
 | 6 · Close | — | `close-slice` |
 
 **`00` closed 2026-08-18.** `seams.md` carries the amended `channel` row, the new `ingest`
@@ -66,11 +66,17 @@ paired through the auth-only store and lost its sync. Kept as evidence, deletabl
 
 ## Start here
 
-**`01`** — [`transcript` survives a Live line](issues/01-transcript-survives-a-live-line.md).
-Three defects in shipped code, all Live-only, none ever fired. The worst loses data silently
-while reporting `written: 0`. Gate rows 11–13, each a failing test first.
+**`02`** — [pair a live account](issues/02-pair-a-live-account.md). Then `03` (peers) →
+`04` (ingest).
 
-Then `02` (pair) → `03` (peers) → `04` (ingest).
+**`01` is done.** Gate rows 11, 12 and 13 pass. `transcript` gained
+[`internal/lock.ts`](../../../src/modules/transcript/internal/lock.ts) and a key-order-blind
+change comparison; `merged` lost the provenance gate that made it a no-op for Live lines.
+**D1 needed real data to see** — a replay through `readTranscript` passes on the broken code,
+because those lines are already in the store's field order. Feeding the real 13,134 lines back
+in the *Reader's* order rewrites the whole file before the fix and touches nothing after it.
+The ticket's fourth, smaller defect — two copies of one id inside a single batch — is
+deliberately left to `04`, which is where a Live batch first exists.
 
 **`00`** — [seam rows + dependencies](issues/00-seam-rows-and-libsql.md) — is **done**, so
 `new-module` will now scaffold `ingest`, and `channel` may name `whatsappd`. Nothing else may.

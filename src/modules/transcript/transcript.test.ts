@@ -7,7 +7,13 @@ import { afterEach, expect, it } from "vite-plus/test";
 import { openHome } from "~/modules/home/service.ts";
 import type { Place } from "~/modules/home/types.ts";
 import { readTranscript, writeTranscript } from "./service.ts";
-import type { ArchiveEvent, ArchiveMessage, TranscriptWrite } from "./types.ts";
+import type {
+  ArchiveEvent,
+  ArchiveMessage,
+  LiveMedia,
+  LiveMessage,
+  TranscriptWrite,
+} from "./types.ts";
 
 const made: string[] = [];
 
@@ -143,4 +149,94 @@ it("round-trips Archive event, media, edit and deletion variants", async () => {
   expect(result.lines).toEqual([event, shaped]);
   expect(result.messages).toEqual({ written: 1, skipped: 0 });
   expect(await readTranscript(transcript)).toEqual([event, shaped]);
+});
+
+// ── Gate rows 11–13 ───────────────────────────────────────────────────
+//
+// Three defects in shipped code. All are Live-only and none has ever fired,
+// because nothing in this repository had ever produced a Live line.
+
+/**
+ * `text` sits before `msgKind` here. That is a producer's key order, and it is
+ * not the reader's — `internal/store.ts` rebuilds a loaded line as `from, kind,
+ * at, id, who, msgKind, text`. Row 11 is about exactly that difference.
+ */
+const live = (id: string, media?: LiveMedia): LiveMessage => ({
+  from: "live",
+  kind: "message",
+  at: Date.parse("2026-08-18T09:00:00Z"),
+  id,
+  who: { id: "1@lid", mode: "lid" },
+  text: "hello",
+  msgKind: "conversation",
+  ...(media === undefined ? {} : { media }),
+});
+
+const ids = (lines: readonly import("./types.ts").TranscriptLine[]): readonly string[] =>
+  lines.flatMap((line) => (line.from === "live" && line.kind === "message" ? [line.id] : []));
+
+it("row 11 — the same Live ingest twice appends nothing and does not rewrite the file", async () => {
+  const transcript = await place();
+  expect(wrote(await writeTranscript(transcript, [live("A"), live("B")]))).toMatchObject({
+    written: 2,
+  });
+  const before = fs.readFileSync(transcript.path);
+  const inode = fs.statSync(transcript.path).ino;
+
+  expect(wrote(await writeTranscript(transcript, [live("A"), live("B")]))).toMatchObject({
+    written: 0,
+    skipped: 2,
+  });
+  expect(fs.readFileSync(transcript.path)).toEqual(before);
+  // D1 — change detection is `JSON.stringify(stored) !== JSON.stringify(next)`,
+  // which compares a rebuilt object against the caller's. Key order alone sets
+  // `changed`, so every replay renames a whole new file over this one.
+  expect(fs.statSync(transcript.path).ino).toBe(inode);
+});
+
+it("row 12 — a Live re-delivery upgrades media and never degrades a Stored hash", async () => {
+  const transcript = await place();
+  const hash = "b".repeat(64);
+  await writeTranscript(transcript, [live("A", { state: "Failed" })]);
+
+  const upgraded = wrote(await writeTranscript(transcript, [live("A", { state: "Stored", hash })]));
+  expect(upgraded).toMatchObject({ written: 0, skipped: 1 });
+  expect(upgraded.lines).toEqual([live("A", { state: "Stored", hash })]);
+
+  // D2 — `merged` requires `from === "archive"` on both sides, so for a Live line
+  // it returns `incoming` unconditionally. A re-delivery whose bytes were never
+  // fetched overwrites the stored hash, and the call reports `written: 0`.
+  const again = wrote(await writeTranscript(transcript, [live("A", { state: "Failed" })]));
+  expect(again.lines).toEqual([live("A", { state: "Stored", hash })]);
+  expect(await readTranscript(transcript)).toEqual([live("A", { state: "Stored", hash })]);
+});
+
+it("row 13 — two writers never both succeed with one set lost", async () => {
+  const transcript = await place();
+  await writeTranscript(transcript, [live("seed", { state: "Failed" })]);
+
+  // Both upgrade the seed, so both take the rewrite path, and both `load()`
+  // before either writes.
+  const [first, second] = await Promise.all([
+    writeTranscript(transcript, [
+      live("seed", { state: "Stored", hash: "c".repeat(64) }),
+      live("A"),
+    ]),
+    writeTranscript(transcript, [
+      live("seed", { state: "Stored", hash: "d".repeat(64) }),
+      live("B"),
+    ]),
+  ]);
+
+  const after = await readTranscript(transcript);
+  if ("problems" in after) throw new Error("readTranscript failed");
+
+  // D6 — `load()` … `replace()` is a read-modify-write with no lock, so the loser's
+  // lines vanish while both callers are told they succeeded.
+  if (!("problems" in first) && !("problems" in second)) {
+    expect(ids(after)).toContain("A");
+    expect(ids(after)).toContain("B");
+  } else {
+    expect([first, second].filter((result) => "problems" in result)).toHaveLength(1);
+  }
 });
