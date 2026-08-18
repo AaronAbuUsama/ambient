@@ -198,10 +198,6 @@ artefact per slice and no others: [artefacts.md](./artefacts.md).
 - `vp run shape` — every cross-link in `scope.md`, `design.md` and `spec.md` resolves. A
   `grilling` question that names a block of `design.md` is checked here for *resolving*;
   nothing checks that it is the right block.
-- `vp run shape` — every module in a `design.md` § Seam delta owns a row in
-  [seams.md](../design/seams.md) by the time step 5 runs. This is what `new-module`'s
-  precondition used to say and never enforced; see
-  [method/deficits.md](../planning/method/deficits.md) deficit 25.
 - [definition-of-done.md](../design/definition-of-done.md) row 10, **read not run**: the call
   graph in `design.md` matches the code, or the divergence is recorded as an amendment. It
   joins rows 7–9, which are also read rather than run.

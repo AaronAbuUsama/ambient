@@ -13,6 +13,14 @@ it got a specification — that specification is the template at the foot of thi
 **fourth** came out of step 5, the first time Build ever ran under the rule, and all three of
 its entries are about what the method does when it is *wrong* rather than when it is working.
 
+**Deficits are logged here and not fixed.** Standing instruction from the principal,
+2026-08-18: *"I don't want anyone to fix the defects — if anyone's tried to fix defects,
+revert them."* This file is a record, and the record is the whole deliverable. A deficit
+that arrives with a fix attached has cost a decision that was not the agent's to make —
+what the method becomes is METHOD's to decide, in one pass, once the evidence has stopped
+accumulating. **Cohort four has already had one fix written and reverted under this rule;
+that retraction is recorded at deficit 25 rather than erased.**
+
 **The slice is METHOD, and most of this is now closed.** What each deficit became:
 
 | Deficit | Status |
@@ -174,7 +182,7 @@ found: **nine of these were invisible until a slice existed that was not closed.
 | 7 | The step report has no specification | [slices.md](../../rules/slices.md), and each step's skill |
 | 8 | The frontier is reported cut off from what produced it | [slices.md](../../rules/slices.md) § 3 |
 | 9 | Research is reported as answers with no questions | [map-slice](../../../.agents/skills/map-slice/SKILL.md) *Finish* |
-| 10 | **There is no entry point. Nothing runs a step.** | a new skill — **built, then reverted six minutes later. See 24** |
+| 10 | **There is no entry point. Nothing runs a step.** | **not a deficit.** Built, and reverted six minutes later because the principal does not want one. See 24 |
 | 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../../.agents/skills/render-slice/SKILL.md) |
 | 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../../rules/slices.md) *Why*, or [roadmap.md](../../design/roadmap.md) |
 | **The artefacts break at step 1** — found by the run | | |
@@ -457,7 +465,7 @@ un-close, enforce, or record a decision made while building.
 | # | Deficit | Where the fix goes |
 |---|---|---|
 | 24 | **A deficit can be closed and cannot be un-closed.** 318 lines were built and reverted, and this document says it never happened | this file's status table, and [decisions.md](../../rules/decisions.md) |
-| 25 | **`new-module`'s precondition is a sentence, so it has never once refused.** Ticket 00 exists in both slices that have had one | **fixed this run** — [shape.ts](../../../scripts/shape.ts) grew a fourth section |
+| 25 | **`new-module`'s precondition is a sentence, so it has never once refused.** Ticket 00 exists in both slices that have had one | **written, proven, and reverted.** Open — see below |
 | 26 | **Build makes decisions and the method has nowhere to put them.** Two were made inside ticket 00 alone | [slices.md](../../rules/slices.md) § 5 |
 
 ### Deficit 24 — a deficit can be closed, and cannot be un-closed
@@ -493,6 +501,19 @@ than one that has not, because the next attempt starts from the reason the first
 **This entry does not say the revert was wrong.** It says that whatever the reason was, it is
 not written down, and six minutes is far too fast for the reason to have been nothing.
 
+**Amended 2026-08-18, and the reason is not what this entry guessed.** Asked directly, the
+principal said: *"I didn't want an entry point."* Deficit 10 was therefore never a deficit —
+it was a proposal, recorded in the shape of a defect, and it got built because a shape it was
+never checked against read as a mandate. The revert was correct, complete and fast for exactly
+that reason.
+
+**Which sharpens this entry rather than dissolving it.** The method had nowhere to say *"10 is
+a proposal, not a defect, and it is declined"* — so the only vocabulary available was build it
+or delete it, and both were used within six minutes. The missing status is still missing, and
+it now needs two words rather than one: `retracted` for work that was tried and pulled, and
+`declined` for a deficit the principal does not accept. Neither exists, and this file's only
+alternative to them is silence.
+
 ### Deficit 25 — `new-module`'s precondition is a sentence, so it has never once refused
 
 [`new-module/SKILL.md:11`](../../../.agents/skills/new-module/SKILL.md) is quoted in three
@@ -526,17 +547,30 @@ step 5:
 
 Two files, two slices, one job. **`00` is not a ticket, it is a missing check with a number.**
 
-**Fixed this run.** [`shape.ts`](../../../scripts/shape.ts) grew a fourth section: every
-module named in a `docs/planning/<slice>/design.md` § Seam delta, and every directory under
-`src/modules/`, must own a row in `seams.md`. Run against the tree as it stood at `00d9b09`
-— four days of `clean` — it says:
+**A fix was written, it worked, and it was reverted. This deficit is open.**
+[`shape.ts`](../../../scripts/shape.ts) grew a fourth section — every module named in a
+`docs/planning/<slice>/design.md` § Seam delta, and every directory under `src/modules/`,
+must own a row in `seams.md`. Run against the tree as it stood at `00d9b09`, four days of
+`clean`, it said:
 
 ```
 docs/planning/ingest/design.md: § Seam delta names `ingest`, which owns no row in docs/design/seams.md
 shape: 1 problems
 ```
 
-*Why the fix is a check and not a generator.* The obvious move is to generate `seams.md`'s
+**It was reverted the same session, under the standing instruction at the top of this file.**
+Not because it was wrong — it fired on exactly the state it was written for — but because
+fixing a deficit is a decision about what the method becomes, and that decision is METHOD's
+to make in one pass rather than an agent's to make in passing. Thirty-eight lines of
+`shape.ts`, plus the check-feet of [modules.md](../../rules/modules.md) and
+[slices.md](../../rules/slices.md) and a paragraph in `new-module`, went back.
+
+**Recording it is the point.** Deficit 24, two entries up, is that a retraction leaves no
+trace; this is the first one that does. The evidence above — that the check exists, that it
+compiles, that it fires on the real prior state and passes on the current one — is the part
+worth keeping, and it is worth keeping precisely so the eventual fix does not start from zero.
+
+*Why the fix was a check and not a generator.* The obvious move is to generate `seams.md`'s
 rows out of `design.md` § Seam delta, and it does not work: the delta's third column is
 **`Depends on`** and `seams.md`'s is **`Interface is about`**. They are different facts. The
 `ingest` row's `runIngest(deps) → IngestReport`, one call was authored by analogy to

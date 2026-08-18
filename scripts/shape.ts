@@ -118,44 +118,6 @@ for (const name of modules) {
   }
 }
 
-// ── every designed module owns a row in seams.md ──────────────────────
-
-/**
- * `new-module` refuses a module with no `seams.md` row — but that refusal is a
- * sentence in a skill file, so it has never once fired. Ticket 00 exists in both
- * slices that reached step 5 purely to copy rows a `design.md` had already
- * written. This is that ticket, as a check.
- *
- * It reads the delta rather than writing it. A generator cannot work here:
- * `design.md`'s third column is `Depends on` and `seams.md`'s is `Interface is
- * about`, so the one cell that matters would have to be invented.
- */
-const named = (block: string): readonly string[] =>
-  [...block.matchAll(/^\|\s*`([^`]+)`/gm)].flatMap((m) => (m[1] === undefined ? [] : [m[1]]));
-
-/** The lines under the first heading matching `title`, up to the next heading. */
-const under = (text: string, title: RegExp): string => {
-  const lines = text.split("\n");
-  const from = lines.findIndex((l) => /^#{1,6} /.test(l) && title.test(l));
-  if (from === -1) return "";
-  const rest = lines.slice(from + 1);
-  const ends = rest.findIndex((l) => /^#{1,6} /.test(l));
-  return (ends === -1 ? rest : rest.slice(0, ends)).join("\n");
-};
-
-const SEAMS = "docs/design/seams.md";
-const rows = new Set(named(under(read(SEAMS), /The modules/)));
-
-for (const rel of files.filter((f) => /^docs\/planning\/[^/]+\/design\.md$/.test(f))) {
-  for (const name of named(under(read(rel), /Seam delta/))) {
-    if (!rows.has(name)) say(rel, `§ Seam delta names \`${name}\`, which owns no row in ${SEAMS}`);
-  }
-}
-
-for (const name of modules) {
-  if (!rows.has(name)) say(`src/modules/${name}`, `is scaffolded but owns no row in ${SEAMS}`);
-}
-
 // ── every cross-link in a document resolves ───────────────────────────
 
 /** Fenced blocks and inline code are illustration, not links to follow. */
