@@ -21,6 +21,12 @@ start a step until its gate passes.**
 **Every step ends by regenerating the slice's one page** — `render-slice`, below. A step that
 did not update the page did not finish.
 
+**Do not work out which step a Slice is on. Ask.** `vp run slice <SLICE>` reads it off the
+files and names the skill to run, and the `slice` skill is the entry point that runs it.
+Nothing did this until 2026-08-18, so every session began by reconstructing the answer from
+memory and one step shipped without regenerating its page —
+[deficit 10](../planning/method/deficits.md).
+
 ### 1 · Map
 
 `scope.md` has five headings and no others:

@@ -172,7 +172,7 @@ found: **nine of these were invisible until a slice existed that was not closed.
 | 7 | The step report has no specification | [slices.md](../../rules/slices.md), and each step's skill |
 | 8 | The frontier is reported cut off from what produced it | [slices.md](../../rules/slices.md) § 3 |
 | 9 | Research is reported as answers with no questions | [map-slice](../../../.agents/skills/map-slice/SKILL.md) *Finish* |
-| 10 | **There is no entry point. Nothing runs a step.** | a new skill |
+| 10 | ~~There is no entry point. Nothing runs a step.~~ **CLOSED 2026-08-18** | [`slice`](../../../.agents/skills/slice/SKILL.md) + [`scripts/slice.ts`](../../../scripts/slice.ts) |
 | 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../../.agents/skills/render-slice/SKILL.md) |
 | 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../../rules/slices.md) *Why*, or [roadmap.md](../../design/roadmap.md) |
 | **The artefacts break at step 1** — found by the run | | |
@@ -441,6 +441,13 @@ who answers, what waits on what — not the wording.
 ---
 
 ## The step report — the template
+
+**Moved 2026-08-18 to [`slice`](../../../.agents/skills/slice/SKILL.md) § 4**, the skill that
+owns reporting. A template is a rule, and a rule does not live in the record of what was wrong
+— [language.md](../../rules/language.md), one statement one home. What follows is kept as the
+evidence that produced it.
+
+### As it was first written
 
 **This is the fix for deficits 7, 8, 9, 11 and 22**, and it is a cap on length as much as a
 shape. Every step of [slices.md](../../rules/slices.md) ends with this, and nothing in it may

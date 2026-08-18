@@ -80,6 +80,7 @@ Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into
 
 | Skill | Step |
 |---|---|
+| `slice` | **the entry point** — reads which step a Slice is on off its own files, runs that step, regenerates the page, reports. `vp run slice <SLICE>` |
 | `map-slice` | 1 — trace, measure, write `scope.md` with its destination, open questions and fog |
 | `design-slice` | 2 — write the caller first, then `design.md`: call graph, interfaces, seam delta, and the branch points the frontier hangs off |
 | `plan-slice` | 4 — reconcile the design against the answers, write `spec.md`, then the build tickets |
