@@ -84,6 +84,21 @@ un-durable messages, and any single rejection inside it is terminal and unrepeat
 guardrail *"do not spend a pairing on a tool that does not durably write"* now has a
 mechanism under it rather than an instinct.
 
+### Answered by the principal — 2026-08-18, after reading the design
+
+| # | Answer | Closes |
+|---|---|---|
+| 22 | **The Archive is the full-history source; the Live account is the current one.** An Archive of a chat carries that chat's *whole* history — the oldest Instant on disk is where the group began, not where the export truncated. It is less reliable per message (a display label, no message id, a Wall clock), and that is the trade it exists to make. So the Live account **never needs to reach back**, and ADR 003 amendment 3's cut now has a reason rather than only a rule. | `G1` |
+| 23 | **INGEST is a mirror. It is done when it has mirrored.** Not one Chat, not the seed. `whatsappd` already holds the messages; the job is to get it the full history and then put that on disk in our folder-and-JSONL shape. | `G2` |
+| 24 | **The credential lives inside `~/.ambient`.** | `G4` |
+| 25 | **Device slots are not a constraint** — one can be freed on demand. The one-shot is still one-shot; it is simply no longer scarce. | `T1` |
+| 26 | **Explore an Ambient backend adapter before accepting the paging design.** `whatsappd` takes a pluggable `WhatsAppBackend`; if ours can write our format directly, the second database and the paging step both disappear. Dispatched as `R4`. | opens `R4` |
+
+**One question the principal asked back, and it is now his to be answered on:** *is backfill a
+different thing from live ingestion, or the same thing at a different position?* It is not in
+Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
+owed to him rather than by him.
+
 ### What is on disk today
 
 *Instrument: `find`, `wc -l`, and `JSON.parse` over every line of
@@ -105,6 +120,39 @@ global source `personal`                      kind whatsapp · mode ingest · al
 
 **Two of those lines are the whole reason this Slice is next.** `peer: ""` and `allow: []`
 mean no Live account is bound to anything, and nothing would be read if one were.
+
+### Two credentials already exist, and one of them is live
+
+*Instrument: `sqlite3` table listing and `COUNT(*)` over copies of both files, 2026-08-18.
+Read only; `.spike-private/` is gitignored personal data and nothing from it is committed.*
+
+```
+.spike-private/history/account/whatsapp.db
+   wa_auth                3749        <- a LIVE linked-device credential
+   (no other tables)                  <- and NO message store at all
+
+.spike-private/history/account-stale-192151/whatsapp.db
+   wa_auth                4997        <- superseded when the copy above reconnected
+   wa_messages            2739        <- a real mirror, the thin 2026 one
+   wa_chats                913
+   wa_contacts            1560
+   wa_accepted_batches    3440
+```
+
+**So the pairing question has a measured answer.** One file holds a live credential and no
+data; the other holds real data and a dead credential. Reconnecting advances the linked
+device's key state, which is why they are disjoint.
+
+| To do this | A fresh pairing is | Why |
+|---|---|---|
+| Receive live traffic from now on | **not needed** | `account/` is a live linked device |
+| Reach back ~364 days by `requestHistory` | **not needed** | measured 165 of 168 answered, 2026-08-17 |
+| Ask for a `full` history sync | **needed** | the request rides the pairing registration node, and both credentials have spent theirs |
+
+**And Decided 22 removes the last row's purpose.** If the Archive is the full-history source,
+the Live account only has to cover what follows it — so INGEST may need **no new pairing at
+all.** That is a consequence of the principal's own answer, and it is the largest
+simplification available to this Slice.
 
 ### The defect this Slice closes
 
@@ -159,9 +207,14 @@ R1  research   ANSWERED         — findings/01-durable-full-sync.md   → Decid
 R2  research   ANSWERED         — findings/02-handler-backpressure.md → Decided 16, 17, 18
 R3  research   ANSWERED         — findings/03-sync-payload.md        → Decided 19, 20, 21
 
-T1  task       now              — How many of WhatsApp's four linked-device slots are free on
-                                  the principal's account right now, and is `verify-091339`
-                                  still linked? Every spike that needs a socket spends one.
+T1  task       ANSWERED         — slots are not a constraint; one can be freed. And the
+                                  measurement above shows a live credential already exists,
+                                  so INGEST may need no pairing at all. → Decided 25
+
+R4  research   now              — Can Ambient implement whatsappd's WhatsAppBackend so the
+                                  runtime writes our JSONL and Blobs directly, with no second
+                                  database and no paging step?
+                                  → findings/04-ambient-backend-adapter.md
 
 S1  spike      now              — Push a recorded batch of Live-shaped values through the
                                   EXISTING `writeTranscript` path against a temp home, and

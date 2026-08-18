@@ -4,10 +4,12 @@ Recorded 2026-08-17, straight after IMPORT closed. **This is a scope, not a spec
 records what the build process did not have, and what that cost, so the fix was designed
 against evidence rather than a feeling.
 
-**There are two cohorts.** The first, below, was found by *reading* what IMPORT produced.
+**There are three cohorts.** The first, below, was found by *reading* what IMPORT produced.
 The second was found on 2026-08-18 by *running* the new rule on INGEST — nine defects the
 artefacts hit at step 1, and six the principal hit in the process itself. A method that has
 been read is not a method that has been used, and the second cohort is that difference.
+The **third** is the step report itself, which took two more rounds of being unreadable before
+it got a specification — that specification is the template at the foot of this file.
 
 **The slice is METHOD, and most of this is now closed.** What each deficit became:
 
@@ -400,3 +402,127 @@ authored against.
 
 Both have the same shape as deficit 3, which is the one this repo has now hit three times: **a
 pipeline where every part knows its own job and nothing knows the pipeline.**
+
+---
+
+# Third cohort — the report itself
+
+**2026-08-18, straight after step 2.** Deficits 7, 8 and 9 said the step report has no
+specification. Two more rounds of it being unreadable produced the specification, below, plus
+two defects those rounds exposed.
+
+| # | Deficit | Where the fix goes |
+|---|---|---|
+| 22 | **Ids were used as if they were words.** `T1`, `S1`, `R1` in a report to someone who has never opened `scope.md` | the template below |
+| 23 | The frontier diagram carries **filenames, not questions** — `T1  linked-device slots free` | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) recipe C |
+
+### Deficit 22 — ids were used as if they were words
+
+Two reports in a row led with `T1` and `S1` and left the principal to guess.
+
+> *"What is T1 and S1? How am I supposed to see T1 and S1? … you're using jargon right now."*
+
+The ids are real and load-bearing — they are how `scope.md`, `design.md` and the page point at
+one another. **The defect is not that they exist, it is that they were never introduced and
+never expanded.** An id is an index into a document the reader has not read.
+
+### Deficit 23 — the frontier diagram carries filenames, not questions
+
+Recipe C's field lines are ~40 characters, so each question got compressed to
+`T1  linked-device slots free` and `G2  § The caller`. **Both are labels for something the
+reader is expected to already know.** The diagram whose entire job is to show what is open
+shows five strings that cannot be read without a second document.
+
+The recipe's own budget is the cause — 240-wide boxes at 8–9px mono. **A question does not fit
+in a node.** The fix is that recipe C's box carries the *kind and the count*, and the questions
+themselves live in the table beside it, in full. What the diagram is for is the **shape** —
+who answers, what waits on what — not the wording.
+
+---
+
+## The step report — the template
+
+**This is the fix for deficits 7, 8, 9, 11 and 22**, and it is a cap on length as much as a
+shape. Every step of [slices.md](../../rules/slices.md) ends with this, and nothing in it may
+restate what the page holds better.
+
+**The two rules that generate the rest:**
+
+1. **Write for someone who has read nothing.** Not the rule, not the scope, not the design.
+   Every id is expanded the first time it appears; every question is a sentence ending in a
+   question mark; no `§`, no filename standing in for a thought.
+2. **Do not re-render the page.** Say what *changed* and point at the page for the rest. The
+   page is the process; a prose copy of it is a worse copy.
+
+````markdown
+```
+<SLICE>   ①Map ✔  ②Design ✔ ← just ran  ③Frontier ← next  ④Plan  ⑤Build  ⑥Close
+```
+↑ **Delete this line.** ASCII rules are hard to read; use the table. It is here only to say
+  it was tried and rejected.
+
+# Where we are
+
+<SLICE> is one slice on the roadmap. Every slice goes through the same six steps.
+
+| Step | State | What it produces |
+|---|---|---|
+| **1 · Map** | ✅ done | ... |
+| **2 · Design** | ✅ **just finished** | ... |
+| **3 · Work the frontier** | ⬅ **next** | ... |
+| 4 · Plan | — | ... |
+| 5 · Build | — | ... |
+| 6 · Close | — | ... |
+
+<one line: the page has all of it, and which section is the one to react to>
+
+# What <SLICE> is, in two lines
+
+<no jargon, no ids. What a person would say out loud. Include one measured number
+ so it is concrete.>
+
+# What this step decided
+
+<the shapes that went up, which one the caller killed, and WHY — the mechanism,
+ not the aesthetics. Two short paragraphs, then a table if the trade is real.>
+
+# The open questions
+
+Every question gets a short id so the documents can point at it. That is all the
+letters mean:
+
+| | Kind | Who answers it |
+|---|---|---|
+| **R** | research | a background agent, reading source code |
+| **S** | spike | throwaway code, run to find out |
+| **T** | task | a human goes and looks something up |
+| **G** | grilling | **you.** Only you can decide it |
+
+## ✅ Answered
+**<id> — <the question, as a question>**
+<the answer, in plain words, with its instrument>
+
+## 🟢 Open — nobody is waiting on you
+**<id> — <the question, as a question>**
+*Why it matters:* <one line>  ·  *Blocked by:* <or "nothing — I can run this now">
+
+## 🔴 Open — these are yours
+**<id> — <the question, as a question>**
+<enough context to answer it without opening a file. Candidates, if there are candidates.>
+
+# Housekeeping
+
+<checks, commits, and anything you would like permission for. Three lines maximum.>
+````
+
+**What the template forbids**, each because it happened:
+
+| Never | Because |
+|---|---|
+| A bare id in a heading or a lead sentence | deficit 22 |
+| A question written as a fragment — *"one Chat, or the seed"* | it is a filename, not a question |
+| A `§` reference standing alone | it points into a document the reader has not opened |
+| Re-narrating the page's **Where it stands** in prose | deficit 7 — the page does it better |
+| Reporting an answer without its question | deficit 9 |
+| Reporting what is open without what just closed | deficit 8 |
+| An ASCII box-drawing header | tried twice, unreadable both times |
