@@ -258,6 +258,84 @@ IngestProblem   = ChannelRefused    could not read the durable log
 
 ## Alternatives
 
+### Shape C — Ambient supplies the backend, and there is no second database
+
+Raised by the principal after reading the two above, and it is the better instinct: `whatsappd`
+does not require libSQL. `WhatsAppBackend` is five independently replaceable contracts, so ours
+could write our format directly.
+
+```ts
+// channel/internal/backend.ts — sketch
+const ambientBackend = (places: { credential: Place; blobs: Place; chats: Place }): WhatsAppBackend => ({
+  credentials: fileStore(places.credential.path),        // usable UNCHANGED — Decided 29
+  media: {
+    async write({ source }) {
+      const put = await blobs.put(source);               // our own store, our own hash
+      if ("problems" in put) throw new Error(...);       // <- the contract demands a throw
+      return { ref: put.hash, byteLength: put.bytes };   // ref IS the sha256 — Decided 28
+    },
+    async open({ ref }) { return blobs.get(ref); },
+  },
+  data: {
+    async accept(accountId, events, fencingToken) {
+      const lines = events.flatMap(toTranscriptLines);   // OUR MAPPER, INSIDE accept()
+      await transcript.writeTranscript(placeFor(chatId), lines);
+      return { accountId, seq: ++seq, revision, events, patch };
+    },
+    async claim() { /* one durable integer */ },
+    async accepted() { throw new Error("not a client"); },   // never called — Decided 27
+    async read() { throw new Error("not a client"); },       // never called — Decided 27
+  },
+  leases: …, operations: …,
+});
+```
+
+**What makes it legal**: the runtime makes exactly two internal data-store calls during a
+pair-and-sync, `accept()` and `claim()`. Everything else is handed outward for an application
+to use, and we would not be building one.
+
+**What it costs, and it is not the code above.** Three things `whatsappd` does for free stop
+being free:
+
+| Lost | Why it exists | What we would have to store |
+|---|---|---|
+| **Message dedup** | the keyed mirror read *is* the dedup — a replayed message changes no record | a durable `(chatId, messageId)` seen-index |
+| **Out-of-order buffering** | an edit or revoke can arrive before the message it targets | a pending-updates buffer |
+| **The `requestHistory` anchor** | paging back needs each chat's oldest stored message | per chat, `{id, fromMe, keyParticipant, timestamp}` |
+
+Plus a per-account counter triple — fencing token, `seq`, revision. **So "no second database"
+is not what Shape C buys.** It buys *our* small store instead of *their* complete one.
+
+**And it puts our mapper back inside the fragile window.** `accept()` is called by the runtime;
+if it throws, that is the same terminal path that killed Shape A. Shape B's entire argument was
+that our code sits *behind* a durable boundary. Shape C moves it back in front.
+
+**One more thing, and it is the one that decides it for me.** `accepted(accountId, afterSeq)`
+has **zero production call sites** in `whatsappd`. Its own ADR-0014 calls that method *"the
+Ambient Brain boundary"*, and its standing decisions say Ambient follows accepted batches.
+**The seam we were about to bypass was built for us.**
+
+### The three, graded
+
+| Axis | A · write from the handler | B · tail the accepted log | C · our own backend |
+|---|---|---|---|
+| **Floor-first** — does it ship the real thing now | ❌ ships a loss | ✅ ships it | ⚠️ ships it plus three reimplementations |
+| **Reversibility** | ❌ a lost sync is not reversible | ✅ delete a file, re-run | ⚠️ our store's format becomes load-bearing |
+| **Blast radius** | one module, catastrophic failure | one module + a peer dep | `channel` **and** a store we now own |
+| **Correctness** | ❌ needs `throw` for control flow | ✅ failures stay values | ⚠️ the media contract demands a `throw` at the boundary |
+| **Fit** | ✗ fights the library | ✅ **the seam its author built for us** | ✗ bypasses that seam and rebuilds behind it |
+| **Parallelizability** | — | build the mapper against a seeded log, no socket | same, plus a store to build first |
+| **Risk** | — | `libsqlBackend` is the shipped, tested path | **no third-party backend has ever been built, and the conformance suite is not published** |
+
+**Recommendation: B.** C is a genuinely better *instinct* — fewer moving parts is the right
+thing to reach for — and it is only wrong because of a fact neither of us knew before R4: the
+mirror is not overhead, it *is* the dedup, the ordering buffer and the paging anchor. Deleting
+it means writing all three.
+
+**C becomes right if** the answer to *"is backfill a different thing from live"* turns out to be
+that INGEST never pages back and never needs the anchor. Two of the three costs are then gone,
+and only the seen-index remains. That is why this is put to the principal rather than settled.
+
 **ADR 005 — `channel` binds to `whatsappd`'s durable runtime, not to a raw session.** The two
 callers are above; the grading table is above; what killed Shape A is
 [`findings/01`](findings/01-durable-full-sync.md) and

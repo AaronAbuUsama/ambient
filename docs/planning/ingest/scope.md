@@ -99,6 +99,49 @@ different thing from live ingestion, or the same thing at a different position?*
 Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
 owed to him rather than by him.
 
+### Answered by R4 — the adapter, 2026-08-18
+
+The principal's own idea, and it deserved the pass: `whatsappd` takes a pluggable
+`WhatsAppBackend`, so if ours wrote our format directly, the second database and the whole
+paging step would disappear. Full evidence, cited `file:line`, in
+[`findings/04`](findings/04-ambient-backend-adapter.md).
+
+| # | Answer | From |
+|---|---|---|
+| 27 | **It is a genuine third-party interface, and a write-only store is viable.** The runtime makes exactly two internal data-store calls during a pair-and-sync — `accept()` and `claim()`. `snapshot`, `messages` and `read` are handed *outward*, never called inward, so an adapter that cannot answer them is legal **provided we never build a `WhatsAppClient`.** | [04](findings/04-ambient-backend-adapter.md) |
+| 28 | **`ref` can be our own SHA-256.** Exactly one function anywhere parses a ref, and it lives inside `fileMediaStore`; the only validation is a non-empty string. `blobs.put` already streams with backpressure and returns a hash. | [04](findings/04-ambient-backend-adapter.md) |
+| 29 | **`fileStore()` is usable unchanged for the credential** — one `store.json`, 0700/0600, atomic rename, serialized. Point it at a `Place` and Decided 24 is satisfied with no new code. | [04](findings/04-ambient-backend-adapter.md) |
+| 30 | **But the adapter relocates the mapping step rather than deleting it**, and it costs three things `whatsappd` already does: message **dedup** (the keyed mirror read *is* the dedup), the **out-of-order buffer** for an edit or revoke that arrives before its target, and the **`requestHistory` anchor**, which needs each chat's oldest stored message. | [04](findings/04-ambient-backend-adapter.md) |
+| 31 | **`whatsappd` already built a seam for Ambient, and it is the other one.** `accepted(accountId, afterSeq)` has **zero production call sites** in that repo — its ADR-0014 names it *"the Ambient Brain boundary"*, and its standing decisions say Ambient follows accepted batches. The design we were about to bypass is the one its author intended us to use. | [04](findings/04-ambient-backend-adapter.md) |
+
+### The defect R4 found in a file this Slice was not going to touch
+
+*Instrument: `grep -n "fromMe\|keyParticipant" src/modules/transcript/types.ts` — no matches —
+against `MessageRef` in `whatsappd/packages/whatsappd/src/model/outbound.ts`, 2026-08-18.*
+
+To react to, edit, revoke or page back from a message, WhatsApp requires a `MessageRef`:
+
+```
+MessageRef = { id, chatId, fromMe, participant? }
+```
+
+`LiveMessage` in [`transcript/types.ts`](../../../src/modules/transcript/types.ts) carries
+`id`, and `chatId` is implicit in the file path. **It carries neither `fromMe` nor the key
+participant.**
+
+**So a Live line read back out of our own Transcript cannot be turned into a `MessageRef`** —
+Ambient could never react to, edit, revoke or page back from a message it had written down.
+This is true **whatever backend we choose**; it is a hole in the line shape, not in the
+plumbing.
+
+It is the *"hard to change later"* case exactly: the Transcript is append-only and already
+13,134 lines. Two fields cost nothing now and cost a migration later.
+[ADR 004](../../adr/004-transcript-line-is-a-union-on-provenance.md) gains an amendment at
+step 4 — never a silent rewrite, per [decisions.md](../../rules/decisions.md).
+
+**Found before a line of code was written, by designing the caller.** That is the argument for
+Design being step 2.
+
 ### What is on disk today
 
 *Instrument: `find`, `wc -l`, and `JSON.parse` over every line of
@@ -120,6 +163,8 @@ global source `personal`                      kind whatsapp · mode ingest · al
 
 **Two of those lines are the whole reason this Slice is next.** `peer: ""` and `allow: []`
 mean no Live account is bound to anything, and nothing would be read if one were.
+
+| 32 | **A fresh pairing is available on demand.** Confirmed 2026-08-18 after the credential measurement above: the one-shot stays one-shot, but it is no longer scarce. This unblocks `S2` — which needs a live socket — and keeps the `full` history sync on the table even though Decided 22 removed its necessity. | unblocks `S2` |
 
 ### Two credentials already exist, and one of them is live
 
@@ -211,10 +256,8 @@ T1  task       ANSWERED         — slots are not a constraint; one can be freed
                                   measurement above shows a live credential already exists,
                                   so INGEST may need no pairing at all. → Decided 25
 
-R4  research   now              — Can Ambient implement whatsappd's WhatsAppBackend so the
-                                  runtime writes our JSONL and Blobs directly, with no second
-                                  database and no paging step?
-                                  → findings/04-ambient-backend-adapter.md
+R4  research   ANSWERED         — findings/04-ambient-backend-adapter.md  -> Decided 27-31,
+                                  and one defect in transcript/types.ts that no backend fixes
 
 S1  spike      now              — Push a recorded batch of Live-shaped values through the
                                   EXISTING `writeTranscript` path against a temp home, and
@@ -226,9 +269,9 @@ S1  spike      now              — Push a recorded batch of Live-shaped values 
                                   whatsappd has no test for a slow or throwing
                                   conversationSync handler, so ours is the only evidence.
 
-S2  spike      after T1, S1     — The 353 transport failures against 22 expiries (2026-08-16,
+S2  spike      now              — The 353 transport failures against 22 expiries (2026-08-16,
                                   one run): does a retry pass clear them, or are they loss?
-                                  Needs a live socket, so it costs a slot.
+                                  Needs a live socket. UNBLOCKED by Decided 32.
 
 G1  grilling   design.md § State and failure
                                 — Live lines OLDER than 2025-02-14T16:06:10Z: written, or is
