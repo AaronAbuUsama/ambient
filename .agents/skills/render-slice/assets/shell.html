@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IMPORT — slice</title>
+    <title><!--SLICE--> — slice</title>
     <style>
       /*FONTS*/
       :root {
@@ -391,7 +391,7 @@
   <body>
     <aside id="rail">
       <div class="top">
-        <h1>IMPORT</h1>
+        <h1><!--SLICE--></h1>
         <button id="grip" type="button" aria-label="Collapse">
           <svg
             width="16"
@@ -408,7 +408,7 @@
         </button>
       </div>
       <nav><div id="nav"></div></nav>
-      <div class="foot">CLOSED · 6/6<br />← → 1–9 · [</div>
+      <div class="foot"><!--STATUS--><br />← → 1–9 · [</div>
     </aside>
 
     <main>
@@ -436,11 +436,19 @@
         return out+esc(src.slice(last));
       }
       function esc(s){return s.replace(/&(?!lt;|gt;|amp;)/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-      document.getElementById("c1").innerHTML=hl(document.getElementById("p1").textContent);
-      document.getElementById("c2").innerHTML=hl(document.getElementById("p2").textContent);
-      document.getElementById("c3").innerHTML=document.getElementById("p3").textContent
-        .replace(/( {2,})([a-z].*)$/gm,function(_,s,t){return s+'<span style="color:#7a8399">'+t+'</span>'});
-      document.getElementById("c4").textContent=document.getElementById("p4").textContent;
+      // One data block per <script type="text/plain" id="pN" data-mode="…">, filled into #cN.
+      // A slice before step 6 has empty sections and so fewer blocks: a block with no target,
+      // or a target with no block, is skipped rather than thrown on. Four hardcoded lookups
+      // here would kill this whole IIFE — and with it the nav — on any slice at step 1.
+      [].forEach.call(document.querySelectorAll('script[type="text/plain"]'),function(p){
+        var c=document.getElementById("c"+p.id.slice(1)); if(!c)return;
+        var mode=p.dataset.mode||"js", src=p.textContent;
+        if(mode==="raw"){c.textContent=src;return}                    // terminal output, verbatim
+        if(mode==="tree"){c.innerHTML=src                             // a call graph: dim the gloss
+          .replace(/( {2,})([a-z].*)$/gm,function(_,s,t){
+            return s+'<span style="color:#7a8399">'+t+'</span>'});return}
+        c.innerHTML=hl(src);                                          // "js" — the tokenizer above
+      });
 
       var G=/*NAV*/;
       var nav=document.getElementById("nav"),html="";
