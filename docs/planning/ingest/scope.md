@@ -423,10 +423,13 @@ G4  grilling   design.md § Branch point 1
                                   `home` unit alongside chat and agent, or one property like
                                   `home.blobs` with `channel` joining the name itself?
 
-G5  grilling   design.md § Branch point 2
-                                — What the Cursor is: a file beside the Transcript, `seq`
-                                  carried on the Transcript line, or no Cursor at all —
-                                  re-read the log every run and let the Write path dedup.
+G5  grilling   DISSOLVED        — there is no Cursor. Reading current state has no position
+                                  to remember. See design.md § The caller, corrected 2026-08-18.
+
+G7  grilling   design.md § The caller
+                                — The caller refuses on `peer: ""`, and the account holds 1,506
+                                  chats. How does a Chat get bound to one of them — by hand in
+                                  config.yaml, and if so what lists them so a jid can be found?
 ```
 
 **Eight remain; two are startable now** — `T1` and `S1`. The three `research` questions
@@ -441,35 +444,37 @@ belongs back here in the map, or means the design stopped early.
 
 ## Fog
 
-Real, in scope, **not yet sharp enough to phrase**. Not pre-cut into question-sized pieces —
-one patch may graduate into several questions, or none.
+**Cleared 2026-08-18 by the mirror correction.** Three of the five patches below existed only
+because the design read the event log; reading current state dissolves them. What is left is one
+question that graduated, and one measurement that settled itself.
 
-- **Where account-level material lands.** Contacts, aliases and groups are per-account, not
-  per-Chat, and the home layout has nowhere for account-level material that is not knowledge
-  ([intake/scope.md](../intake/scope.md) named this as the likeliest SKELETON revision).
-  `R3` narrowed it: a `full` batch's contacts carry `{id, nativeIds, displayName?}` and
-  nothing else, and group rosters never arrive on the history path at all — they come from
-  `groups.upsert` or a live `groupMetadata(jid)` call.
-  **A conflict is open and is not being resolved silently:** [intake/scope.md](../intake/scope.md)
-  records *142 of 143 groups storing an empty `participants` array*, and `R3` finds from source
-  that the key should be **absent**, because whatsappd reads a plural field the proto does not
-  have. One of the two is wrong. It costs one query against the baseline to settle and nothing
-  downstream turns on it yet, so it stays here rather than becoming a question.
-- **Which of the four Media states a live failure is, and when a retry is right.** `Expired`,
-  `Failed` and `NeverDriven` are declared in [CONTEXT.md](../../../CONTEXT.md) and none of the
-  three has ever had a producer. The question is not phraseable until a blob fails through our
-  own code rather than through a spike's.
-- **Gap-filling after an outage.** ADR 003 keeps `requestHistory` as the way Continuous
-  Ingestion fills a gap; the roadmap's INGEST row does not name it. Whether the first pass owes
-  a gap-filler at all depends on what the Cursor turns out to be.
-- **Whether the reachable window slides forward and strands the middle.** Every depth
-  measurement is one link on one day. This is the question that decides whether INGEST must run
-  on a cadence — and it cannot be phrased until `R1` says what a *second* sync would even do.
-- **The Peer binding.** `peer: ""` on the one Chat that exists, against 1,506 chats in the
-  account (2026-08-17). Whether a Chat is bound by hand, by a derived slug, or by adoption
-  reaches back into SKELETON's layout.
+| Patch | Now |
+|---|---|
+| **Where account-level material lands** — contacts, aliases, groups | **Out of scope, and already durable.** The mirror holds them (`WhatsAppSnapshot` carries `chats`, `contacts`, `contactAliases`, `groups`) and the mirror is the actionable store — Decided 34. KNOWLEDGE reads it when KNOWLEDGE exists. INGEST writes Transcript lines and Blobs and stops. |
+| **Which of the four Media states a live failure is** | **Dissolved for INGEST.** Under a mirror read nothing is downloaded by us: `DurableMedia` is already `stored` with a ref or `failed` with a reason. What remains is a **mapping**, not a question — `stored` → `Stored`, `failed` → one of ours. Small enough to settle in the spec. |
+| **Gap-filling after an outage** | **Dissolved.** If `whatsappd`'s store has a gap, closing it is `whatsappd`'s business — `requestHistory` against its own mirror. We re-read whatever is there. |
+| **Whether the reachable window slides forward** | **Dissolved, same reason.** It is a question about `whatsappd`'s history depth, never about our projection. |
+| **The Peer binding** | **Graduated to a question.** See `G7` below — it is now on the critical path, because the caller refuses on `peer === ""`. |
+
+### The participants conflict, settled by measurement
+
+*Instrument: `json_extract` and `json_type` over `wa_groups.data_json` in a copy of the baseline,
+2026-08-18.*
+
+```
+groups 143 · key absent 0 · stored as an array 143 · empty 142 · with members 1
+```
+
+[intake/scope.md](../intake/scope.md)'s *"142 of 143 groups store an empty `participants` array"*
+is **correct**. `R3`'s source-reading inference that the key should be **absent** is **wrong** —
+the projection writes an empty array.
+
+**Worth recording because it points the other way from the standing lesson.** Usually the
+measurement is the thing to doubt. Here the measurement held and a careful read of the source
+did not, because reading what a type *permits* is not reading what a projection *writes*.
 
 ## Out of scope
+
 
 Ruled beyond the destination. **Never graduates** — this is a scoping act, not a step on the
 route.

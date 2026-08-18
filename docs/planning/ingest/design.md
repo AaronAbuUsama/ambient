@@ -92,85 +92,102 @@ database file and one peer dependency. That is the trade, stated plainly, and it
 
 ## The caller
 
-Two verbs, and the split is a **consequence** of Shape B rather than a preference — they have
-different lifetimes, different failure costs and different preconditions.
+**Corrected 2026-08-18.** The first version of this file read `whatsappd`'s **event log** by
+`seq`, and grew a Cursor, a resume position and a backfill-versus-live distinction out of it.
+All three were artefacts of reading the wrong store. The principal's correction:
 
-### `ambient pair --source <name>` — spends the one-shot
+> *"WhatsApp D connects the account, it handles history, it gets everything into a database, and
+> you just take from the database. Why does it need to even care about catching up?"*
 
-```ts
-// cli/internal/commands/pair.ts — argv → args, render the outcome. NOTHING ELSE.
-const global = home.read();                                   // Global | HomeProblem
-if ("problems" in global) return report(global.problems);
-const source = global.sources.find((s) => s.name === args.source);
-if (source === undefined) {
-  return message(false, `No source "${args.source}" in config.yaml`);
-}
+**The mirror is current state.** `MessageRecord` already carries `reactions`, `receipts`,
+`editedAt`, a `revoked` arm and `media: DurableMedia`
+(`whatsappd/…/runtime/contracts.ts:131-133`, `:156`, `:181`), and `WhatsAppSnapshot` hands over
+`chats`, `contacts`, `contactAliases` and `groups` in one call. There is no position to
+remember, because there is no stream to be behind.
 
-const store = home.source(args.source).store();               // Place | HomeProblem
-if ("problems" in store) return message(false, describeHome(store));
-const media = home.source(args.source).media();               // Place | HomeProblem
-if ("problems" in media) return message(false, describeHome(media));
+*The full read path is being re-established from source in
+[`findings/07`](findings/07-backends-and-the-mirror-read.md); the sketch below is written
+against the contracts as read at `97e4d60` and is marked where that research decides it.*
 
-const paired = await channel.pair({                           // PairReport | ChannelFailure
-  store, media, account: args.source,
-  onProgress: (p) => write(channel.describeProgress(p)),      // ← the ONLY thing cli does live
-});
-return "problems" in paired
-  ? message(false, paired.problems.map(channel.describe).join("; "))
-  : message(true, channel.summarisePair(paired, args.source));
-```
-
-**`cli` renders a progress line and nothing else.** `onProgress` takes an already-formatted
-value from `channel`, so `cli` never learns what a batch is — the same rule that made
-`import.summarise` own its own string.
-
-### `ambient ingest --into <slug>` — maps the durable log into Transcript lines
+### `ambient ingest --into <slug>`
 
 ```ts
-// cli/internal/commands/ingest.ts
+// cli/internal/commands/ingest.ts — argv → args, render the outcome. NOTHING ELSE.
 const chat = home.chats().find((found) => found.slug === args.slug);
 if (chat === undefined) {
   return message(false, `Chat "${args.slug}" does not exist; run \`ambient chat add\` first`);
 }
-const bound = chat.read();                                    // Chat | HomeProblem
+const bound = chat.read();                              // Chat | HomeProblem
 if ("problems" in bound) return message(false, describeHome(bound));
+
+// the two ways INGEST could read a conversation nobody opted into
 if (bound.peer === "") {
-  return message(false, `Chat "${args.slug}" has no peer; set it in chats/${args.slug}/config.yaml`);
+  return message(false, `Chat "${args.slug}" has no peer; set it in its config.yaml`);
 }
 if (!bound.source.allow.includes(bound.peer)) {
   return message(false, `Peer not in source "${bound.source.name}" allow list; nothing was read`);
 }
 
-const transcript = chat.transcript();                         // Place | HomeProblem
+const transcript = chat.transcript();                   // Place | HomeProblem
 if ("problems" in transcript) return message(false, describeHome(transcript));
-const cursor = chat.cursor();                                 // Place | HomeProblem   ← branch point 2
-if ("problems" in cursor) return message(false, describeHome(cursor));
-const store = home.source(bound.source.name).store();         // Place | HomeProblem
+const store = home.source(bound.source.name).store();   // Place | HomeProblem
 if ("problems" in store) return message(false, describeHome(store));
-const media = home.source(bound.source.name).media();         // Place | HomeProblem
+const media = home.source(bound.source.name).media();   // Place | HomeProblem
 if ("problems" in media) return message(false, describeHome(media));
 
-const report = await ingest.runIngest({                       // IngestReport | IngestFailure
+const report = await ingest.runIngest({                 // IngestReport | IngestFailure
   store, media, account: bound.source.name, peer: bound.peer,
-  transcript, cursor, blobs: home.blobs,
-  after: bound.source.mode === "ingest" ? undefined : undefined,   // mode gates SPEAK, not reads
+  transcript, blobs: home.blobs,
 });
 return "problems" in report
   ? message(false, report.problems.map(ingest.describe).join("; "))
   : message(true, ingest.summarise(report, args.slug));
 ```
 
-**Two refusals before any I/O**, and both are in the sketch on purpose: an empty `peer` and a
-Peer absent from `allow` are the two ways INGEST could read a conversation nobody opted into —
-destination row 4 of [`scope.md`](./scope.md).
+**The whole diff from the previous version is one deleted line:** `chat.cursor()` is gone, and
+with it `home`'s new `ChatHandle.cursor` grant, `internal/cursor.ts`, a durable write, a row of
+the crash table and two open questions.
 
-**The caller does not grow arms.** Each verb is parse → resolve Places → one call → render.
-That is the deletion test run against code rather than a guess, which is the mistake
-[`walkthroughs/import.md`](../../walkthroughs/import.md) exists to record.
+### And inside `ingest`, which is where the correction actually shows
 
----
+```ts
+// import/service.ts's sibling. Owns the ORDER of the writes and nothing else.
+const mirror = await channel.openMirror({ store, media, account });  // Mirror | ChannelFailure
+if ("problems" in mirror) return { problems: [{ _tag: "ChannelRefused", … }] };
+
+// ONE Peer, paged to exhaustion. No socket, no lease, no runtime.        ← findings/07 confirms
+const lines: TranscriptLine[] = [];
+for await (const page of channel.messagesFor(mirror, peer)) {
+  for (const record of page) {
+    const stored = record.media?.state === "stored"
+      ? await blobs.put(await channel.bytesOf(mirror, record.media.ref))
+      : undefined;
+    if (stored && "problems" in stored) return { problems: [{ _tag: "BlobRefused", … }] };
+    lines.push(toLine(record, stored));                 // MessageRecord → LiveMessage
+  }
+}
+
+const write = await transcript.writeTranscript(transcriptPlace, lines);   // one call, batched
+return "problems" in write
+  ? { problems: [{ _tag: "TranscriptRefused", … }] }
+  : { written: write.written, skipped: write.skipped, … };
+```
+
+**Three things the corrected shape settles that the old one asked about:**
+
+| Was a question | Now |
+|---|---|
+| `G5` — what the Cursor is | **There is no Cursor.** Nothing to remember |
+| Backfill versus live | **Neither exists.** There is current state, and you copy it |
+| `G3` — when the sync is done | **Not load-bearing.** Re-run later and you get whatever is there. Only `pair`'s own lifetime matters, and that is `whatsappd`'s business |
+
+**One thing it does not settle, and it is real.** `writeTranscript` is called **once with every
+line**, because `S1` measured 372,721 lines/s batched against 10 lines/s one at a time. At
+account scale that is one array of ~43,000 values in memory. Fine at this size, measured, and
+named here so nobody discovers it later.
 
 ## Call graph
+
 
 ```
 src/main.ts                          resolves $AMBIENT_HOME, prints, exits. The only file
