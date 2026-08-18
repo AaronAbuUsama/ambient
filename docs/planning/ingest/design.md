@@ -327,6 +327,9 @@ Ambient Brain boundary"*, and its standing decisions say Ambient follows accepte
 | **Parallelizability** | — | build the mapper against a seeded log, no socket | same, plus a store to build first |
 | **Risk** | — | `libsqlBackend` is the shipped, tested path | **no third-party backend has ever been built, and the conformance suite is not published** |
 
+**Decided 2026-08-18: B.** The principal accepted the recommendation. The paragraph below is
+kept as the reasoning that produced it.
+
 **Recommendation: B.** C is a genuinely better *instinct* — fewer moving parts is the right
 thing to reach for — and it is only wrong because of a fact neither of us knew before R4: the
 mirror is not overhead, it *is* the dedup, the ordering buffer and the paging anchor. Deleting

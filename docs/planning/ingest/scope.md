@@ -99,6 +99,39 @@ different thing from live ingestion, or the same thing at a different position?*
 Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
 owed to him rather than by him.
 
+### Answered by the principal — the boundary I had wrong
+
+| # | Answer | Closes |
+|---|---|---|
+| 33 | **Keep `whatsappd`'s own store and read from it.** Shape B. The recommendation was accepted on the ground that `accepted(accountId, afterSeq)` is the seam `whatsappd`'s own ADR-0014 calls *"the Ambient Brain boundary"*, and that the mirror is not overhead — it **is** the dedup, the ordering buffer and the paging anchor. | `G6` |
+| 34 | **The Transcript and the WhatsApp interface are two different things, and I had conflated them.** The Transcript is **knowledge material** — it exists so a knowledge base can be built, and it may hold messages from an account Ambient does not even live on. **`whatsappd`'s mirror is the actionable store** — sending, reacting, editing, revoking. They are not two copies of one thing; they are two stores with two jobs. | the `LiveMessage` "defect" |
+
+### Which retracts the defect I reported one message earlier
+
+I reported that `LiveMessage` carrying neither `fromMe` nor the key participant was **a hole in
+the line format**, because a message Ambient wrote down could never be acted on.
+
+**That was wrong, and the error was mine: I assumed one store had to serve both jobs.**
+
+*Instrument: `MessageRecord` in `whatsappd/packages/whatsappd/src/runtime/contracts.ts` — its
+identity is `(accountId, chatId, messageId)` and it carries `ref: MessageRef` in full.*
+
+A Transcript line carries `id`, and `chatId` is the Chat folder it sits in. **`(chatId, id)` is
+already the key into the mirror**, and the mirror holds the complete `MessageRef`. Nothing is
+missing. Acting on a message is a mirror read, and the Transcript never needed to be able to do
+it.
+
+**And the two answers reinforce each other.** Under Shape C there would be no mirror, so the
+hole would have been real and the fields would have been necessary. Keeping `whatsappd`'s store
+is what makes the Transcript free to be *only* knowledge material.
+
+**No ADR 004 amendment is owed.** The line shape stands as designed.
+
+**One thing this does put on the record for step 4:** the two-store split is a product statement
+and it currently lives nowhere. [`product.md`](../../design/product.md) is its home —
+[`language.md`](../../rules/language.md)'s one-statement-one-home table decides that, not this
+file.
+
 ### Answered by R4 — the adapter, 2026-08-18
 
 The principal's own idea, and it deserved the pass: `whatsappd` takes a pluggable
@@ -269,9 +302,16 @@ S1  spike      now              — Push a recorded batch of Live-shaped values 
                                   whatsappd has no test for a slow or throwing
                                   conversationSync handler, so ours is the only evidence.
 
-S2  spike      now              — The 353 transport failures against 22 expiries (2026-08-16,
-                                  one run): does a retry pass clear them, or are they loss?
-                                  Needs a live socket. UNBLOCKED by Decided 32.
+S1  spike      RUNNING          — a Live line through the existing writeTranscript path,
+                                  against a temp home. AFK, no socket.
+                                  -> findings/05-live-line-write-path.md
+
+S2a spike      RUNNING          — how do we tell "the CDN no longer has it" from "transient"?
+                                  Source-reading only, no socket.
+                                  -> findings/06-media-failure-classification.md
+
+S2b spike      after S2a        — the retry pass itself. Needs a live socket and the principal
+                                  at a phone, so it is HITL, not AFK.
 
 G1  grilling   design.md § State and failure
                                 — Live lines OLDER than 2025-02-14T16:06:10Z: written, or is
