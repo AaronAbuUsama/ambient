@@ -177,24 +177,45 @@ S2  spike      after T1, S1     — The 353 transport failures against 22 expiri
                                   one run): does a retry pass clear them, or are they loss?
                                   Needs a live socket, so it costs a slot.
 
-G1  grilling   after design     — The cut is settled at the Archive's NEWEST Instant. A full
-                                  sync reaches back further than the Archive does. What
-                                  happens to Live lines OLDER than 2025-02-14T16:06:10Z —
-                                  written, or is the Archive authoritative for its own span?
+G1  grilling   design.md § State and failure
+                                — Live lines OLDER than 2025-02-14T16:06:10Z: written, or is
+                                  the Archive authoritative for its own span? The Cursor is
+                                  seq-ordered, not time-ordered, so this is a filter in
+                                  `channel.readFrom` or it is nothing.
 
-G2  grilling   after design     — What makes INGEST done: one Chat proven end to end, or the
-                                  ~19-group seed? `allow: []` has to become something.
+G2  grilling   design.md § The caller
+                                — `--into <slug>`, one Chat at a time, is what the caller
+                                  sketch does. The alternative is a verb with no `--into`
+                                  that walks every Chat whose Peer is in `allow`. One is
+                                  provable now; the other is what the seed needs.
 
-G3  grilling   after design     — Is the gate "one pairing, zero loss", or is "re-pair and
-                                  redo" an acceptable recovery? Four slots exist; a lost sync
-                                  is recoverable at the cost of one.
+G3  grilling   design.md § Branch point 3
+                                — Nothing can signal that a one-shot sync is finished:
+                                  silence and exhaustion are indistinguishable. A quiet
+                                  window that is too short ends it early, and early is
+                                  unrecoverable. Who makes that call — a timer, or you?
+
+G4  grilling   design.md § Branch point 1
+                                — A Source's credential, log, mirror and media are
+                                  per-Source and the home has nowhere for them. A fourth
+                                  `home` unit alongside chat and agent, or one property like
+                                  `home.blobs` with `channel` joining the name itself?
+
+G5  grilling   design.md § Branch point 2
+                                — What the Cursor is: a file beside the Transcript, `seq`
+                                  carried on the Transcript line, or no Cursor at all —
+                                  re-read the log every run and let the Write path dedup.
 ```
 
-**Six remain; two are startable now** — `T1` and `S1`. The three `research` questions
+**Eight remain; two are startable now** — `T1` and `S1`. The three `research` questions
 answered the same day they were fired, which is what AFK and parallel is for. `S2` waits on a
-fact (`T1`) and on the Write path being proven (`S1`). The three `grilling` questions wait on
-`design.md`, and by [`slices.md`](../../rules/slices.md)'s step-2 gate each must come back
-naming a block of it — otherwise it belongs here in the map, or the design stopped early.
+fact (`T1`) and on the Write path being proven (`S1`).
+
+**`G4` and `G5` did not exist before step 2**, and that is the step working: they are places
+the shape depends on something undecided, found by writing the caller. Every `grilling` line
+now names a block of [`design.md`](./design.md), which is
+[`slices.md`](../../rules/slices.md)'s step-2 gate — a question that cannot name one either
+belongs back here in the map, or means the design stopped early.
 
 ## Fog
 
@@ -248,6 +269,7 @@ Not the Slice's gate; the Slice's gate is written at step 4. This is
 [`slices.md`](../../rules/slices.md) step 1's: **the destination is named, and every open
 question is either kinded or in the fog.** Both hold.
 
-The next step is [`design-slice`](../../../.agents/skills/design-slice/SKILL.md), **not**
-grilling. The three `grilling` questions above have nothing to look at yet, and that is the
-whole reason Design moved to step 2.
+**Step 2 is done** — [`design.md`](./design.md) holds the caller, the call graph, the
+interfaces read off it, the seam delta for `channel` and `ingest`, both state-and-failure
+sequences and three branch points. The next step is **3, working the frontier**, and the five
+`grilling` questions now each have a block of code to be asked in front of.
