@@ -8,7 +8,7 @@ current state as one page is [`ingest.html`](./ingest.html) — gitignored, rege
 
 ## Where it is
 
-**Steps 1–4 are done. Step 5, Build, is next, and two tickets are startable immediately.**
+**Steps 1–4 are done. Step 5, Build, is running: `00` is closed, `01` is next.**
 
 | Step | State | Produced |
 |---|---|---|
@@ -16,8 +16,16 @@ current state as one page is [`ingest.html`](./ingest.html) — gitignored, rege
 | 2 · Design | done | [`design.md`](./design.md) — **the first time `design-slice` ever ran** |
 | 3 · Frontier | done | 13 answered · 4 dissolved · 1 retired to the roadmap |
 | 4 · Plan | done | [`spec.md`](./spec.md), 16 gate rows, and 5 tickets in [`issues/`](./issues/) |
-| **5 · Build** | **next** | `00` and `01` in parallel, then `02 → 03 → 04` |
+| **5 · Build** | **running** | `00` **done** · `01` next · then `02 → 03 → 04` |
 | 6 · Close | — | `close-slice` |
+
+**`00` closed 2026-08-18.** `seams.md` carries the amended `channel` row, the new `ingest`
+row and the three changed graph lines; `whatsappd@0.4.0-alpha.3` and `@libsql/client@^0.15.15`
+are runtime dependencies. `vp check` pass·pass, shape clean, 53 tests, nothing under `src/`.
+Two build scripts had to be answered to get there — `baileys` and `protobufjs`, both `false`,
+matching `whatsappd`'s own workspace. Evidence is in the ticket's Comments.
+
+**The page is stale.** Step 5 is not finished, and `render-slice` runs when it is.
 
 ## The account is paired, and the sync is on disk
 
@@ -58,16 +66,14 @@ paired through the auth-only store and lost its sync. Kept as evidence, deletabl
 
 ## Start here
 
-**`00`** — [seam rows + dependencies](issues/00-seam-rows-and-libsql.md). Writes no code;
-`new-module` refuses a module without a `seams.md` row. Note `qrcode-terminal` is **already**
-a devDependency — added today for the pairing screen, so `00`'s list is `whatsappd` and
-`@libsql/client`.
-
 **`01`** — [`transcript` survives a Live line](issues/01-transcript-survives-a-live-line.md).
-Independent of `00`. Three defects in shipped code, all Live-only, none ever fired. The worst
-loses data silently while reporting `written: 0`. Gate rows 11–13, each a failing test first.
+Three defects in shipped code, all Live-only, none ever fired. The worst loses data silently
+while reporting `written: 0`. Gate rows 11–13, each a failing test first.
 
 Then `02` (pair) → `03` (peers) → `04` (ingest).
+
+**`00`** — [seam rows + dependencies](issues/00-seam-rows-and-libsql.md) — is **done**, so
+`new-module` will now scaffold `ingest`, and `channel` may name `whatsappd`. Nothing else may.
 
 ## What this Slice also produced, which is not product
 

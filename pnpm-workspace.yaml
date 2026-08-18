@@ -1,6 +1,11 @@
+allowBuilds:
+  baileys: false
+  protobufjs: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
   vite-plus: 0.2.8
+minimumReleaseAgeExclude:
+  - whatsappd@0.4.0-alpha.3
 overrides:
   vite: "catalog:"
 peerDependencyRules:

@@ -23,7 +23,8 @@ Revisable. Expected to change on contact.
 | `archive` | An Archive file → Messages. No network, no home, no path building. | read an Archive → Message values | no |
 | `transcript` | The one Write path. Line format, dedup key, append, read. | append · read Messages and Blob refs | no |
 | `import` | **The History Import operation itself** — open an Archive, store its media, write the Transcript, persist the Receipt. Owns the order of those writes and what a crash between them leaves. | `runImport(deps) → ImportReport`, one call | no |
-| `channel` | A Live account Reader and a bound destination. Accounts, source modes, allowlist, cursors. **Hides `whatsappd` entirely.** | read a Live account → Message values; send, pre-bound to one Chat | no |
+| `channel` | A Live account Reader and a bound destination. The credential, the pairing, the account lease, the one-shot full sync, and reading the durable log from a `seq`. **Hides `whatsappd` entirely** — nothing else names `libsqlBackend`, `createWhatsAppRuntime` or a `MessageRecord`. Produces values; **writes no Ambient state**. | read a Live account → Message values; send, pre-bound to one Chat | no |
+| `ingest` | **The Continuous Ingestion operation itself** — read from the Cursor, store Blobs, append the Transcript, advance the Cursor. Owns the order of those writes and what a crash between them leaves. | `runIngest(deps) → IngestReport`, one call | no |
 | `media` | Interpreting a blob: speech-to-text, vision, extraction. Keyed by hash, cached. | `process(ref) → Interpretation` | later |
 | `knowledge` | The OpenKnowledge project and the ontology. **Hides the OK MCP client.** Frontmatter validation, the work queue, the derived index. | read · search · write · validate · next · index | no |
 | `harness` | Constructing and running **one** agent session: cwd, model policy, MCP list, skills, receipt. **Hides Pi entirely.** | `run(spec) → Receipt` | no |
@@ -35,7 +36,7 @@ Revisable. Expected to change on contact.
 ## Dependency direction
 
 ```
-cli ─────────────> home, import
+cli ─────────────> home, import, channel, ingest
 
 composition root ─> everything (the ONLY place wiring happens)
 
@@ -43,9 +44,9 @@ work ────────────> harness ──┬─> knowledge
                              ├─> capabilities
                              └─> home
 import ──────────> archive, transcript, blobs, home (a Place)
-archive ────┐
-            ├─> transcript ─> blobs
-channel ────┘
+ingest ──────────> channel, blobs, transcript, home (a Place)
+archive ─────────> transcript ─> blobs
+channel ─────────> home (a Place), transcript (types only)
 media ───────────> blobs, knowledge
 speaker ─────────> harness, channel (send, pre-bound)
 evals ───────────> harness (replay)
@@ -55,8 +56,8 @@ Rules the graph encodes:
 
 - **Nothing depends on `cli`.** It is a leaf.
 - **`home` and `blobs` depend on nothing.** They are the floor.
-- **Both Readers produce Message values; the composition root feeds both through
-  `transcript`.** Neither Reader writes on its own.
+- **Both Readers produce Message values; the operation writes.** `archive` and `channel`
+  return values and touch no Ambient state; `import` and `ingest` own the order of the writes.
 - **`harness` runs a session; `work` decides that a session should run.** Two seams, not
   one. Conflating them is what produced four drifted copies last time.
 - **Only the composition root wires.** No module resolves its own dependencies.
