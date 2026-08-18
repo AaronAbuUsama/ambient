@@ -4,6 +4,11 @@ Recorded 2026-08-17, straight after IMPORT closed. **This is a scope, not a spec
 records what the build process did not have, and what that cost, so the fix was designed
 against evidence rather than a feeling.
 
+**There are two cohorts.** The first, below, was found by *reading* what IMPORT produced.
+The second was found on 2026-08-18 by *running* the new rule on INGEST — nine defects the
+artefacts hit at step 1, and six the principal hit in the process itself. A method that has
+been read is not a method that has been used, and the second cohort is that difference.
+
 **The slice is METHOD, and most of this is now closed.** What each deficit became:
 
 | Deficit | Status |
@@ -148,4 +153,250 @@ pipeline, and extract whatever survives. That is this repo's own principle appli
   reads `linesWritten: 0` beside a 13,134-line Transcript. Provenance-confusing; the fix is
   to keep the first run's numbers and record re-runs, or name receipts by run.
 - **INGEST's open question** — how a one-shot full sync survives a crash between seven
-  ~4,800-message batches, on a callback that must not block.
+  ~4,800-message batches, on a callback that must not block. **Answered 2026-08-18** by `R1`
+  and `R2`: it does not survive one. See [ingest/scope.md](../ingest/scope.md), Decided 13–18.
+
+---
+
+# Second cohort — found by running it
+
+**2026-08-18, INGEST step 1.** The first real run of the six-step rule. Everything here was
+produced by *using* the method, not by reading it, which is the only reason any of it was
+found: **nine of these were invisible until a slice existed that was not closed.**
+
+| # | Deficit | Where the fix goes |
+|---|---|---|
+| **The process has no surface** — raised by the principal, and the more serious group | | |
+| 7 | The step report has no specification | [slices.md](../../rules/slices.md), and each step's skill |
+| 8 | The frontier is reported cut off from what produced it | [slices.md](../../rules/slices.md) § 3 |
+| 9 | Research is reported as answers with no questions | [map-slice](../../../.agents/skills/map-slice/SKILL.md) *Finish* |
+| 10 | **There is no entry point. Nothing runs a step.** | a new skill |
+| 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../../.agents/skills/render-slice/SKILL.md) |
+| 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../../rules/slices.md) *Why*, or [roadmap.md](../../design/roadmap.md) |
+| **The artefacts break at step 1** — found by the run | | |
+| 13 | The page template threw on any slice before step 6 | **fixed this run** |
+| 14 | The template hardcoded one slice's name and status | **fixed this run** |
+| 15 | The diagram checklist passed on an unreadable diagram | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) |
+| 16 | `diagrams.md` has no geometry for the case it tells you to use | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) |
+| 17 | `map-slice` and `sections.md` disagree about what step 1 fills | one of the two is wrong |
+| 18 | `sections.md` contradicts itself on empty sections | [sections.md](../../../.agents/skills/render-slice/references/sections.md) |
+| 19 | Nothing says who owns an answer that lands in the wrong step | [slices.md](../../rules/slices.md) § 3 |
+| 20 | The map can permanently delete scope, and that is a decision | [slices.md](../../rules/slices.md) § 1 |
+| 21 | Nothing asserts the page was regenerated | [definition-of-done.md](../../design/definition-of-done.md) — carried, confirmed |
+
+---
+
+## The process has no surface
+
+### Deficit 7 — the step report has no specification, so it is improvised every time
+
+[slices.md](../../rules/slices.md) specifies **artefacts** and **gates** exhaustively. It says
+nothing about what the agent *says* when a step ends. The only reporting instruction in the
+whole chain is one line in `map-slice`:
+
+> Report the frontier: how many questions are `now`, and what the rest wait on.
+
+That was followed exactly, and exactly that was insufficient. The principal's words:
+
+> *"this response format is horrible … it's just highly disorientating … I need to know where
+> I am visually."*
+
+**The root cause is the more useful half.** The page *is* the process — twelve sections,
+grouped, with a **Where it stands** table naming all six steps. The report re-narrated that in
+prose and did it worse. **A step report must not re-render the page.** It owes a short header
+— where we are, and where to look — and then only what *changed*.
+
+The fix is a cap, not a template: an orientation header of a few lines, a pointer to the page,
+and no prose the page already holds better.
+
+### Deficit 8 — the frontier is reported cut off from what produced it
+
+The report listed what was open. It did not list what had been **done**, so the open items had
+nothing to be relative to.
+
+> *"the frontier is not just what's literally on the frontier, is what's already been done …
+> it doesn't make sense if it's not connected to what's coming before it."*
+
+The rule made this easy to get wrong: step 3 is named *"Work the frontier"* and the frontier
+is defined as the **Open** heading alone. But an open question is only legible beside the
+answers already banked — three of INGEST's nine closed inside step 1, and a report showing six
+open while saying nothing about the three closed describes a slice that has not moved.
+
+### Deficit 9 — research is reported as answers with no questions
+
+The report gave findings — *"media downloads serially inside acceptance"* — without ever
+stating what had been asked.
+
+> *"I don't even know what the question was … you didn't say, okay, here's the research,
+> here's what was done, here's what the research question was, here's what came back."*
+
+**And `research` is precisely the kind where this matters most.** It is the one kind that is
+**AFK and parallel** — [slices.md](../../rules/slices.md) says so and makes it the exception to
+one-decision-per-session — so it is the one kind whose dispatch the principal never witnesses.
+Every other kind he would see happen. The kind that most needs its question restated is the
+one with no instruction to restate it.
+
+### Deficit 10 — there is no entry point, and nothing runs a step
+
+This is the one that matters.
+
+Six phases of work ran off **one long human prompt**. The skills were invoked — `map-slice`
+and `render-slice` both ran — but nothing **drove** them: nothing read where the slice was,
+picked the step, chained `render-slice`, and reported.
+
+> *"there should be like one skill to drive the whole process … instead of having to give you
+> that brain dump."*
+
+**It is deficit 3 recurring one level up.** That one read: *"the pipeline had no step that knew
+the pipeline."* It was closed by making `plan-slice` name `new-module`'s precondition — which
+fixed the edge between two skills and left the pipeline itself unowned. Every skill now names
+`render-slice` in its *Finish*, and that is a **convention an agent must remember**, not a call
+site. No step knows it is a step.
+
+### Deficit 11 — `render-slice`'s job is not legible from outside it
+
+> *"I'm not even sure what render-slice is even doing."*
+
+It is called at the end of every step, writes a **gitignored** file, and reports a byte count.
+Nothing says what it read, which sections it filled, which it left empty, or what changed since
+the last render. Its own *Finish* asks for exactly that report — and the report has no
+consumer, because there is no step report (deficit 7) to carry it.
+
+### Deficit 12 — the boundary between up-front and just-in-time planning is nowhere written
+
+The vendored skills want all wayfinding **up front**. This repo rejected that: planning is
+just-in-time, per slice, which is what [slices.md](../../rules/slices.md) is. But
+[roadmap.md](../../design/roadmap.md) was written up front and is **correct** to have been —
+the slice names, their order, and what breaks going backwards are not derivable slice by slice.
+
+**So there are two kinds of planning and the line between them is stated nowhere.** The
+principal's framing:
+
+> *"you still need to do some overall planning first — what is the general evidence and stuff —
+> but the tactical should probably be changed."*
+
+Nothing tells a fresh agent which is which, so the roadmap reads as a contradiction of the rule
+rather than its complement.
+
+---
+
+## The artefacts break at step 1
+
+### Deficit 13 — the page template threw on any slice before step 6
+
+`shell.html` dereferenced `p1`–`p4` and `c1`–`c4` unconditionally. One missing block raised a
+`TypeError`, which killed the whole IIFE — **so the nav array never built and section switching
+never bound.** A slice at step 1 would have rendered as one scrolling page with no navigation
+at all.
+
+**Cause: the template was extracted from one rendered page** — IMPORT, closed, twelve sections,
+exactly four data blocks — so the shape of that page became a hard requirement of every page.
+
+**It was predicted in writing and shipped anyway.** [SESSION-HANDOFF.md](SESSION-HANDOFF.md):
+*"The template has only rendered a closed slice. Every section had content; the empty-state path
+is untested, and INGEST will test it at step 1."*
+
+**Fixed this run.** Blocks are discovered, keyed by a `data-mode`, and skipped when absent.
+
+### Deficit 14 — the template hardcoded one slice's name and status
+
+`<title>IMPORT — slice</title>`, `<h1>IMPORT</h1>`, and a rail foot reading `CLOSED · 6/6` on a
+slice at step 1. Same cause as 13: extracted, not parameterised. **Fixed this run** —
+`<!--SLICE-->` and `<!--STATUS-->`.
+
+### Deficit 15 — the diagram checklist passed on an unreadable diagram
+
+Two defects, both obvious in one second of looking, both invisible to every numeric check in
+[diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md):
+
+- **Four connectors shared one vertical corridor** at `x=356`, two of them overlapping in `y`.
+  They rendered as **one continuous line**; which question fed which gate row was untraceable.
+- **Two legend strings overran their slot** and collided with the next swatch.
+
+The checklist says *"No two connectors share an attach point; shared edges fanned ≥12px."* They
+did not share an attach point — they shared the whole corridor — so the rule never fired. And
+there is **no rule at all** about text width against available slot width.
+
+**This is the third recorded instance of the standing lesson**, and the first where the lesson
+was already written at the foot of the file being followed: *"Then open the page and look at
+it. Measuring the DOM is not looking."*
+
+**Two rules are missing**: one corridor per connector, ordered so runs nest and nothing crosses;
+and a stated character budget per legend slot and per box field line.
+
+### Deficit 16 — `diagrams.md` has no geometry for the case it tells you to use
+
+Recipe C says: *"Above 6 questions, group the homogeneous ones into a single box listing them as
+field lines."* Every solved coordinate in that recipe is for a **240×48** box. A box with three
+field lines is 96 tall.
+
+INGEST opened nine questions, so the grouping instruction fired **immediately**, and the
+geometry had to be solved freehand — **which is the exact thing the file exists to prevent**:
+*"Do not invent coordinates. Freehand placement is what produces collisions."*
+
+### Deficit 17 — `map-slice` and `sections.md` disagree about what step 1 fills
+
+| Says | What |
+|---|---|
+| `map-slice` *Finish* | *"Regenerate the page — this fills sections **1, 2, 4 and 8**."* |
+| `sections.md` | *"A slice at step 1 has **three**."* |
+
+Sections 4 and 8 are **Modules and interfaces** and **State and failure** — both in group
+DESIGN, both impossible before step 2. `sections.md` was followed. Nothing catches the
+disagreement, and one of the two files is simply wrong.
+
+### Deficit 18 — `sections.md` contradicts itself on empty sections
+
+> *"Build only the sections that have content."*
+
+against
+
+> *"Empty sections say which skill fills them and what will be in them. An empty section is
+> information, not an apology."*
+
+Resolved by judgement toward rendering stubs — the page's completeness can only *be* the
+progress bar if the incomplete sections are on it — but a rule conflict was resolved silently
+by an agent, which is the failure mode this whole directory exists to prevent.
+
+### Deficit 19 — nothing says who owns an answer that lands in the wrong step
+
+`map-slice` instructs that research be fired **at step 1**. All three of INGEST's answered
+during step 1. Recording an answer is **step 3's** job — *"answers, appended to Decided."*
+
+They were appended and the page re-rendered, which was right for the work and **crossed a step
+boundary with nothing in the rule permitting it and no requirement to say so.** The rule needs
+one line: an answer is recorded when it lands, whatever step is running.
+
+### Deficit 20 — the map can permanently delete scope, and that is a decision
+
+[slices.md](../../rules/slices.md) § 1: *"Out of scope is a scoping act, not a step on the route
+… it never graduates."* The map writes it, and the map is the agent's.
+
+The same rule says: **facts are the agent's job, decisions are the principal's.**
+
+INGEST's map ruled the pairing screen out of scope. It may well be right. But *permanently
+deleting scope* is a decision wearing a scoping act's clothes, and the rule hands an agent the
+pen with no gate — it was flagged in the report only because the agent chose to. A `grilling`
+line, or an explicit *"Out of scope is provisional until the principal confirms it"*, would
+close it.
+
+### Deficit 21 — nothing asserts the page was regenerated
+
+Carried from [SESSION-HANDOFF.md](SESSION-HANDOFF.md) and **confirmed still true**. Every step
+is required to end by regenerating the page; no definition-of-done row, and no check, would
+notice a page a step out of date. Same class as the row that already exists for the call graph
+— read, not run.
+
+---
+
+## What the second cohort says as a whole
+
+The first cohort was *"we codified the artefacts and not the method."*
+
+The second is narrower and sharper: **we codified the method's outputs and not its operation.**
+Every one of 7–12 is a missing *surface* — no entry point, no step report, no statement of
+where you are — and every one of 13–18 is an artefact that only worked for the one state it was
+authored against.
+
+Both have the same shape as deficit 3, which is the one this repo has now hit three times: **a
+pipeline where every part knows its own job and nothing knows the pipeline.**
