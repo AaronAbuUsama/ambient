@@ -4,12 +4,14 @@ Recorded 2026-08-17, straight after IMPORT closed. **This is a scope, not a spec
 records what the build process did not have, and what that cost, so the fix was designed
 against evidence rather than a feeling.
 
-**There are three cohorts.** The first, below, was found by *reading* what IMPORT produced.
+**There are four cohorts.** The first, below, was found by *reading* what IMPORT produced.
 The second was found on 2026-08-18 by *running* the new rule on INGEST — nine defects the
 artefacts hit at step 1, and six the principal hit in the process itself. A method that has
 been read is not a method that has been used, and the second cohort is that difference.
 The **third** is the step report itself, which took two more rounds of being unreadable before
-it got a specification — that specification is the template at the foot of this file.
+it got a specification — that specification is the template at the foot of this file. The
+**fourth** came out of step 5, the first time Build ever ran under the rule, and all three of
+its entries are about what the method does when it is *wrong* rather than when it is working.
 
 **The slice is METHOD, and most of this is now closed.** What each deficit became:
 
@@ -172,7 +174,7 @@ found: **nine of these were invisible until a slice existed that was not closed.
 | 7 | The step report has no specification | [slices.md](../../rules/slices.md), and each step's skill |
 | 8 | The frontier is reported cut off from what produced it | [slices.md](../../rules/slices.md) § 3 |
 | 9 | Research is reported as answers with no questions | [map-slice](../../../.agents/skills/map-slice/SKILL.md) *Finish* |
-| 10 | **There is no entry point. Nothing runs a step.** | a new skill |
+| 10 | **There is no entry point. Nothing runs a step.** | a new skill — **built, then reverted six minutes later. See 24** |
 | 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../../.agents/skills/render-slice/SKILL.md) |
 | 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../../rules/slices.md) *Why*, or [roadmap.md](../../design/roadmap.md) |
 | **The artefacts break at step 1** — found by the run | | |
@@ -437,6 +439,139 @@ The recipe's own budget is the cause — 240-wide boxes at 8–9px mono. **A que
 in a node.** The fix is that recipe C's box carries the *kind and the count*, and the questions
 themselves live in the table beside it, in full. What the diagram is for is the **shape** —
 who answers, what waits on what — not the wording.
+
+---
+
+# Fourth cohort — what the method does when it is wrong
+
+**2026-08-18, INGEST step 5.** The first time Build ever ran under the rule. Steps 1 to 4
+produce documents and the rule has a great deal to say about them; step 5 produces code,
+commits and retractions, and it turns out to be where the method is thinnest.
+
+The three below share one shape, and it is not the shape of the earlier cohorts. Deficits
+1–6 were *"we codified the artefacts and not the method"*; 7–21 were *"we codified the
+method's outputs and not its operation."* **These are: the method has a forward gear and no
+reverse.** It can close a deficit, assert a precondition and answer a question. It cannot
+un-close, enforce, or record a decision made while building.
+
+| # | Deficit | Where the fix goes |
+|---|---|---|
+| 24 | **A deficit can be closed and cannot be un-closed.** 318 lines were built and reverted, and this document says it never happened | this file's status table, and [decisions.md](../../rules/decisions.md) |
+| 25 | **`new-module`'s precondition is a sentence, so it has never once refused.** Ticket 00 exists in both slices that have had one | **fixed this run** — [shape.ts](../../../scripts/shape.ts) grew a fourth section |
+| 26 | **Build makes decisions and the method has nowhere to put them.** Two were made inside ticket 00 alone | [slices.md](../../rules/slices.md) § 5 |
+
+### Deficit 24 — a deficit can be closed, and cannot be un-closed
+
+`0c7eae3` at **09:55:49** closed deficit 10. It added `scripts/slice.ts` (178 lines),
+`.agents/skills/slice/SKILL.md` (122 lines) and its symlink, a row in
+[AGENTS.md](../../../AGENTS.md)'s skill table, six lines to
+[slices.md](../../rules/slices.md), and flipped this document's own entry for 10.
+
+`00d9b09` at **10:01:10** reverted all 318 lines. Its message is `git revert`'s default —
+*"This reverts commit 0c7eae3…"* — and **nothing anywhere says why.**
+
+The revert was clean, which is the problem. It took the *record* back along with the work,
+so line 175 above reads *"there is no entry point, a new skill"* exactly as it did before
+09:55, and the document now asserts something that is true only by accident. A reader who
+finds this file tomorrow learns that the entry point was never attempted. A reader who runs
+`git log` learns it existed for six minutes. Those are two answers alive in two places, which
+is the failure [decisions.md](../../rules/decisions.md) was written to stop:
+
+> *"A silently corrected ADR reads as if the design were right first time, which teaches the
+> next reader nothing and quietly removes the evidence."*
+
+That rule governs ADRs and the **Decided** list and stops there. It never occurred to it that
+this file — the record of what is wrong — could itself need an amendment, and its own check
+line already admits the weak spot: *"that a correction was written as an amendment rather than
+an edit to the body is **not currently checked**."*
+
+**The status vocabulary is the concrete gap.** The table at the top of this file has `closed`
+and it has open. There is no `retracted`, so there is nowhere to put *built, reverted, and
+here is what we learned* — and a deficit that has been attempted once is worth strictly more
+than one that has not, because the next attempt starts from the reason the first came out.
+
+**This entry does not say the revert was wrong.** It says that whatever the reason was, it is
+not written down, and six minutes is far too fast for the reason to have been nothing.
+
+### Deficit 25 — `new-module`'s precondition is a sentence, so it has never once refused
+
+[`new-module/SKILL.md:11`](../../../.agents/skills/new-module/SKILL.md) is quoted in three
+documents as the thing that stops a module existing before its seam row:
+
+> *"the module must already own something in `docs/design/seams.md` … A module with no row
+> is not a module yet."*
+
+**It is prose in a skill file.** It refuses only if the agent reading it decides to. Nothing
+runs, and [legibility.md](../../rules/legibility.md) has the sentence for exactly this: *a
+rule that cannot be run is not a rule.*
+
+[`scripts/shape.ts`](../../../scripts/shape.ts) has three sections — source files (`:73`), the
+six slots (`:105`), cross-links (`:121`). The six-slot loop reads `src/modules/*` and asks
+whether each has its files. **Nothing reads `seams.md` at all.** So for the whole of INGEST's
+steps 1–4, `ingest` was a module in `design.md`, in the call graph, in five tickets, and in
+neither `seams.md` nor any check — and `vp run shape` printed `clean` on every one of those
+days.
+
+**This is deficit 3 for the third time**, and the second time it was declared closed. That
+closure reads: *"`plan-slice` names `new-module`'s seam-row precondition."* Naming a
+precondition in a second document is not checking it — it is the same sentence, in one more
+place, still unexecuted. The cost is visible and identical in both slices that have reached
+step 5:
+
+| | IMPORT | INGEST |
+|---|---|---|
+| Ticket `00` | `00-seam-rows.md` — `archive`, `transcript` | `00-seam-rows-and-libsql.md` — `channel`, `ingest` |
+| Writes code | no | no |
+| What it does | copies the rows a design already wrote | copies the rows a design already wrote |
+
+Two files, two slices, one job. **`00` is not a ticket, it is a missing check with a number.**
+
+**Fixed this run.** [`shape.ts`](../../../scripts/shape.ts) grew a fourth section: every
+module named in a `docs/planning/<slice>/design.md` § Seam delta, and every directory under
+`src/modules/`, must own a row in `seams.md`. Run against the tree as it stood at `00d9b09`
+— four days of `clean` — it says:
+
+```
+docs/planning/ingest/design.md: § Seam delta names `ingest`, which owns no row in docs/design/seams.md
+shape: 1 problems
+```
+
+*Why the fix is a check and not a generator.* The obvious move is to generate `seams.md`'s
+rows out of `design.md` § Seam delta, and it does not work: the delta's third column is
+**`Depends on`** and `seams.md`'s is **`Interface is about`**. They are different facts. The
+`ingest` row's `runIngest(deps) → IngestReport`, one call was authored by analogy to
+`import`'s, not copied from anywhere — and the delta's `Owns` cells open with `**amended.**`
+and `**new.**`, which are markers for a delta and wrong in a permanent map. A generator would
+have to invent the one column that matters or silently degrade it. A checker cannot get a
+cell wrong, because it writes none.
+
+### Deficit 26 — Build makes decisions, and the method has nowhere to put them
+
+Ticket 00's *Done when* is three lines, and one of them is *"`pnpm install` resolves, and
+`vp check` is pass·pass."* Reaching it took two decisions the ticket never anticipated:
+
+| Decision | What was at stake | Where it is recorded |
+|---|---|---|
+| `whatsappd` pinned to `0.4.0-alpha.3` from the registry, **not** `link:../whatsappd` | a `link:` makes `pnpm install` here depend on a directory outside this repository | the ticket's `## Comments` |
+| `baileys` and `protobufjs` `allowBuilds: false` | `pnpm` refuses to install while they are unanswered, so `vp check` failed on `ERR_PNPM_IGNORED_BUILDS` before reading a single file | the ticket's `## Comments` |
+
+Neither is an ADR and neither should be — [decisions.md](../../rules/decisions.md) reserves
+those for *"a decision that shapes the codebase"*, and a pinned alpha and a build-script
+policy are below that bar. **But the rule has no bar below that one.** The only decision
+surface in [slices.md](../../rules/slices.md) is step 3, the frontier, whose gate is *"Open
+and Fog are both empty"* — by construction it is closed before Build begins. So a decision
+made at step 5 has exactly one home, a `## Comments` block that no gate reads and no step
+report carries.
+
+**And the gate cannot see it.** [definition-of-done.md](../../design/definition-of-done.md) is
+sixteen rows of command-or-observable-state; `close-slice` will read every one of them and
+will not read a Comments block. Both facts above are load-bearing for the next person who runs
+`pnpm install` in this repo, and both are one `git log` away from invisible.
+
+**The smallest honest fix is not a new artefact.** It is a line in `slices.md` § 5 saying
+where a build-time decision goes, and the cheapest answer is the one the third cohort already
+built for a different problem: the step report. A decision made at step 5 is reported at step
+5, and the report is what the principal reads.
 
 ---
 

@@ -10,9 +10,12 @@ checked by `vp run shape`. Scaffold them together so the module is never briefly
 
 **Before scaffolding:** the module must already own something in
 [`docs/design/seams.md`](../../../docs/design/seams.md) — one row, what it owns, which
-way its dependencies flow. A module with no row is not a module yet. And do not scaffold
-ahead of behaviour: create it when the first real work lands in it, not to reserve the
-name.
+way its dependencies flow. A module with no row is not a module yet. **`vp run shape`
+checks this**, in both directions: a module in a `design.md` § Seam delta with no row, and
+a directory under `src/modules/` with no row, are both offences. Until 2026-08-18 this
+paragraph was the only enforcement and it never fired once — [method/deficits.md](../../../docs/planning/method/deficits.md)
+deficit 25. And do not scaffold ahead of behaviour: create it when the first real work
+lands in it, not to reserve the name.
 
 ## The five files
 

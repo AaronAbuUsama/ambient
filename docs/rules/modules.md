@@ -67,7 +67,10 @@ list precisely so they cannot.
 ## The check
 
 `vp run shape` — asserts all six slots exist for every module under `src/modules/`, and
-names the missing ones.
+names the missing ones. It also asserts the row: every module named in a
+`docs/planning/<slice>/design.md` § Seam delta, and every directory under `src/modules/`,
+owns a row in [seams.md](../design/seams.md). `new-module` states that refusal in prose;
+this is what executes it.
 
 That `main.ts` is the only file reading the environment, and that a module's work is a
 named top-level function rather than a nested closure, are **not currently checked**.
