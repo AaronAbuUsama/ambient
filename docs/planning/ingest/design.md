@@ -244,10 +244,10 @@ Read back off the caller. Nothing here was invented ahead of a call site.
 | `home` | **+** `source(name) → SourceHandle` with `store: Grant` · `media: Grant`; **+** `ChatHandle.cursor: Grant` | `cli.pair`, `cli.ingest` |
 | `channel` | `pair(req) → Promise<PairReport \| ChannelFailure>` · `readFrom(req) → Promise<ChannelRead \| ChannelFailure>` · `describe(p) → string` · `describeProgress(p) → string` · `summarisePair(r, into) → string` | `cli.pair`, `ingest/service.ts` |
 | `ingest` | `runIngest(req) → Promise<IngestReport \| IngestFailure>` · `describe(p) → string` · `summarise(r, into) → string` | `cli.ingest` |
-| `transcript` | **unchanged.** `writeTranscript(Place, lines)` already accepts `LiveMessage` and `LiveReaction` | `ingest/service.ts` |
+| `transcript` | **changed — corrected 2026-08-18.** `S1` found three Live-only defects in it, none of which had ever fired because nothing produced a Live line. Ticket [`01`](./issues/01-transcript-survives-a-live-line.md) fixes them | `ingest/service.ts` |
 | `blobs` | **unchanged.** `openBlobs(root) → put · get · exists` | `ingest/service.ts` |
 
-**`transcript` gains nothing, and that is the headline.** `LiveMessage`, `LiveReaction`,
+**`transcript` was going to gain nothing. It does now** — and finding that out cost one spike rather than one corrupted Transcript. `LiveMessage`, `LiveReaction`,
 `LiveWho` and `LiveMedia` have existed since IMPORT with **no producer** — measured
 2026-08-18, `grep -rn 'from: "live"' src/`, four hits, all declarations or the deserialiser.
 `ingest` is the caller that makes them real and closes the one empty middle column in
@@ -446,106 +446,46 @@ is the reason: **the whole point of Shape B is that we are not in that window.**
 | # | Write | A crash immediately after leaves | The next run |
 |---|---|---|---|
 | 1 | Blobs | orphan Blobs, content-addressed, harmless | re-hashes to the same names |
-| 2 | Transcript lines | lines ahead of the Cursor | re-reads from the Cursor; `writeTranscript` is idempotent |
-| 3 | the Cursor (`seq`) | — | resumes at `seq + 1` |
+| 2 | Transcript lines | lines with no record that they were written | **re-reads the mirror and writes them again; `writeTranscript` is idempotent on the message id** |
 
-**The Cursor is written last on purpose**, for exactly the reason the Receipt is: its value is
-the claim that everything below it is already in the Transcript. Written first, it would claim
-lines that were never appended.
+**Two rows, not three.** The Cursor was the third, and it is gone. What replaces it is that the
+mirror is still there — a crash costs a re-read of something that has not moved, which is the
+whole reason the durable boundary sits where it does.
 
-**A revoke can arrive in the same batch as the line it revokes**
-([`findings/03`](findings/03-sync-payload.md)) — so a batch is mapped whole before it is
-written, never message-by-message. That is a property of `channel.readFrom`, and it is why it
-returns a batch rather than an async iterator of messages.
-
----
+**A revoke can arrive on the same record as the message it revokes**
+([`findings/03`](findings/03-sync-payload.md)), and `editedAt`, reactions and receipts are all
+state on the record rather than events — so a Chat is mapped whole and written in one call. That
+is also what `S1`'s measurement demands: 372,721 lines/s batched against 10 one at a time.
 
 ## Branch points
 
-Each is a place the shape depends on something not yet decided. Each carries two candidate
-shapes as code, and each is one `grilling` line in [`scope.md`](./scope.md).
+**Empty, and that is the gate.** Every branch point this file raised was a `grilling` question
+in [`scope.md`](./scope.md), and step 3 answered or dissolved all of them. They are collapsed
+below rather than deleted, because *what a decision beat* is part of the decision.
 
-### Branch point 1 — where the Live account's durable store lives · `G4`
-
-`home` has three units — home, chat, agent. A WhatsApp Account's credential, source log,
-mirror and media tree are **per-Source, not per-Chat**, and the layout has nowhere for
-account-level material that is not knowledge.
-
-```ts
-// A — a fourth unit, following ADR 001's handle pattern
-home.source("personal").store()   // ~/.ambient/sources/personal/wa.db
-home.source("personal").media()   // ~/.ambient/sources/personal/media/
-// every Source in config.yaml gets a folder; `doctor` plans and converges it like any other
-
-// B — one property, like `home.blobs`, keyed inside by the Source name
-home.channels                     // Place → ~/.ambient/channels/
-// `channel` joins <name> itself. Fewer home changes; breaks ADR 001's escrow rule,
-// because a module outside `home` would be building a path.
-```
-
-**A is the sketch above.** B is here because it is genuinely smaller and it is what
-`home.blobs` already does — but `home.blobs` is a property precisely because *"the root has no
-name to be wrong"*, and a Source **does** have a name that can be wrong. That asymmetry is the
-whole question.
-
-### Branch point 2 — what the Cursor is, and where it lives · `G5`
-
-```ts
-// A — a file beside the Transcript. One more durable write, ordered last.
-chat.cursor()                     // ~/.ambient/chats/<slug>/cursor.json  → { seq, at }
-
-// B — carry `seq` on the Transcript line itself; re-derive by reading the last line.
-//     No second write, no ordering question, and the crash table loses a row.
-//     Costs: it changes the line shape ADR 004 settled, and `home` "never parses"
-//     the Transcript because it is bounded by traffic — so something must tail it.
-
-// C — no cursor. Re-read the whole log every run and let writeTranscript dedup.
-//     Correct today (13,134 lines, 43,334 messages); it is O(everything) forever.
-```
-
-Three, not two, because C is the honest floor: it ships INGEST with **no new durable state at
-all** and is the one shape that cannot be wrong about resumption. It is here to be killed on
-cost, not ignored.
-
-### Branch point 3 — when a one-shot sync is "done" · anchors `G3`
-
-`whatsappd` publishes no completion signal, and none can be synthesised: silence and
-exhaustion are indistinguishable.
-
-```ts
-// A — quiet window. Stop after N seconds with no accepted batch.
-//     Wrong N ends the sync early, and early is unrecoverable.
-
-// B — never stop on our own. Run until the principal stops it, and print the live
-//     `seq`, batch source and oldest Instant so the decision is his.
-//     Slower, and it makes the irreversible call a human one.
-```
-
-**This is where `G3` becomes concrete**: *"zero loss, or re-pair"* is really *"who decides the
-sync is finished, and what does it cost to be wrong."*
-
-### Anchors for the map's three questions
-
-| id | Names | The question, now that there is code to look at |
+| Was | Now | Killed by |
 |---|---|---|
-| `G1` | § State and failure · `ambient ingest` | Live lines older than `2025-02-14T16:06:10Z` — write them, or is the Archive authoritative for its own span? The Cursor is `seq`-ordered, not time-ordered, so this is a filter in `channel.readFrom` or nothing |
-| `G2` | § The caller · `ambient ingest` | `--into <slug>`, one Chat at a time, is the sketch. The alternative is a verb with no `--into` that walks every Chat whose Peer is in `allow`. One is provable now; the other is what the seed needs |
-| `G3` | § Branch point 3 | above |
+| **1 · Where the Source's store lives** — a fourth `home` unit, or one property like `home.blobs` | **A fourth unit.** `home.source(name).store()` / `.media()`, inside `~/.ambient`. `home.blobs` is a property precisely because *"the root has no name to be wrong"*, and a Source **does** have a name that can be wrong | the principal, Decided 24 |
+| **2 · What the Cursor is** — a file, a field on the line, or nothing | **Dissolved. There is no Cursor.** The question existed only because this design read the event log by `seq`. Reading current state has no position to remember | the principal: *"why does it need to even care about catching up?"* |
+| **3 · When a one-shot sync is done** | **Dissolved as a design question, and survives as one operational rule**: never exit on a guess. `pair` stops on the protocol's own completion, and otherwise holds and prints where it got to. It is not load-bearing for `ingest`, which can simply be re-run | the mirror correction |
+| — | **New, and answered**: how a Chat is bound to a Peer. By hand, from `ambient peers <source>` | the principal, Decided 54–55 |
 
----
+**One question this file raised was itself an artefact.** *Backfill versus live* is not a
+distinction the API has: there is one read of current state, and "am I caught up" is a property
+of a number rather than a second operation. Recorded because the design asked it and the asking
+was the error.
 
-## The frontier, ordered
+## What follows
+
+The frontier is empty and [`spec.md`](./spec.md) is written. The build tickets are
+[`issues/`](./issues/), numbered in dependency order:
 
 ```
-T1  task       now                                    — linked-device slots free
-S1  spike      now                                    — a Live line through writeTranscript
-S2  spike      after T1, S1                           — retry the 353 transport failures
-G1  grilling   after design.md § State and failure    — older than the Archive
-G2  grilling   after design.md § The caller           — one Chat, or the seed
-G3  grilling   after design.md § Branch point 3       — who decides a sync is done
-G4  grilling   after design.md § Branch point 1       — where the Source's store lives
-G5  grilling   after design.md § Branch point 2       — what the Cursor is
+00 seam rows + @libsql/client ──> 02 ambient pair ──> 03 ambient peers ──┐
+                                                                        ├──> 04 ambient ingest
+01 transcript survives a Live line ─────────────────────────────────────┘
 ```
 
-Every `grilling` line names a block of this file, which is the step-2 gate. `T1` and `S1`
-remain the only two things startable without the principal.
+**`00` and `01` are startable now, in parallel.** `00` writes no code and exists because
+`new-module` refuses a module with no `seams.md` row; `01` needs nothing because `transcript`
+already has one.

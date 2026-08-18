@@ -99,6 +99,26 @@ different thing from live ingestion, or the same thing at a different position?*
 Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
 owed to him rather than by him.
 
+### Answered by the principal — the last one
+
+| # | Answer | Closes |
+|---|---|---|
+| 54 | **A Chat is bound to a Peer by hand, and one read-only verb makes that possible.** `ambient peers <source>` prints what is in the mirror — Peer id, subject, message count, newest Instant — and the principal pastes the id into `chats/<slug>/config.yaml`. *Operate it by hand until it is good, then automate.* The rejected alternative is deriving slugs from 913 subjects carrying emoji and punctuation, which [intake/scope.md](../intake/scope.md) already flagged as the likeliest thing to go wrong. | `G7` |
+| 55 | **The verb is `peers`, positional, not `chats --source`.** [CONTEXT.md](../../../CONTEXT.md) already owns the word: a **Peer** is *"the Source's own identifier for one conversation."* `chat` is Ambient's own noun and `ambient chat add` already uses it, so `ambient chats` would name the wrong thing. One word, one meaning. | — |
+
+### `S2b` is retired to the roadmap, not silently dropped
+
+The step-3 gate is *"Open and Fog are both empty."* Fog is empty. `S2b` — **do the 375 failed
+media downloads come back under pacing?** — is the one thing left, it needs the principal at a
+phone, and the principal ruled it off the critical path.
+
+**It is therefore moved to [roadmap.md](../../design/roadmap.md)'s Research queue**, whose own
+rule is *"answer before the slice that needs it — not before"*, and it blocks the point at which
+the knowledge base has to be **trusted**. That is a real home with a real trigger, and it is the
+honest way to empty Open: the question is not answered and this file no longer pretends it is.
+
+The recipe is already written and costs one run: [`findings/06`](findings/06-media-failure-classification.md).
+
 ### Answered by R5 — the backends, re-done and this time run
 
 The earlier adapter pass was framed around the event log and is superseded. `R5` re-established
@@ -411,82 +431,12 @@ not.** That gap is what the three research questions below are about.
 
 ## Open
 
-Each carries an **id**, a **kind** and **what it waits on**. `now` means dispatchable this
-minute.
+**Empty.** Every question this Slice opened is in **Decided** above, dissolved by the mirror
+correction, or — for `S2b` alone — retired to [roadmap.md](../../design/roadmap.md)'s Research
+queue with its trigger named. Seventeen were opened; four were dissolved rather than answered,
+which is what happens when a framing turns out to be wrong.
 
-```
-R1  research   ANSWERED         — findings/01-durable-full-sync.md   → Decided 13, 14, 15
-R2  research   ANSWERED         — findings/02-handler-backpressure.md → Decided 16, 17, 18
-R3  research   ANSWERED         — findings/03-sync-payload.md        → Decided 19, 20, 21
-
-T1  task       ANSWERED         — slots are not a constraint; one can be freed. And the
-                                  measurement above shows a live credential already exists,
-                                  so INGEST may need no pairing at all. → Decided 25
-
-R4  research   ANSWERED         — findings/04-ambient-backend-adapter.md  -> Decided 27-31,
-                                  and one defect in transcript/types.ts that no backend fixes
-
-S1  spike      now              — Push a recorded batch of Live-shaped values through the
-                                  EXISTING `writeTranscript` path against a temp home, and
-                                  measure lines/second and bytes. No credential, no socket.
-                                  Nothing has ever produced a Live line; this is what proves
-                                  the Write path accepts one before a pairing is spent.
-                                  Sharpened by R1/R2: also time a durable write against the
-                                  30 s lease TTL, and exercise a handler that REJECTS —
-                                  whatsappd has no test for a slow or throwing
-                                  conversationSync handler, so ours is the only evidence.
-
-S1  spike      ANSWERED         — findings/05-live-line-write-path.md -> Decided 35-39,
-                                  and three defects in shipped transcript code
-
-S2a spike      ANSWERED         — findings/06-media-failure-classification.md -> Decided
-                                  40-44. The 22-versus-353 split was a regex over signed URLs
-
-S2b spike      after S2a        — the retry pass itself. Needs a live socket and the principal
-                                  at a phone, so it is HITL, not AFK.
-
-G1  grilling   design.md § State and failure
-                                — Live lines OLDER than 2025-02-14T16:06:10Z: written, or is
-                                  the Archive authoritative for its own span? The Cursor is
-                                  seq-ordered, not time-ordered, so this is a filter in
-                                  `channel.readFrom` or it is nothing.
-
-G2  grilling   design.md § The caller
-                                — `--into <slug>`, one Chat at a time, is what the caller
-                                  sketch does. The alternative is a verb with no `--into`
-                                  that walks every Chat whose Peer is in `allow`. One is
-                                  provable now; the other is what the seed needs.
-
-G3  grilling   design.md § Branch point 3
-                                — Nothing can signal that a one-shot sync is finished:
-                                  silence and exhaustion are indistinguishable. A quiet
-                                  window that is too short ends it early, and early is
-                                  unrecoverable. Who makes that call — a timer, or you?
-
-G4  grilling   design.md § Branch point 1
-                                — A Source's credential, log, mirror and media are
-                                  per-Source and the home has nowhere for them. A fourth
-                                  `home` unit alongside chat and agent, or one property like
-                                  `home.blobs` with `channel` joining the name itself?
-
-G5  grilling   DISSOLVED        — there is no Cursor. Reading current state has no position
-                                  to remember. See design.md § The caller, corrected 2026-08-18.
-
-G7  grilling   design.md § The caller
-                                — The caller refuses on `peer: ""`, and the account holds 1,506
-                                  chats. How does a Chat get bound to one of them — by hand in
-                                  config.yaml, and if so what lists them so a jid can be found?
-```
-
-**Eight remain; two are startable now** — `T1` and `S1`. The three `research` questions
-answered the same day they were fired, which is what AFK and parallel is for. `S2` waits on a
-fact (`T1`) and on the Write path being proven (`S1`).
-
-**`G4` and `G5` did not exist before step 2**, and that is the step working: they are places
-the shape depends on something undecided, found by writing the caller. Every `grilling` line
-now names a block of [`design.md`](./design.md), which is
-[`slices.md`](../../rules/slices.md)'s step-2 gate — a question that cannot name one either
-belongs back here in the map, or means the design stopped early.
+The step-3 gate is met. The next step is [`plan-slice`](../../../.agents/skills/plan-slice/SKILL.md).
 
 ## Fog
 
