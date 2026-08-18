@@ -99,6 +99,52 @@ different thing from live ingestion, or the same thing at a different position?*
 Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
 owed to him rather than by him.
 
+### Answered by R5 — the backends, re-done and this time run
+
+The earlier adapter pass was framed around the event log and is superseded. `R5` re-established
+the facts against `97e4d601` (`0.4.0-alpha.3`, **0 behind `origin/master`**) and, decisively,
+**ran the read cross-process rather than reasoning about it**. Evidence:
+[`findings/07`](findings/07-backends-and-the-mirror-read.md).
+
+| # | Answer | Instrument |
+|---|---|---|
+| 45 | **Ambient can open `whatsappd`'s file and read the entire mirror with no socket, no lease and no runtime.** Measured **88 ms** for the full mirror, from a second process, while a writer held the lease. `runtime.snapshot()` and `runtime.messages()` are literal pass-throughs (`runtime.ts:813-814`), so the runtime adds nothing to this path. | a live cross-process run, 2026-08-18 |
+| 46 | **A read cannot tear and cannot block the writer.** One `read()` is one transaction at one revision: a chat committed by the other process mid-read was **invisible**, the revision did not move, and the writer committed in **156 ms** un-blocked. The reader also **could not steal the lease**. | the same run |
+| 47 | **Paging terminates and neither skips nor repeats** — 4 pages across a deliberate 3-way timestamp collision. Ordering is `(timestamp, messageId)` descending, both parts required, which is why the collision is safe. | the same run |
+| 48 | **Everything the Transcript needs is current state.** Reactions, receipts, `editedAt`, the `revoked` arm and `DurableMedia` are all on the record — **nothing needs replaying**. Media bytes round-trip through `MediaStore.open()` alone. | the same run |
+| 49 | **There is no Postgres backend and there never was one** — zero hits in source and zero in the entire git history: no removed file, no commit, no ADR. It is a deferred target (`post-0.3`). The contract **is** storage-agnostic; nothing libSQL-specific reaches `runtime.ts` or `client.ts`. | `findings/07` |
+| 50 | **`memoryBackend` is the reference implementation by its own docstring**, and a 1,181-line conformance suite runs against both it and libSQL — **but it is not shipped** (`files: ["dist"]`, and `./testing` is a session driver, not a backend suite). Which is one more reason not to have written our own. | `findings/07` |
+
+### Three things that change the plan
+
+| # | Fact | Consequence |
+|---|---|---|
+| 51 | **`@libsql/client` is an *optional* peer dependency of `whatsappd`, dynamically imported.** | **Ambient must depend on it directly.** One line in `package.json`, and it is the only new runtime dependency this Slice adds. |
+| 52 | **The database file must be *writable*.** A read-only copy dies at `PRAGMA journal_mode = WAL`. | `home` grants a `Place` inside `~/.ambient` that Ambient owns anyway, so this costs nothing — but it forecloses "point at someone else's read-only copy", and that is worth knowing before someone tries it. |
+| 53 | **`AccountRecord` carries no self address.** *Which* address is the principal exists only on a live runtime. | Per message it does not matter — `MessageRecord.fromMe` is on every record. It matters for identity, which is KNOWLEDGE's, and it is recorded here so that Slice does not rediscover it. |
+
+### And a correction to R5's own recency claim
+
+`R5` reported that `e6bbf69` — *"correct two comments that promised a recovery which never
+runs"* — had folded into `f225ee6`, so nothing was stale.
+
+*Instrument: `git show e6bbf69 --stat`, plus `grep` over the working tree, 2026-08-18.*
+
+`e6bbf69` touches `baileys/download.ts`, `errors.ts` and one test. It does **not** touch
+`model/message.ts`, and that file still reads:
+
+```
+model/message.ts:106   `download()` fetches + decrypts, transparently re-uploading expired media.
+```
+
+`S2a` established that this never fires — Baileys gates the re-upload on `error?.status` while
+the error object carries `output.statusCode`. **So the misleading comment survives**, `S2a` was
+right, and `R5` was over-stated on that one point. Nothing else in its recency check is
+affected.
+
+**Third agent summary this Slice that needed checking against source, and the third time the
+check cost under a minute.** That is the rate to plan for, not an aberration.
+
 ### Answered by S2a — and it retracts a number this repo has repeated all day
 
 Evidence: [`findings/06`](findings/06-media-failure-classification.md), and the base rate below
