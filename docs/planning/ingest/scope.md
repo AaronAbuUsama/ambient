@@ -99,6 +99,94 @@ different thing from live ingestion, or the same thing at a different position?*
 Open below because it is a **shape** question — it belongs to `design.md`, and the answer is
 owed to him rather than by him.
 
+### Answered by S2a — and it retracts a number this repo has repeated all day
+
+Evidence: [`findings/06`](findings/06-media-failure-classification.md), and the base rate below
+was re-run here rather than taken on the spike's word.
+
+**The claim, as it has stood since 2026-08-16:** *"attempted 728, landed 343, failed 375 — of
+which 353 transport failures and 22 EXPIRED/GONE"*, and from it, *"expiry is real but rare."*
+
+**It is noise, and it is provably noise.**
+
+*Instrument: substring counts over the 375 failure keys in `.spike-private/history/summary.json`,
+2026-08-18, with a nonsense token as a control.*
+
+```
+failure records                     375
+  contains "404"                     14   3.7%
+  contains "410"                      8   2.1%
+  contains "777"  (control)          14   3.7%     <- identical to 404
+  contains "313"  (control)          16   4.3%     <- MORE than 404
+  labelled EXPIRED/GONE               22           == 14 + 8
+  records carrying an HTTP status      0
+```
+
+The spike regexed the raw error message, which carries the **signed CDN URL and no status**, so
+`404` and `410` were matching digit substrings inside a URL. A meaningless token matches at the
+same rate. **`whatsappd`'s real classifier — an HTTP status off Baileys' Boom — landed at
+`f225ee6`, 2026-08-17 10:58 UTC, the day *after* the run.**
+
+**Correct reading: 375 unclassified failures.** Not 353 plus 22.
+
+| # | Answer | From |
+|---|---|---|
+| 40 | **Today's classifier is real and status-derived**, not string-matched: `expired` (404/410), `throttled` (429), `unavailable` (5xx), `unknown` (no status, or anything else including 403). Only `throttled` and `unavailable` are retryable. | [06](findings/06-media-failure-classification.md) |
+| 41 | **But under Shape B we would not see it.** The runtime discards the classified error in a bare `catch {}`, so a media failure reaches a durable record as `failed` with `download_failed` and **no status at all**. Calling `download()` directly keeps the typed error; going through the runtime does not. | [06](findings/06-media-failure-classification.md) |
+| 42 | **There is no media rate limiting anywhere.** `pacer.ts` has exactly one call site and it is outbound `send`. Media is serial *by accident* — a `for … await` loop inside `accept()` — with no cap, no gap, no backoff and no retry. That is the likeliest mechanism behind a 48% failure rate on a live CDN. | [06](findings/06-media-failure-classification.md) |
+| 43 | **Retry from stored state stays type-impossible**, and the documented "transparently re-uploads expired media" **never fires** — Baileys gates it on a field the error object does not carry. Only redelivery recovers a blob. | [06](findings/06-media-failure-classification.md) |
+| 44 | **`S2b`'s experiment is now concrete**, and it is one run rather than a fishing trip: drain the same media set **twice, paced and unpaced**, reading the typed error. **If the failure rate collapses under a ~200 ms gap, it was throttling.** Bucket on `reason` and status; write no signed URLs to disk. | [06](findings/06-media-failure-classification.md) |
+
+**What this costs the design.** Decided 41 is a genuine constraint on the shape already chosen:
+Shape B routes media through the runtime, so Ambient sees `failed` and not *why*. Either `ingest`
+accepts that a failure is unclassified, or `channel` wraps the download itself. **That belongs in
+step 4**, with the `transcript` corrections from `S1`.
+
+**And the standing lesson fired again, on me.** *State the instrument with every number.* The
+instrument here was a regex over a signed URL, nobody wrote that down, and the number was
+repeated in four reports to the principal before anyone asked what produced it.
+
+### Answered by S1 — the Write path, measured 2026-08-18
+
+The first thing that has ever produced a `from: "live"` line. Synthetic values, a temp home, no
+socket, `~/.ambient` untouched. Evidence: [`findings/05`](findings/05-live-line-write-path.md);
+throwaway code in `.spike-private/live-line/`, gitignored and uncommitted.
+
+| # | Answer | Instrument |
+|---|---|---|
+| 35 | **It accepts a Live line.** 1,000 synthetic lines round-tripped through `openHome → chat.transcript() → writeTranscript → readTranscript`: **1000/1000 value-identical**, nothing dropped or coerced. | the spike, 2026-08-18 |
+| 36 | **Batch size is the whole performance story, and it is now a number.** 372,721 lines/s batched — 50,000 lines in 134 ms, 284.1 B/line — against **10 lines/s** one line at a time, because `writeTranscript` reloads the entire file per call. An account-sized ingest is **≈37 min at batch 1 and 2.12 s at batch 1,000.** | the spike, M1 Pro, Node v24.19.0, APFS |
+| 37 | **The Archive-shaped dedup key holds for Live lines** — the sharp case is safe. The Live key is the message id, so two messages with identical text in the same millisecond stay two lines. | `internal/key.ts`, exercised |
+| 38 | **Every failure is a value.** 8 of 8 induced failures returned `{problems: […]}`; nothing threw. A torn last line self-heals on the next write. | the spike |
+| 39 | **Reactions are an append-only log, never collapsed to state.** Add, change, another reactor and removal are four lines; a removal appends `emoji: null` and supersedes nothing. | the spike |
+
+### Three defects in shipped code, and the design claim they falsify
+
+**All three are Live-only and none has ever fired**, because nothing has ever produced a Live
+line — so nothing on disk is corrupted. They become real the day INGEST ships, which is what
+running a spike before a pairing is for.
+
+*Verified by reading [`transcript/service.ts`](../../../src/modules/transcript/service.ts)
+directly, not taken from the spike's word.*
+
+| # | Defect | Where |
+|---|---|---|
+| **D2** | **Silent data loss, reported as success.** `merged` requires `from === "archive"` on **both** sides, so for a Live line it returns `incoming` unconditionally. A re-delivered line whose media is `NeverDriven` **overwrites** a stored line whose media was `Stored` with a hash — and the call reports `written: 0`, which reads as "nothing happened". | `service.ts:12` |
+| **D1** | **Every replay rewrites the whole file.** Change detection is `JSON.stringify(stored) !== JSON.stringify(next)`, and the stored side comes from the deserialiser while the incoming side comes from the caller. **Key order alone sets `changed`** — measured on 638 of 1,000 lines, because `types.ts:77` declares `text` before `msgKind` and `store.ts:171` rebuilds them the other way round. | `service.ts:65` |
+| **D6** | **A lost write, with both callers told they succeeded.** `load()` … `replace()` is a read-modify-write with no lock; an append landing between them is gone. | `service.ts:65`, `:73` |
+
+D1 and D6 compound and are **one fix**. A fourth, smaller: two copies of one message id **inside
+a single batch** are both written — correct for an Archive, where two identical messages in one
+second really are two messages, and wrong for a Live account, where a repeated id is always a
+re-delivery.
+
+**The design claim this falsifies.** [`design.md`](./design.md) § Interfaces says `transcript`
+is **unchanged** — *"`transcript` gains nothing, and that is the headline."* **That is now
+false**, and the correction belongs in step 4, where the spec is written and the design is
+re-read against the answers. `transcript` gains work: the merge rule must cover Live, change
+detection must stop being key-order-sensitive, and either the write becomes safe against a
+concurrent caller or `ingest` must establish that it is the only one.
+
 ### Answered by the principal — the boundary I had wrong
 
 | # | Answer | Closes |
@@ -302,13 +390,11 @@ S1  spike      now              — Push a recorded batch of Live-shaped values 
                                   whatsappd has no test for a slow or throwing
                                   conversationSync handler, so ours is the only evidence.
 
-S1  spike      RUNNING          — a Live line through the existing writeTranscript path,
-                                  against a temp home. AFK, no socket.
-                                  -> findings/05-live-line-write-path.md
+S1  spike      ANSWERED         — findings/05-live-line-write-path.md -> Decided 35-39,
+                                  and three defects in shipped transcript code
 
-S2a spike      RUNNING          — how do we tell "the CDN no longer has it" from "transient"?
-                                  Source-reading only, no socket.
-                                  -> findings/06-media-failure-classification.md
+S2a spike      ANSWERED         — findings/06-media-failure-classification.md -> Decided
+                                  40-44. The 22-versus-353 split was a regex over signed URLs
 
 S2b spike      after S2a        — the retry pass itself. Needs a live socket and the principal
                                   at a phone, so it is HITL, not AFK.

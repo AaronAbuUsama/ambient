@@ -696,6 +696,15 @@ Assert these over anything earlier in this document:
 6. **The 515 stream error was never the cause of anything.** A `while (drainers < 4)` spin
    in the spike blocked whatsappd's event pipeline so `synced` could never be applied.
 
+7. **"Media downloads — 353 transport failures against 22 expiries."** Wrong, and wrong in a way
+   worth naming: **the 22 is noise.** The spike had no classifier — `whatsappd`'s status-derived
+   one landed at `f225ee6` on 2026-08-17, the day after this run — so it regexed the raw error
+   message, which carries the signed CDN URL and no status. `404` matches 14 of 375 records
+   (3.7%); the control token `777` matches the same 14, and `313` matches more. **The correct
+   reading is 375 unclassified failures**, and *"expiry is real but rare"* above rests on a coin
+   flip. Re-measured 2026-08-18; see
+   [ingest/findings/06](../ingest/findings/06-media-failure-classification.md).
+
 Each was asserted confidently and each came from reading one layer and stopping. **Three
 times the principal said a measurement contradicted what he knows about his own account,
 and three times he was right.**
