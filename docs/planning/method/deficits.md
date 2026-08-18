@@ -10,8 +10,9 @@ artefacts hit at step 1, and six the principal hit in the process itself. A meth
 been read is not a method that has been used, and the second cohort is that difference.
 The **third** is the step report itself, which took two more rounds of being unreadable before
 it got a specification — that specification is the template at the foot of this file. The
-**fourth** came out of step 5, the first time Build ever ran under the rule, and all three of
-its entries are about what the method does when it is *wrong* rather than when it is working.
+**fourth** came out of steps 5 and 6, the first time Build and Close ever ran, and its entries
+are about what the method does when it is *wrong* rather than when it is working — and about
+the checks that pass while the artefact is visibly broken.
 
 **Deficits are logged here and not fixed.** Standing instruction from the principal,
 2026-08-18: *"I don't want anyone to fix the defects — if anyone's tried to fix defects,
@@ -452,9 +453,10 @@ who answers, what waits on what — not the wording.
 
 # Fourth cohort — what the method does when it is wrong
 
-**2026-08-18, INGEST step 5.** The first time Build ever ran under the rule. Steps 1 to 4
-produce documents and the rule has a great deal to say about them; step 5 produces code,
-commits and retractions, and it turns out to be where the method is thinnest.
+**2026-08-18, INGEST steps 5 and 6.** The first time Build and Close ever ran under the rule.
+Steps 1 to 4 produce documents and the rule has a great deal to say about them; step 5 produces
+code, commits and retractions, and step 6 produces the one artefact anyone outside the session
+reads. Both turn out to be where the method is thinnest.
 
 The three below share one shape, and it is not the shape of the earlier cohorts. Deficits
 1–6 were *"we codified the artefacts and not the method"*; 7–21 were *"we codified the
@@ -467,6 +469,8 @@ un-close, enforce, or record a decision made while building.
 | 24 | **A deficit can be closed and cannot be un-closed.** 318 lines were built and reverted, and this document says it never happened | this file's status table, and [decisions.md](../../rules/decisions.md) |
 | 25 | **`new-module`'s precondition is a sentence, so it has never once refused.** Ticket 00 exists in both slices that have had one | **written, proven, and reverted.** Open — see below |
 | 26 | **Build makes decisions and the method has nowhere to put them.** Two were made inside ticket 00 alone | [slices.md](../../rules/slices.md) § 5 |
+| 27 | **`render-slice`'s canvases are narrower than the container it forces them into**, so three of the four recipes clip | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md), or the shell |
+| 28 | **The page's no-personal-data rule has no check, and the `raw` block invites breaking it** | [sections.md](../../../.agents/skills/render-slice/references/sections.md) |
 
 ### Deficit 24 — a deficit can be closed, and cannot be un-closed
 
@@ -606,6 +610,44 @@ will not read a Comments block. Both facts above are load-bearing for the next p
 where a build-time decision goes, and the cheapest answer is the one the third cohort already
 built for a different problem: the step report. A decision made at step 5 is reported at step
 5, and the report is what the principal reads.
+
+### Deficit 27 — the diagram canvases and the container they are forced into disagree
+
+`assets/shell.html` sets `.scroll svg.d { min-width: 1040px }`. That is recipe **B**'s canvas.
+Recipes **A**, **C** and **D** are `0 0 1000 …`, and every one of them is wrapped in `.scroll`
+by the worked example the skill points at.
+
+The result on a 1440px display: `main` is 1032px, the scroll container 944px, and a 1000-wide
+diagram is stretched to 1040 and clipped. Recipe A right-aligns each module's name at
+`x + w - 8` — which for the right-hand column is **exactly the clip line**, so the three
+modules on it rendered as `cl`, `blobs` and `tran`.
+
+**Every numeric check in `diagrams.md` passed.** Legend clearance, the 4px grid, the node
+budget, the fan spacing — all of it. The check the skill actually relies on is its own step 3,
+*open the page and look at every diagram*, and that is what found it in one second. Two more
+came the same way in the same pass: a question DAG whose gloss lines ended in dangling commas,
+and a ticket DAG with two arrows pointing at empty space because transitive blockers had been
+drawn as direct edges.
+
+**The fix is one line and it is not being made.** Either the shell stops forcing a width the
+recipes do not produce, or the recipes move to 1040. Which, is METHOD's call.
+
+### Deficit 28 — the no-personal-data rule has no check, and `raw` invites breaking it
+
+[sections.md](../../../.agents/skills/render-slice/references/sections.md) says it three times:
+*"No personal data. Counts, spans and hashes only. Message text, chat subjects, phone numbers
+and display names stay in `.spike-private/`."*
+
+INGEST's page shipped a first draft with a real `ambient peers` transcript pasted into a
+`data-mode="raw"` block — **two Peer addresses and two chat subjects**, straight from the
+principal's account. Nothing failed. `raw` is `textContent`, verbatim by design, and the
+easiest way to evidence a real run is to paste what the terminal said.
+
+Caught by looking at the rendered page, same as 27. **The rule is stated in the right place
+and enforced nowhere**, and the one artefact it governs is the one that carries measurements
+taken from a real account.
+
+---
 
 ---
 
