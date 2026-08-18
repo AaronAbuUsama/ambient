@@ -190,38 +190,48 @@ named here so nobody discovers it later.
 
 
 ```
-src/main.ts                          resolves $AMBIENT_HOME, prints, exits. The only file
-  │                                  that reads the environment.
-  └─ cli.run(argv, root, zone)
+src/main.ts                          resolves $AMBIENT_HOME and the progress sink,
+  │                                  prints, exits. The only file that reads the
+  │                                  environment, and the only one that writes to it.
+  └─ cli.run(argv, root, zone, say)
        ├─ cli.pair                   argv → args. Renders progress and the outcome. NOTHING ELSE.
-       │    ├─ home.read()           the Source must exist in config.yaml
-       │    ├─ home.source(n).store()   a Place — the libSQL file. `cli` never builds a path.
-       │    ├─ home.source(n).media()   a Place — whatsappd's own media tree.
+       │    ├─ internal/account.ts   the Source must be in config.yaml, and `home` grants
+       │    │    ├─ home.read()          both its Places. Shared by all three Live verbs.
+       │    │    ├─ home.source(n).store()   a Place — the libSQL file. `cli` never builds a path.
+       │    │    └─ home.source(n).media()   a Place — whatsappd's own media tree.
+       │    ├─ home.source(n).converge()  the directory exists before a credential lands
        │    └─ channel.pair          ← THE OPERATION. Owns the credential and the one-shot.
-       │         ├─ whatsappd.libsqlBackend        durable: source log + mirror + media
-       │         ├─ whatsappd.createWhatsAppRuntime  claims the lease BEFORE opening WhatsApp
-       │         ├─ runtime.start()                the sync lands, per batch, per transaction
-       │         └─ internal/quiet.ts              when is a sync done? ← branch point 3
+       │         └─ internal/pair.ts
+       │              ├─ whatsappd.libsqlBackend        durable: log + mirror + media
+       │              ├─ whatsappd.createWhatsAppRuntime  claims the lease BEFORE WhatsApp
+       │              ├─ runtime.start()                the sync lands, per batch, per transaction
+       │              └─ the quiet rule                 online + no batch for quietMs,
+       │                                                else SyncIncomplete with its counts
+       │
+       ├─ cli.peers                  argv → args. Renders the table. NOTHING ELSE.
+       │    ├─ internal/account.ts   as above
+       │    └─ channel.openMirror → mirror.peers()   ← one read(), one revision. NO WRITES.
        │
        └─ cli.ingest                 argv → args. Renders the outcome. NOTHING ELSE.
             ├─ home.chats()          find the Chat, or refuse and name `chat add`
             ├─ chat.read()           peer + the resolved Source, for the two refusals
             ├─ chat.transcript()     a Place.
-            ├─ chat.cursor()         a Place.                  ← branch point 2
-            ├─ home.source(n).store()  a Place.
+            ├─ internal/account.ts   as above
             └─ ingest.runIngest      ← THE OPERATION. Owns the order of the writes.
-                 ├─ channel.readFrom          seq → Live values, Peer-filtered. NO WRITES.
-                 ├─ blobs.put              ×N  bytes out of whatsappd's media store
-                 ├─ transcript.writeTranscript  the one Write path, idempotent
-                 └─ internal/cursor.ts        seq, written LAST
+                 ├─ channel.openMirror        no socket, no lease, no runtime
+                 ├─ mirror.read(peer)         paged to exhaustion, oldest first. NO WRITES.
+                 ├─ internal/media.ts ×N      mirror.bytes → blobs.put, per line
+                 └─ transcript.writeTranscript  the one Write path, idempotent, ONE call
 ```
+
 
 | Step | Owner | Why not somewhere else |
 |---|---|---|
 | argv → args, and the progress string's *placement* | `cli` | the only module that has ever seen a command line |
 | every path | `home` | ADR 001's escrow rule. A `Place` is branded, so none can be fabricated |
 | the credential, the lease, and the one-shot | `channel` | it is the module that *"hides `whatsappd` entirely"* ([seams.md](../../design/seams.md)). Nothing else may name `libsqlBackend` |
-| `seq` → Live values | `channel` | reading a Live account is its sentence in `seams.md`. **It returns values and writes nothing** — the same rule as `archive` |
+| a Peer → Live values | `channel` | reading a Live account is its sentence in `seams.md`. **It returns values and writes nothing** — the same rule as `archive` |
+| the Source name → two Places | `cli/internal/account.ts` | all three Live verbs do it identically. Written once, because written three times it was already 51 duplicated lines |
 | **the order of the writes** | `ingest` | `channel` reads, `transcript` appends, `blobs` stores — none knows the others exist. Identical argument to `import`, and it is the one IMPORT got wrong first |
 | the outcome string | `ingest.summarise` · `channel.summarisePair` | `cli`'s README forbids it building strings; the destination arrives as a label |
 
@@ -240,10 +250,10 @@ Read back off the caller. Nothing here was invented ahead of a call site.
 
 | Module | Public interface | Call site above |
 |---|---|---|
-| `cli` | `run(argv, root, zone) → Outcome` — unchanged; two new handlers | `main.ts` |
-| `home` | **+** `source(name) → SourceHandle` with `store: Grant` · `media: Grant`; **+** `ChatHandle.cursor: Grant` | `cli.pair`, `cli.ingest` |
-| `channel` | `pair(req) → Promise<PairReport \| ChannelFailure>` · `readFrom(req) → Promise<ChannelRead \| ChannelFailure>` · `describe(p) → string` · `describeProgress(p) → string` · `summarisePair(r, into) → string` | `cli.pair`, `ingest/service.ts` |
-| `ingest` | `runIngest(req) → Promise<IngestReport \| IngestFailure>` · `describe(p) → string` · `summarise(r, into) → string` | `cli.ingest` |
+| `cli` | `run(argv, root, zone, say?) → Outcome`. **+ `Say`**, a progress sink the composition root supplies — `pair` holds a socket for minutes and shows a code someone must scan, and `cli` still does not print. Three new handlers | `main.ts` |
+| `home` | **+** `source(name) → SourceHandle` with `store: Grant` · `media: Grant` · `plan` · `converge`; **+** `sources()`. **No `ChatHandle.cursor`** — there is no Cursor | `cli/internal/account.ts` |
+| `channel` | **built.** `pair(req)` · `openMirror(account) → Mirror` with `peers · read · bytes · close` · `describe` · `describeProgress` · `summarisePair`. Plus [`testing.ts`](../../../src/modules/channel/testing.ts), a seeded account with no credential | `cli.pair`, `cli.peers`, `ingest/service.ts` |
+| `ingest` | **built.** `runIngest(req) → Promise<IngestReport \| IngestFailure>` · `describe(p) → string` · `summarise(r, into) → string` | `cli.ingest` |
 | `transcript` | **changed — corrected 2026-08-18.** `S1` found three Live-only defects in it, none of which had ever fired because nothing produced a Live line. Ticket [`01`](./issues/01-transcript-survives-a-live-line.md) fixes them | `ingest/service.ts` |
 | `blobs` | **unchanged.** `openBlobs(root) → put · get · exists` | `ingest/service.ts` |
 
@@ -370,6 +380,25 @@ mistake ADR 003 amendment 2 exists to correct.
 **Not designed twice, and why:** `ingest`'s shape is settled by precedent, not by argument —
 it is `import` with a different Reader, and the one thing it owns is the order of the writes.
 Two shapes for it would be theatre.
+
+---
+
+## Corrected at step 5 — what the build changed
+
+`design.md` is written before the code and corrected by it. Five things moved, and each
+is already reflected above:
+
+| Was designed | Is built | Why |
+|---|---|---|
+| `channel.readFrom(req)` returning a `ChannelRead` | `openMirror(account) → Mirror`, with `peers · read · bytes · close` | The view is valid only inside `backend.data.read`'s callback, so one call per answer is the only shape that keeps a page and its snapshot at one revision. A handle with an explicit `close` is `archive`'s precedent, one module over. |
+| four `ChannelProblem` arms | five — **`Unpaired`** added | `libsqlBackend` **creates** the file it is pointed at. Without this check, reading an unpaired account succeeds, reports zero conversations, and leaves an empty database that looks exactly like a paired account with nothing in it. Gate row 3 is the assertion. |
+| `LiveReaction` as a third arm of `TranscriptLine` | reaction **state on `LiveMessage`** | The mirror is current state, so there is no reaction event to write. [ADR 004 amendment 1](../../adr/004-transcript-line-is-a-union-on-provenance.md#amendments). |
+| `cli.run(argv, root, zone)` | `+ say?: Say` | `pair` shows a code someone has to scan and then holds for minutes. An outcome delivered at the end is no use, and `cli` still must not print — so the composition root hands in the sink. |
+| the Places resolved in each handler | `cli/internal/account.ts` | Three handlers doing it identically measured **51 duplicated lines** across three clone groups. |
+
+Two things the design predicted and the build confirmed: **`ingest` is a second module**
+(its handler is 61 lines against `import`'s 74, and `cli` did not become the composition
+owner), and **`transcript` needed the three fixes** ticket `01` made.
 
 ---
 

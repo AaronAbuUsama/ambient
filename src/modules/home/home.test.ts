@@ -213,10 +213,17 @@ it("15 · agent add is silent and leaves doctor silent", async () => {
 
 // ── the invariants that are conventions only if they are checked ─────
 
+/**
+ * Production source only. `*.test.ts` is excluded because a test asserting a
+ * refusal has to fail loudly, and `testing.ts` for the same reason — it is a
+ * module's own scaffolding, the slot `whatsappd/testing` occupies one layer down,
+ * and it is imported by tests and by nothing else.
+ */
 const sources = (): readonly { readonly rel: string; readonly text: string }[] =>
   fs
     .readdirSync(`${import.meta.dirname}/../..`, { recursive: true, encoding: "utf8" })
-    .filter((rel) => rel.endsWith(".ts") && !rel.endsWith(".test.ts"))
+    .filter((rel) => rel.endsWith(".ts"))
+    .filter((rel) => !rel.endsWith(".test.ts") && !rel.endsWith("/testing.ts"))
     .map((rel) => ({ rel, text: fs.readFileSync(`${import.meta.dirname}/../../${rel}`, "utf8") }));
 
 it("16 · only home knows a path", () => {

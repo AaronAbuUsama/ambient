@@ -4,13 +4,14 @@
  */
 
 import type { Home, Problem } from "~/modules/home/types.ts";
-import type { Outcome } from "../types.ts";
+import type { Outcome, Say } from "../types.ts";
 
 /** Async only where it writes: `doctor` never touches disk, so it is not. */
 export type Command = (
   home: Home,
   rest: readonly string[],
   defaultZone: string,
+  say: Say,
 ) => Outcome | Promise<Outcome>;
 
 export const report = (problems: readonly Problem[]): Outcome => ({ kind: "report", problems });

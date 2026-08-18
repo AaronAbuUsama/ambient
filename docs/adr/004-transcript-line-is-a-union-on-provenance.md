@@ -92,4 +92,43 @@ primary source, so a classification we get wrong is re-readable without a re-exp
 
 ## Amendments
 
-*None yet.*
+### 1 · 2026-08-18 — `LiveReaction` is state on its message, not a line
+
+**Falsifier 3 fired, and it was the one this ADR called most likely.** The live variants
+were written without a producer. INGEST built one, and two of the three were wrong.
+
+**What changed.** `TranscriptLine` was `ArchiveLine | LiveMessage | LiveReaction`. It is now
+`ArchiveLine | LiveMessage`, and `LiveReaction` is the shape of an entry in
+`LiveMessage.reactions` — `{ subject, emoji, by?, at? }`, with no `from`, no `kind` and no
+`target`, because a reaction that lives on its message needs none of them.
+
+**Why the body above is wrong on this point.** Its Consequences say:
+
+> Reactions, edits and deletions arrive after their message on whatsappd's `Update` stream,
+> so they are their own line kind. Rewriting a line to attach a reaction would break
+> append-only, and therefore idempotency.
+
+Every clause is true of the **event log**, and `channel` does not read the event log. It
+reads the **mirror**, which is current state ([ADR 005](./005-channel-binds-to-the-durable-runtime.md)):
+a removed reaction is filtered out of the record, a changed emoji replaces in place, an edit
+has already replaced the content and a revoke has already replaced the arm. Measured, not
+argued — `docs/planning/ingest/findings/07-backends-and-the-mirror-read.md` §5.
+
+So there is no trail to append and nothing to rewrite. A re-read produces the same line, and
+`writeTranscript`'s merge already handles a changed one. **Append-only survives; what was
+wrong was the premise that reactions arrive separately at all.**
+
+**What this cost, and what it bought.** A public type with no production call site shipped
+for two days and turned out to model the wrong stream. That is precisely the defect INGEST
+was written to close, so it closes it on itself rather than shipping a second one. Ticket
+[`04`](../planning/ingest/issues/04-ingest-a-chat.md) made the choice explicit: give it a
+producer or delete it.
+
+**What survives.** The decision — a union on provenance, with unknowable fields *absent*
+from the variant rather than optional in it — held on contact. `from: "live"` lines now
+exist, `keyOf` still keys them by message id, and the Archive half is untouched. The three
+`LiveMedia` states beyond `Stored` were all reached by real records.
+
+**Still unproduced:** `LiveMedia`'s `Expired` arm. `channel` maps a Source `failed` record
+to `Failed`, and nothing yet distinguishes an expiry. Left declared, and named here so it is
+not mistaken for something with a producer.

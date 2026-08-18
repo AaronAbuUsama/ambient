@@ -77,7 +77,13 @@ for (const rel of sources) {
   const lines = text.split("\n");
   const count = lines.length - (text.endsWith("\n") ? 1 : 0);
   const owner = /^src\/modules\/([^/]+)\//.exec(rel)?.[1];
-  const isTest = rel.endsWith(".test.ts");
+  /**
+   * `testing.ts` counts as test code. It is a module's own scaffolding — the slot
+   * `whatsappd/testing` occupies one layer down — imported by tests and by nothing
+   * else, and a fixture that cannot fail loudly hides the failure inside the test
+   * that depends on it.
+   */
+  const isTest = rel.endsWith(".test.ts") || rel.endsWith("/testing.ts");
 
   if (count > LIMIT && !(rel in LONGER)) {
     say(`${rel}:${LIMIT + 1}`, `${count} lines, over the ${LIMIT}-line limit`);

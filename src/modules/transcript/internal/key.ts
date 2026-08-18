@@ -4,6 +4,4 @@ import type { TranscriptLine } from "../types.ts";
 export const keyOf = (line: TranscriptLine): string =>
   line.from === "archive"
     ? [line.wall, line.who.label, line.kind === "message" ? line.text : line.raw].join("\0")
-    : line.kind === "message"
-      ? [line.from, line.kind, line.id].join("\0")
-      : [line.from, line.kind, line.at, line.target, line.who.id, line.emoji].join("\0");
+    : [line.from, line.kind, line.id].join("\0");

@@ -14,10 +14,20 @@ import {
   names,
   planned,
   slugs,
+  sourceItems,
+  sourceNames,
 } from "./internal/ensure.ts";
 import { describe as rendered, kindOf, problem } from "./internal/problem.ts";
 import { readAgent, readChat, readGlobal } from "./internal/read.ts";
-import type { AgentHandle, ChatHandle, Describe, HomeProblem, OpenHome, Place } from "./types.ts";
+import type {
+  AgentHandle,
+  ChatHandle,
+  Describe,
+  HomeProblem,
+  OpenHome,
+  Place,
+  SourceHandle,
+} from "./types.ts";
 
 /** Both verbs over one list, so `plan` and `converge` cannot drift apart. */
 const verbs = (items: () => readonly Ensure[]) => ({
@@ -30,10 +40,10 @@ const verbs = (items: () => readonly Ensure[]) => ({
  * type rather than a convention: the grant has somewhere to say no, so it does.
  */
 const granting =
-  (h: Layout, kind: "chats" | "agents", name: string) =>
+  (h: Layout, kind: "chats" | "agents" | "sources", name: string) =>
   (leaf?: string): Place | HomeProblem => {
     if (!legal(name)) return { problems: [problem(`${kind}/${name}`, badName(name))] };
-    const dir = at(kind === "chats" ? h.chats : h.agents, name);
+    const dir = at(h[kind], name);
     return placeAt(leaf === undefined ? dir : at(dir, leaf));
   };
 
@@ -48,6 +58,20 @@ const chatHandle = (h: Layout, slug: string): ChatHandle => {
     now: () => grant("now.md"),
     read: () => readChat(h, slug),
     ...verbs(() => chatItems(h, slug)),
+  };
+};
+
+/**
+ * The database file, not its directory. `whatsappd` opens it by path and writes
+ * `-wal` and `-shm` beside it, so what escapes here is the file it names.
+ */
+const sourceHandle = (h: Layout, name: string): SourceHandle => {
+  const grant = granting(h, "sources", name);
+  return {
+    name,
+    store: () => grant("whatsapp.db"),
+    media: () => grant("media"),
+    ...verbs(() => sourceItems(h, name)),
   };
 };
 
@@ -72,8 +96,10 @@ export const openHome: OpenHome = (root) => {
     read: () => readGlobal(h),
     chat: (slug) => chatHandle(h, slug),
     agent: (name) => agentHandle(h, name),
+    source: (name) => sourceHandle(h, name),
     chats: () => slugs(h).map((slug) => chatHandle(h, slug)),
     agents: () => names(h).map((name) => agentHandle(h, name)),
+    sources: () => sourceNames(h).map((name) => sourceHandle(h, name)),
 
     ...verbs(() => homeItems(h)),
   };

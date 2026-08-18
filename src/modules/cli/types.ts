@@ -19,6 +19,16 @@ export type Outcome =
   | { readonly kind: "misuse"; readonly said: string };
 
 /**
+ * Where a long verb says where it has got to.
+ *
+ * `ambient pair` holds a socket for minutes and shows a code someone has to scan,
+ * so an outcome delivered at the end is no use. `cli` still does not print: the
+ * composition root hands in the sink, exactly as it hands in the root and the
+ * Zone, and a test hands in an array.
+ */
+export type Say = (line: string) => void;
+
+/**
  * `defaultRoot` is where the home is when `--home` does not say. The caller
  * resolves it, because `cli` reads no environment.
  */
@@ -26,4 +36,5 @@ export type Run = (
   argv: readonly string[],
   defaultRoot: string,
   defaultZone?: string,
+  say?: Say,
 ) => Promise<Outcome>;

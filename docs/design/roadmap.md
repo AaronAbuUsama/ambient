@@ -5,27 +5,27 @@ settled, or what breaks if you go backwards — this is the page.
 
 **Hard cap: 200 lines.** The last attempt's ledger hit 2000 and nobody read it. When a
 slice closes, delete its detail and leave two lines in the Ledger.
-
 **Slices have names, not numbers.** Order changes; identity should not.
 
 ---
 
 ## You are here
 
-> **IMPORT closed** — 16/16 gate; `vp check`, 49 tests, shape and zero duplication green.
-> The real `~/.ambient` holds 13,134 Transcript lines and 980 verified Blobs from the media
-> Archive; its previous contents are preserved beside it in a dated backup.
-> **METHOD is active, and it is not product.** IMPORT shipped green while its topology was
-> wrong — a 176-line CLI handler against 8, 8, 12 and 14 for its siblings, making `cli` the
-> composition owner its own spec says it is not; an interface that met the design-it-twice
-> bar and never got it; and a call graph nobody drew. The rule is written
-> ([slices.md](../rules/slices.md)); METHOD turns it into `map-slice`, `plan-slice` and a
-> `close-slice` that reads the graph. Evidence:
-> [../planning/method/deficits.md](../planning/method/deficits.md).
+> **INGEST closed** — 16/16 gate; `vp check`, 75 tests, shape clean and 0 duplication.
+> `ambient pair · peers · ingest` exist. Proven on the real account: **85 conversations
+> listed** with no socket, no lease and no runtime, and **911 Live lines ingested onto the
+> 13,134 Archive lines** of `capxul-devs`, whose 2,900,784 bytes came through
+> byte-for-byte identical. 71 attachments became 67 Blobs; 43 the Source no longer holds are
+> declared rather than dropped. A second ingest wrote nothing and did not rewrite the file.
 >
-> **INGEST is next, and METHOD's first real run.** Its scope must decide how a one-shot full
-> sync resumes after a crash between seven ~4,800-message batches; do not spend another
-> pairing on a tool that cannot durably write through IMPORT's Transcript path.
+> **METHOD is still active, and INGEST was its first full run.** All six steps executed on
+> one Slice for the first time. It produced product *and* four cohorts of deficits in
+> [../planning/method/deficits.md](../planning/method/deficits.md) — the fourth found by
+> running step 5, and the standing rule there is that deficits are **logged, not fixed**.
+>
+> **KNOWLEDGE is next.** It now has both halves of its material: an Archive's history and a
+> Live account kept current. What it does not have is MEDIA — an unprocessed voice note is a
+> hole, not a degraded entry — so KNOWLEDGE can start, but *trusting* it cannot.
 
 ---
 
@@ -36,8 +36,8 @@ slice closes, delete its detail and leave two lines in the Ledger.
 | **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
 | **IMPORT** | ● closed | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
 | **METHOD** | ◐ active | How a slice is built, as skills rather than folklore. `map-slice`, `plan-slice`, `close-slice`, vendored dependencies. **Not product.** |
-| **INGEST** | ○ next | A **live account** → transcripts + blobs. `channel`: pairing, the one-shot full sync, cursors, the lease. Raw only. |
-| **KNOWLEDGE** | ○ | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
+| **INGEST** | ● closed | A **live account** → transcripts + blobs. `channel` hides `whatsappd`; `ingest` owns the order of the writes. `pair · peers · ingest`. **No Cursor** — the Mirror is current state. Raw only. |
+| **KNOWLEDGE** | ○ next | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
 | **CAPABILITIES** | ○ | Chat folders as runtime instances; the reflector MCP; background agents. |
@@ -51,13 +51,13 @@ slice closes, delete its detail and leave two lines in the Ledger.
 
 ```
 SKELETON ──> IMPORT ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> CAPABILITIES ──> MOUTH
-                 │  └──> INGEST           │
-                 └──> MEDIA               └──> EVALS
+                 │  └──> INGEST ●        │
+                 └──> MEDIA              └──> EVALS
 ```
 
-- **IMPORT before INGEST is forced.** A full sync is one-shot per credential, so `transcript`
-  must exist before the next pairing. IMPORT builds it; INGEST uses it. KNOWLEDGE needs
-  material rather than currency, so one archive unblocks it and INGEST keeps it fresh.
+- **IMPORT before INGEST was forced**, and it held: a full sync is one-shot per credential,
+  so `transcript` had to exist before the next pairing. KNOWLEDGE needs material rather than
+  currency, so one archive unblocks it and INGEST keeps it fresh.
 - **SKELETON is under everything.** Changing the home layout after IMPORT means rewriting
   what is on disk. This is why it goes first and why its interfaces get designed twice.
 - **KNOWLEDGE is not trustworthy without MEDIA.** An unprocessed voice note is a hole, not
@@ -65,8 +65,8 @@ SKELETON ──> IMPORT ──> KNOWLEDGE ──> HARNESS ──> LOOPS ──> 
   knowledge base.
 - **HARNESS automates what KNOWLEDGE proved by hand.** Building it earlier means guessing
   at passes that do not exist yet — the old repo's mistake.
-- **Going backwards is cheap left of KNOWLEDGE and expensive right of it**, because right
-  of it there is content on disk shaped by the earlier decisions.
+- **Going backwards is cheap left of KNOWLEDGE and expensive right of it**: right of it
+  there is content on disk shaped by the earlier decisions.
 
 ## Why this order
 
@@ -89,45 +89,49 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 
 Append-only. Two lines per closed slice, or per pivot. Newest first.
 
+- **2026-08-18** — **INGEST closed.** `channel` binds to `whatsappd`'s durable runtime
+  ([ADR 005](../adr/005-channel-binds-to-the-durable-runtime.md)) and Ambient writes nothing
+  inside the one-shot window; `ingest` owns the order of the writes. Real account: 85
+  conversations listed with no socket or lease, 911 Live lines onto 13,134 Archive lines
+  with all 2,900,784 of their bytes identical, 67 Blobs from 71 attachments, and a second
+  run that wrote nothing.
+  **Learned: the Mirror is current state, so there is no Cursor** — backfill-versus-live was
+  an artefact of reading the wrong store. Two more, both by being wrong first: `libsqlBackend`
+  **creates** the file it is pointed at, so an unpaired account read as an empty one until
+  `Unpaired` existed; and `LiveReaction` had no producer because reactions are state, not
+  events ([ADR 004 amendment 1](../adr/004-transcript-line-is-a-union-on-provenance.md#amendments),
+  which that ADR's own falsifier 3 predicted).
+
 - **2026-08-17** — **The method is a rule, not folklore.**
-  [../rules/slices.md](../rules/slices.md): map → frontier → plan → build → close, one gate
-  each, an open question carrying a kind. **Seven** upstream skills vendored — those something
-  here names, closed under their dependencies — because `modules.md` requires
-  `codebase-design`'s words *exactly*. `map-slice`, `plan-slice` and `setup-abu-usama-skills`
-  written; `close-slice` gains **definition-of-done row 10**, the call graph, read not run.
+  [../rules/slices.md](../rules/slices.md): map → design → frontier → plan → build → close,
+  one gate each, an open question carrying a kind. Nine upstream skills vendored — those
+  something here names, closed under their dependencies — because `modules.md` requires
+  `codebase-design`'s words *exactly*. `close-slice` gains **definition-of-done row 10**, the
+  call graph, read not run.
   **Learned:** IMPORT passed rows 1–9 while its topology was wrong, so every existing row
-  measured behaviour and none measured shape. Also learned by doing it wrong first: vendoring
-  all 35 skills was copying instead of thinking — the set had to be *traced*, not swept in. Slice replaces Area throughout, and the
-  rejected ordering is renamed *breadth-first* — otherwise "thin vertical slice" would read
-  as the thing we adopted rather than the thing we turned down.
-- **2026-08-17** — **IMPORT correction re-proved on the real default home.** Reader v2 uses
-  WhatsApp's structural mark, preserves rich media on poorer re-imports, and atomically
-  replaces corrected Transcripts; the real ZIP produced 13,134 lines, 1,139 stored refs and
-  980 content-verified Blobs, and its identical re-import was byte-identical.
-  **Learned:** the first closure line's 105 is superseded — prose regex over-classified 73
-  Messages and missed 19 Events; the source-marked answer is 13,083 Messages + 51 Events.
-- **2026-08-17** — **IMPORT closed.** All three Archive forms now produce one Transcript, global deduplicated Blobs, a verbatim primary source and a hash-addressed Receipt; 16/16 gate and all repository checks pass.
-  **Learned:** 1,139 media refs collapse to 980 unique Blobs, and the claimed 174 events were word occurrences, not lines — the conservative whole-line Reader records 105 and preserves the source for re-reading.
-- **2026-08-17** — **INTAKE split into IMPORT and INGEST; IMPORT specified.** The halves
-  share only an output type — one needs a file, the other a credential and an open question.
-  The order is forced: a full sync is **one-shot per credential** (43,334 msgs, 1,506 chats,
-  7 batches), so the write path ships first. **ADR 003 gained two amendments** — the one-year
-  ceiling was measured with the full-history request *deleted* by a gate (whatsappd
-  `cf44458`), and decision 1 survives on a narrower reason. Settled by measurement, not
-  argument: zip names decode as UTF-8 (**0 of 1,140** flagged; a conformant decode loses 4
-  documents), the dedup key is the **wall clock** (1 collision in 13,134), and the transcript
-  line is a **union on provenance** so *"this reader cannot see replies"* is unrepresentable.
+  measured behaviour and none measured shape. And vendoring all 35 skills was copying instead
+  of thinking — the set had to be *traced*, not swept in.
+- **2026-08-17** — **IMPORT closed**, then corrected on the real home. All three Archive
+  forms produce one Transcript, global deduplicated Blobs, a verbatim primary source and a
+  hash-addressed Receipt; 16/16 gate. Reader v2 uses WhatsApp's structural mark and
+  atomically replaces corrected Transcripts: 13,134 lines, 1,139 refs → 980 verified Blobs.
+  **Learned:** counting by prose regex was wrong twice — 174 "events" were word occurrences,
+  and the corrected 105 over-classified 73 Messages while missing 19. The source-marked
+  answer is **13,083 Messages + 51 Events**, and the primary source is kept so a
+  misclassification is re-readable without a re-export.
+- **2026-08-17** — **INTAKE split into IMPORT and INGEST.** The halves share only an output
+  type; the order is forced because a full sync is **one-shot per credential**, so the write
+  path ships first. **ADR 003 gained two amendments.** Settled by measurement: zip names
+  decode as UTF-8 (0 of 1,140 flagged), the dedup key is the **wall clock** (1 collision in
+  13,134), and the Transcript line is a **union on provenance**.
 - **2026-08-17** — **The lexicon exists.** [../../CONTEXT.md](../../CONTEXT.md), governed by
-  [../rules/language.md](../rules/language.md): 28 nouns, one meaning each, plus the words
-  not to use. Written because *"backfill"* named two operations and produced four wrong
-  answers in one session — and a warning inside `product.md` only reaches a reader already
-  in `product.md`.
-- **2026-08-16** — **Conventions made runnable.** `vp run shape` checks what AGENTS.md
-  only claimed — file length against a declared exception list, the six slots, `internal/`
-  privacy, no `../..`, no `throw`, and every document cross-link. The contract split into
-  one file per rule under [../rules/](../rules/), each stating its rule, its argument and
-  the command that enforces it or *"not currently checked"*. Closing a slice now has a
-  list: [definition-of-done.md](./definition-of-done.md). Duplication baseline **0 lines**.
+  [../rules/language.md](../rules/language.md): one meaning per noun, plus the words not to
+  use. Written because *"backfill"* named two operations and produced four wrong answers in
+  one session.
+- **2026-08-16** — **Conventions made runnable.** `vp run shape` checks what AGENTS.md only
+  claimed — file length, the six slots, `internal/` privacy, no `../..`, no `throw`, every
+  cross-link. The contract split into one file per rule under [../rules/](../rules/), each
+  naming its check or *"not currently checked"*. Duplication baseline **0 lines**.
 - **2026-08-16** — **INTAKE scoped** against the principal's real iOS account. The mirror
   spans four years with no media refs; the accepted log spans ten days and carries them —
   so history import and continuous ingestion read different stores. **Corrects
@@ -136,19 +140,14 @@ Append-only. Two lines per closed slice, or per pivot. Newest first.
   conversations. Six open questions block the spec; the highest-value one is whether
   `whatsappd` can pull deeper history.
 - **2026-08-16** — **SKELETON closed.** `ambient init · doctor · chat add · agent add`;
-  18/18 gate against real temp directories. **OpenKnowledge is vendored, not called** — `ok
-  init` writes a nested `.git` and six editor directories to deliver one file of defaults,
-  so we write it ourselves. Six ADR 001 statements were wrong on contact and are in that
-  ADR's Amendments. Two things parked, neither blocking: `capabilities` may already be dead
-  (decide at CAPABILITIES), and ADR 002 falsifier #2 lands at MEDIA/LOOPS.
-- **2026-08-16** — SKELETON specified. Design-it-twice run on both load-bearing seams:
-  `home` → ADR 001 (unit handles; no cache, so hot-reload is structural), `work` → ADR 002
-  (**provisional**; loops are declarations, `claim/complete/fail/nextDue` rejected).
-  **Grill 002 Q1 amended** — the work key generalises from `chat_id` to `(kind, key)`.
-  Layout, CLI verbs, config schemas and the gate written. No code written.
+  18/18 gate against real temp directories. Design-it-twice on both load-bearing seams —
+  `home` → [ADR 001](../adr/001-home-interface.md), `work` → [ADR 002](../adr/002-work-interface.md),
+  provisional. **OpenKnowledge is vendored, not called**: `ok init` writes a nested `.git`
+  and six editor directories to deliver one file of defaults.
+  **Learned:** six ADR 001 statements were wrong on contact and are in its Amendments, while
+  the decision they support survived all six — which is the case for amendments over edits.
 - **2026-08-16** — Design phase closed. Product model, knowledge flow, seam map and
-  engineering contract agreed across one session; nine slices named and ordered.
-  No code written.
+  engineering contract agreed in one session; nine slices named and ordered. No code.
 
 ---
 
@@ -160,7 +159,6 @@ Answer before the slice that needs it — not before.
 |---|---|---|
 | What did the MCP spec change? | CAPABILITIES | Statelessness; better with many agents on many servers. **Read the spec — do not design from memory.** |
 | How does Pi take per-session MCP config? | HARNESS, CAPABILITIES | email-pa sets `enableMCP: false` after a stray server polluted a client's directory |
-| ~~Schema coverage for a whole domain~~ | ~~SKELETON~~ | **Answered** — [spec.md §3.4](../planning/skeleton/spec.md). Closed *field vocabulary*, open *type space*: users add types, never field forms. Whether the six shipped types cover a real domain is now an observation for KNOWLEDGE, not a design question |
 | Does OK `search` hold at thousands of docs? | MOUTH | Index-as-judgement is fine either way; ranking is the question |
 | Do the 375 failed media downloads come back under pacing? | **trusting** KNOWLEDGE | INGEST `S2b`, deferred off its critical path. The 22-vs-353 split was a regex over signed URLs; there is no media rate limiting anywhere. One run: drain the same set twice, paced and unpaced, reading the typed error. Recipe in [../planning/ingest/findings/06-media-failure-classification.md](../planning/ingest/findings/06-media-failure-classification.md) |
 
@@ -184,7 +182,9 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | Every engineering rule — one file each, with its check | [../rules/](../rules/), indexed by [../../AGENTS.md](../../AGENTS.md) |
 | How a slice is built — the six steps and their gates | [../rules/slices.md](../rules/slices.md) |
 | Running a slice, step by step, from the operator's seat | [../walkthroughs/slice.md](../walkthroughs/slice.md) |
-| The Transcript line, and the two shapes it beat | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
+| The Transcript line, and the two shapes it beat — **plus amendment 1, where `LiveReaction` stopped being a line** | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
+| Why `channel` binds to a durable runtime, and what a one-shot sync costs | [../adr/005-channel-binds-to-the-durable-runtime.md](../adr/005-channel-binds-to-the-durable-runtime.md) |
+| Pairing, the Mirror read, the two refusals, and the sixteen gate rows | [../planning/ingest/spec.md](../planning/ingest/spec.md) |
 | Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../planning/method/deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
@@ -196,5 +196,5 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 1. Update **You are here** and the **Status board**.
 2. Add a dated **Ledger** line saying what changed and why.
 3. Check **Dependencies** for what the change invalidates, and say so explicitly.
-4. If it overturns something in the Decision index, edit that document — do not leave two
+4. If it overturns something in the Decision index, edit that document — never leave two
    answers alive in two places.

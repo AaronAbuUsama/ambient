@@ -5,8 +5,8 @@
  * THE interface. Read this file alone and you know what `home` is. `service.ts`
  * implements it; `internal/` is what only `home` knows.
  *
- * The unit is the handle. Three inhabitants — home, chat, agent — answer the
- * same three verbs. `init` and `doctor` are not a second interface; they are the
+ * The unit is the handle. Four inhabitants — home, chat, agent, source — answer
+ * the same verbs. `init` and `doctor` are not a second interface; they are the
  * root unit's `converge()` and `plan()`, over one list of things that must be true.
  *
  * **Every way `home` can fail is a `ProblemDetail` below.** Nothing in this module
@@ -154,7 +154,7 @@ export type Global = {
   readonly schema: Schema;
 };
 
-// ── the three units ───────────────────────────────────────────────────
+// ── the units ─────────────────────────────────────────────────────────
 
 /**
  * A place a handle grants. It is a method, not a property, because an illegal
@@ -180,6 +180,24 @@ export type ChatHandle = {
   converge(): Promise<readonly Problem[]>;
 };
 
+/**
+ * A Source's own directory. It holds a **credential**, which is why it lives
+ * inside the home and never in a cache: `~/.ambient` is the thing a user backs
+ * up, and an account that has to be re-paired to be restored is not backed up.
+ *
+ * `home` vouches for the directory. What is written inside it belongs to
+ * `channel`, which is the only module that knows what `whatsappd` stores.
+ */
+export type SourceHandle = {
+  readonly name: string;
+  /** → `channel`. The durable mirror: credential, log, messages, media index. */
+  store: Grant;
+  /** → `channel`. `whatsappd`'s own media tree, keyed by its refs and not by ours. */
+  media: Grant;
+  plan(): readonly Problem[];
+  converge(): Promise<readonly Problem[]>;
+};
+
 export type AgentHandle = {
   readonly name: string;
   cwd: Grant;
@@ -200,8 +218,11 @@ export type Home = {
   /** Pure and total — an illegal slug fails at `read()`, `plan()`, `converge()` and every `Grant`. */
   chat(slug: string): ChatHandle;
   agent(name: string): AgentHandle;
+  /** Pure and total, like `chat`. A Source need not exist on disk to be named. */
+  source(name: string): SourceHandle;
   chats(): readonly ChatHandle[];
   agents(): readonly AgentHandle[];
+  sources(): readonly SourceHandle[];
 
   /** `doctor`. Ordered by `at`, then tag. `[]` means healthy. */
   plan(): readonly Problem[];

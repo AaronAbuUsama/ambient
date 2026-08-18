@@ -132,13 +132,24 @@ The Source's own identifier for one conversation, bound to a Chat by that Chat's
 `config.yaml`.
 _Avoid_: chat id, jid, room id.
 
+**Mirror**:
+A Source's own durable copy of its current state — every conversation and every message
+as they stand now, not the events that got them there. A Live account has one; an Archive
+does not. Reading it needs no socket, no lease and no credential.
+_Avoid_: cache (a Mirror is authoritative, and nothing re-derives it), log (the log is the
+event trail beside it, which Ambient does not read), database.
+
 **Allowlist**:
 The set of a Source's conversations that are in scope. Opt-in, conversation by
 conversation. Empty means nothing is read.
 _Avoid_: whitelist, filter, scope (Scope is an Agent's remit).
 
 **Cursor**:
-A durable position in a Source, so a restart neither replays nor skips.
+A durable position in a stream, so a restart neither replays nor skips.
+**No Source has one, and INGEST is why.** A Live account is read from its Mirror, which is
+current state: there is nothing to be behind, so re-running reads what is there now and the
+Transcript's own dedup makes the second pass free. The word is kept for LOOPS, where a
+position in a queue is a real thing.
 _Avoid_: offset, checkpoint (`checkpoint` is an OpenKnowledge verb), watermark.
 
 ### What a read produces

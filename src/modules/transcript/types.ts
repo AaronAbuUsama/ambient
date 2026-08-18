@@ -68,6 +68,25 @@ export type LiveWho = {
   readonly pushName?: string;
 };
 
+/**
+ * One reaction, as **current state on its message** — never a line of its own.
+ *
+ * A Live account's mirror holds the live set: a removed reaction is filtered out
+ * and a changed emoji replaces in place, so there is no event trail to write and
+ * nothing to reconcile on re-read. `subject` is the reactor WhatsApp keyed it by,
+ * or `"aggregate"` when it named nobody.
+ *
+ * **Amends [ADR 004](../../../docs/adr/004-transcript-line-is-a-union-on-provenance.md).**
+ * This was a third arm of `TranscriptLine` until 2026-08-18, when the producer
+ * that would have written it turned out not to exist.
+ */
+export type LiveReaction = {
+  readonly subject: string;
+  readonly emoji: string;
+  readonly by?: string;
+  readonly at?: number;
+};
+
 export type LiveMessage = {
   readonly from: "live";
   readonly kind: "message";
@@ -75,26 +94,18 @@ export type LiveMessage = {
   readonly id: string;
   readonly who: LiveWho;
   readonly text?: string;
+  /** The Source's own word for what this message is — `text`, `image`, `revoked`. */
   readonly msgKind: string;
   readonly quoted?: { readonly id: string; readonly from: string };
   readonly mentions?: readonly string[];
   readonly edited?: true;
   readonly viewOnce?: true;
   readonly ephemeral?: true;
+  readonly reactions?: readonly LiveReaction[];
   readonly media?: LiveMedia;
 };
 
-export type LiveReaction = {
-  readonly from: "live";
-  readonly kind: "reaction";
-  readonly at: number;
-  readonly target: string;
-  readonly who: LiveWho;
-  /** `null` means the reaction was removed. */
-  readonly emoji: string | null;
-};
-
-export type TranscriptLine = ArchiveLine | LiveMessage | LiveReaction;
+export type TranscriptLine = ArchiveLine | LiveMessage;
 
 export type TranscriptProblemDetail =
   | { readonly _tag: "Unreadable"; readonly cause: string }

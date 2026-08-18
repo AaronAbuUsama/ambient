@@ -13,7 +13,9 @@ import { describe } from "./modules/home/service.ts";
 
 const defaultRoot = process.env.AMBIENT_HOME ?? `${homedir()}/.ambient`;
 const defaultZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-const outcome = await run(process.argv.slice(2), defaultRoot, defaultZone);
+const outcome = await run(process.argv.slice(2), defaultRoot, defaultZone, (line) => {
+  process.stdout.write(`${line}\n`);
+});
 
 if (outcome.kind === "misuse") {
   process.stderr.write(`${outcome.said}\n`);

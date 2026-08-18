@@ -26,6 +26,7 @@ export type Layout = {
   readonly root: string;
   readonly chats: string;
   readonly agents: string;
+  readonly sources: string;
   readonly knowledge: string;
   readonly blobs: string;
   readonly db: string;
@@ -37,6 +38,7 @@ export const layoutOf = (root: string): Layout => {
     root: abs,
     chats: at(abs, "chats"),
     agents: at(abs, "agents"),
+    sources: at(abs, "sources"),
     knowledge: at(abs, "knowledge"),
     blobs: at(abs, "blobs"),
     db: at(abs, "state.db"),

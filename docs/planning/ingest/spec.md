@@ -172,6 +172,37 @@ this list.
 16. `vp check` pass·pass, `vp test` green with no skips, `vp run shape` clean, and
     `pnpm dlx fallow dupes` no worse than **0 lines**.
 
+## The gate, run
+
+**2026-08-18. 16/16.** Rows 1–15 are `vp test`; row 16 is the repository. Every row that
+could be proved on real data was, and the real `~/.ambient` was never written to — the
+account store and the `capxul-devs` Transcript were copied into a scratch home first.
+
+| Row | Where | Evidence |
+|---|---|---|
+| 1 | `channel.test.ts` | the Source directory holds `media`, `whatsapp.db` and its two sidecars, and nothing else |
+| 2 | `channel.test.ts` · `live.test.ts` · **real** | 85 conversations, newest first, group subjects and 1:1 names resolved |
+| 3 | `channel.test.ts` · `live.test.ts` | `Unpaired`, names the file, and **no database is created** |
+| 4 · 5 | `live.test.ts` | both refusals before any I/O; no `transcript.jsonl` exists afterwards |
+| 6 | `ingest.test.ts` · **real** | 911 lines written for 911 records read |
+| 7 | `lines.test.ts` · **real** | every line `from: "live"`, oldest first, value-identical on re-read |
+| 8 | `lines.test.ts` · `ingest.test.ts` · **real** | 71 attachments → **67** Blobs; one checked byte-for-byte, sha256 matching its line's hash |
+| 9 | `lines.test.ts` · **real** | 43 `Failed` — never a line with no media |
+| 10 | `lines.test.ts` | edit, revoke and reactions land as state; **no reaction line is written** |
+| 11 | `ingest.test.ts` · **real** | second ingest: 0 written, byte-identical, inode unchanged |
+| 12 · 13 | `transcript.test.ts` | ticket `01`'s three defects, each a named failing test first |
+| 14 | `ingest.test.ts` · **real** | 2,900,784 bytes of Archive lines identical after 911 Live lines were appended |
+| 15 | `channel.test.ts` · **real** | `peers` with nothing paired and no runtime; store mtime unchanged |
+| 16 | — | `vp check` pass·pass · 75 tests · `vp run shape` clean · `fallow dupes` **0 lines** |
+
+**One gate row would have passed vacuously.** Row 3 asks that an unpaired Source refuses.
+`libsqlBackend` *creates* the file it is pointed at, so before `Unpaired` existed the read
+succeeded, reported zero conversations, and left an empty database that looks exactly like
+a paired account with nothing in it. The row was written before anyone knew that, and it is
+the reason the failure is its own value rather than a message.
+
+---
+
 ## Out of Scope
 
 Unchanged from [scope.md](./scope.md): speaking, interpretation, Ambient's own scheduling,
