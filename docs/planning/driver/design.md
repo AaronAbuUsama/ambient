@@ -151,13 +151,15 @@ dispatch.
   └─ dispatch the step               one skill, by path, never by bare name
        ├─ 1 → map-slice
        ├─ 2 → design-slice
-       ├─ 3 → no skill exists         ← branch point B2
+       ├─ 3 → the AFK kinds, by kind, and nothing else
+       │        research → vendor/research      spike → vendor/prototype
+       │        grilling → hand back            task  → hand back with the checklist
        ├─ 4 → plan-slice
        ├─ 5 → new-module · tdd · code-review, per ticket
        ├─ 6 → close-slice
        │
-       ├─ render-slice                ← branch point B1: driver's job, or the skill's?
-       └─ the step report             ← branch point B3: driver's job, or the skill's?
+       ├─ render-slice                after every step. One call site.
+       └─ the step report             after every dispatch. One emitter.
 ```
 
 ### Ownership, and why not somewhere else
@@ -167,8 +169,9 @@ dispatch.
 | reading which step a slice is on | **the driver** | it is the only thing that needs it; a step skill already knows which step it is |
 | deciding whether to proceed | **the principal** | HITL. The driver reports and asks; `auto` mode is the declared exception |
 | doing the step | **the step skill, unchanged** | the six skills work. The driver adds a caller, not a rewrite |
-| regenerating the page | **undecided — B1** | it is stated in six places and called from none |
-| the step report | **undecided — B3** | its specification exists, in a file about defects |
+| regenerating the page | **the driver** — decided at B1 | one call site instead of six restatements none of which was ever a command |
+| the step report | **the driver** — decided at B3 | six emitters of one format is how it was improvised every time; and it is the only home deficit 26 was ever offered |
+| dispatching the AFK kinds at step 3 | **the driver** — decided at B2 | `grilling` has no row in the table, so an agent cannot answer its own grilling question |
 
 **The driver reads; it does not parse.** `scripts/slice.ts` was built twice as a markdown
 parser and deleted twice — `68d2180` (*"a skill reads markdown, it does not need a parser"*)
@@ -275,7 +278,7 @@ What *can* be observed, and what each observation costs:
 | every dispatch path resolves to a real file | `vp run shape` cross-links, once the paths are links | **yes** — it already checks documents |
 | the driver reports the right step | run it on the four slices whose state is known and compare | by hand, four cases |
 | the driver changed no step skill | `git diff --stat .agents/skills/` shows only the new file | **yes** |
-| a step ends with the page regenerated | branch point B1 decides whether this is even the driver's | not yet |
+| a step ends with the page regenerated | the driver dispatches it, so the check is that the driver did — `<slice>.html` newer than the newest `.md` beside it | **yes**, once written |
 
 **The conformance table is the honest version of this step's usual one:**
 
@@ -302,77 +305,42 @@ What it does not remove:
 |---|---|---|
 | a dispatched step skill fails halfway | whatever that skill wrote — e.g. a `scope.md` with a Destination and no Open | the driver reads the file as it is, reports step 1 as unfinished, and offers `redo` |
 | the principal answers `n` | nothing | the same state, reported the same way |
-| two sessions drive the same slice | two agents editing one markdown file | **unhandled, and named** — see branch point B5 |
+| two sessions drive the same slice | two agents editing one markdown file | **reported, not prevented** — the driver prints `mtime` and `git status` before acting, and the principal decides |
 
 The `redo` path is the important one, and it is why the driver reports state before acting
 rather than after: **a half-written artefact is the normal case, not an error.**
 
 ---
 
-## Branch points
+## Branch points — all five collapsed at step 3
 
-The frontier hangs off these. Each becomes one `grilling` line in
-[`scope.md`](./scope.md) naming this document.
+**Empty. Every branch point below became a decision on 2026-08-19**, recorded in
+[`scope.md`](./scope.md)'s Decided with what it beat. They are kept here as the shape each
+answer chose, because a decision with no rejected alternative was not a decision.
 
-### B1 — who calls `render-slice`?
+| Was | Decided | What it beat |
+|---|---|---|
+| **B1** who calls `render-slice` | **the driver dispatches it**, and the five restatements are deleted | each skill keeping it in its own Finish — that is the convention deficit 10 names, kept; and "both", which writes 143 KB twice per step |
+| **B2** step 3 has no skill | **no seventh skill.** The AFK kinds join the driver's dispatch table; `grilling` and `task` hand back | a `frontier-slice` skill, whose only distinctive job is the one thing `slices.md` forbids it to do; and handing back entirely, which leaves AFK dispatch manual — where R3 died once |
+| **B3** who owns the step report | **the driver emits it**, and the template leaves `deficits.md` | six skills emitting their own, which is how it was improvised every time |
+| **B4** which skills a model may start | **flag the driver now; observe the mechanism on one step skill before flagging six** | flagging all seven, which acts on an unobserved mechanism the driver depends on |
+| **B5** two sessions, one slice | **report staleness from `mtime` and `git status`; write no lock** | a lock file, which would make the driver the one thing that writes durably and adds a stale-lock failure |
 
-```
-A  the driver dispatches it after every step
-   → delete the instruction from all six places it is currently stated
-   → one call site, and "the page is stale" becomes impossible
+**The collapsed shape, checked against the two invariants:**
 
-B  each step skill keeps calling it in its own Finish
-   → the driver does nothing; six restatements stay
-   → a step run WITHOUT the driver still regenerates the page
-```
+- **No public symbol without a production call site.** The driver has two —
+  `/slice <SLICE>` and `/slice chart <NAME>` — and both are written above under
+  § The caller. Nothing else is exported, because a skill exports nothing.
+- **Only the composition root wires.** The driver *is* the composition root for the process,
+  and it is the only thing that names another skill. No step skill gains a dispatch, a flag
+  or a parameter — which is the property step 6 row 10 checks: if one had to, the driver is
+  in the wrong place.
 
-*Measured: the instruction appears in `map-slice`, `design-slice`, `plan-slice`,
-`close-slice` and twice in `slices.md` — six statements, and `render-slice <SLICE>` is not a
-command. `package.json` has two scripts, `ambient` and `shape`.*
+**One decision changed the shape after it was drawn**, and the trace above is corrected in
+place rather than left saying the old thing: B2's answer turned step 3 from a row with no
+target into a row that dispatches by kind. `grilling` having no target is the mechanism, not
+an omission.
 
-### B2 — step 3 has no skill. What does the driver dispatch?
-
-```
-A  nothing. The driver hands back to the principal: "3 questions, 2 are yours."
-   → honest; step 3 is HITL by definition
-   → but the driver goes quiet at exactly the step that needs the most structure
-
-B  a new `frontier-slice` skill that dispatches the AFK kinds and grills the rest
-   → a seventh skill, and the one place research/spike dispatch would live
-   → risks becoming the "answers its own grilling questions" failure slices.md forbids
-```
-
-### B3 — who owns the step report?
-
-Its specification exists — the template at the foot of
-[`method/deficits.md`](../method/deficits.md), which is a file about defects and the wrong
-home for a specification.
-
-```
-A  the driver emits it, after every dispatch
-   → one implementation, and it is where build-time decisions could land
-B  each step skill emits its own
-   → six implementations of one format, which is how it was improvised every time
-```
-
-### B4 — which skills may a model start on its own?
-
-Already open as `G3`. It is a branch point because the answer changes whether the driver can
-dispatch at all: nobody has observed whether `disable-model-invocation` blocks a *skill*
-dispatching a flagged skill, or only the model starting it.
-
-### B5 — what happens when two sessions drive one slice?
-
-```
-A  nothing. Say so in the skill, and rely on the principal not doing it.
-B  the driver reports "this slice was touched N minutes ago" from git and file mtimes.
-```
-
-Not hypothetical: **three agents worked in this repository simultaneously today**, and one
-`vp run shape` read a file mid-write and reported a violation that does not exist in any
-commit.
-
----
 
 ## What follows
 
