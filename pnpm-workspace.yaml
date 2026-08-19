@@ -1,5 +1,6 @@
 allowBuilds:
   baileys: false
+  msgpackr-extract: false
   protobufjs: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8

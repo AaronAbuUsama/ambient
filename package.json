@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
+    "effect": "4.0.0-rc.110",
     "whatsappd": "0.4.0-alpha.3",
     "yaml": "^2.9.0",
     "yauzl": "3.4.0"
