@@ -94,7 +94,7 @@ export const pair: Pair = async (request) =>
     account: request.account,
     quietMs: request.quietMs ?? 20_000,
     deadlineMs: request.deadlineMs ?? 1_800_000,
-    ...(request.onProgress === undefined ? {} : { onProgress: request.onProgress }),
+    onProgress: request.onProgress,
     // The production session, and the ONE place a socket is opened. `syncFullHistory`
     // is the one-shot: it rides the pairing registration node and cannot be re-asked.
     openSession: (credentials) =>

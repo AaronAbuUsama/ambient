@@ -38,11 +38,7 @@ const progressOf = (status: Status, messages: number, chats: number): PairProgre
   if (status.phase === "pairing") {
     const step = status.pairing;
     if (step.step === "challenge_live") {
-      return {
-        step: "challenge",
-        ...(step.qr === undefined ? {} : { qr: step.qr }),
-        expiresAt: step.expiresAt,
-      };
+      return { step: "challenge", qr: step.qr, expiresAt: step.expiresAt };
     }
     return { step: "waiting" };
   }
