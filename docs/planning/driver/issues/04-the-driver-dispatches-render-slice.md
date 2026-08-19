@@ -1,6 +1,6 @@
 # 04 — the driver dispatches `render-slice`, and five restatements are deleted
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 02
+**Status:** done · **Blocks:** nothing · **Blocked by:** 02
 
 *Measured:* the instruction *"Regenerate the page — `render-slice <SLICE>`"* appears in
 **six** places — `map-slice`, `design-slice`, `plan-slice`, `close-slice`, and twice in

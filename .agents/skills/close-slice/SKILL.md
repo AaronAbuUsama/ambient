@@ -61,6 +61,3 @@ Only after every row passes, in one commit:
    `## Amendments` section, never in its body.
 
 Then re-run `vp run shape`: the roadmap edit may have broken a cross-link.
-
-Finally, **regenerate the page** — `render-slice <SLICE>`. This fills section 9, the ten
-rows with their evidence, and it is the last state that page will ever hold.

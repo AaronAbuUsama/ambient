@@ -135,7 +135,5 @@ Every number carries **how it was measured**. A claim with no instrument is an a
 1. `vp run shape` — every cross-link resolves.
 2. Update `scope.md`'s **Open**: each `grilling` line now anchors into `design.md`, and each
    line carries its id and what it waits on.
-3. **Regenerate the page** — `render-slice <SLICE>`. The design and its two diagrams are
-   sections 3 and 5; a step that did not update the page did not finish.
-4. Report: the shapes considered and which the caller killed, the seam delta, what is
+3. Report: the shapes considered and which the caller killed, the seam delta, what is
    **startable now**, and what waits on the principal.

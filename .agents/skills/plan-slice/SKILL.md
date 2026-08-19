@@ -84,8 +84,6 @@ and never `gh` — there is no remote.
 ## Finish
 
 1. `vp run shape` — every cross-link in `spec.md` and `design.md` resolves.
-2. **Regenerate the page** — `render-slice <SLICE>`. This fills sections 6 and 7, empties 4,
-   and corrects 3.
-3. Report the ticket graph: what can start now, and what waits on what.
+2. Report the ticket graph: what can start now, and what waits on what.
 
 **Write no code in this session.**

@@ -100,8 +100,7 @@ nobody is waiting on them, and they are the exception to one-decision-per-sessio
 ## Finish
 
 1. `vp run shape` — every cross-link in `scope.md` resolves.
-2. **Regenerate the page** — `render-slice <SLICE>`. This fills sections 1, 2, 4 and 8.
-3. Report the frontier: how many questions are `now`, and what the rest wait on.
+2. Report the frontier: how many questions are `now`, and what the rest wait on.
 
 **Stop there.** Mapping is one session's work and it resolves nothing. The next step is
 [`design-slice`](../design-slice/SKILL.md), **not** grilling.

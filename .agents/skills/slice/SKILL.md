@@ -121,6 +121,19 @@ different job.
 
 **One step per run.** Advance by one, report, and stop. The principal types it again.
 
+### Then regenerate the page
+
+**After every step this skill dispatches**, dispatch
+`.agents/skills/render-slice/SKILL.md` for the same slice. It knows which of its twelve
+sections the step just filled; this skill does not need to, and must not restate it.
+
+One call site. The instruction *"regenerate the page"* used to sit in four step skills and
+twice in [`slices.md`](../../../docs/rules/slices.md) — **six restatements, and never once a
+command.** The rule stays where it was; only the instruction moved here.
+
+**The cost, accepted:** a step skill run *without* this driver no longer regenerates the
+page. That is correct. Running a step bare is what this skill exists to stop.
+
 ---
 
 ## 5 · Emit the step report

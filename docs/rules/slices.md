@@ -18,8 +18,11 @@ start a step until its gate passes.**
 | 5 | **Build** | code | every build ticket is `done` |
 | 6 | **Close** | the roadmap moved on | every row of [definition-of-done.md](../design/definition-of-done.md) passes |
 
-**Every step ends by regenerating the slice's one page** — `render-slice`, below. A step that
-did not update the page did not finish.
+**Every step ends by regenerating the slice's one page.** A step that did not update the
+page did not finish. **How** it is regenerated is not this rule's business and never was:
+[`.agents/skills/slice/SKILL.md`](../../.agents/skills/slice/SKILL.md) dispatches it after
+every step it dispatches. A step run outside the driver does not regenerate the page —
+running a step bare is what the driver exists to stop.
 
 ### 1 · Map
 
@@ -190,7 +193,7 @@ that went wrong.
 
 ## Seeing it
 
-**`render-slice` draws the whole slice as one page**, and every step ends by regenerating it.
+**One page draws the whole slice**, regenerated at the end of every step by the driver.
 Its twelve sections are not a matter of taste — they are these six steps projected, grouped
 **Plan · Design · Record**, so what is missing from the page names the step that has not run. One
 artefact per slice and no others: [artefacts.md](./artefacts.md).
