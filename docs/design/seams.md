@@ -17,6 +17,7 @@ Revisable. Expected to change on contact.
 
 | Module | Owns | Interface is about | Effect |
 |---|---|---|---|
+| `failure` | How a caught error becomes text a person reads, and the shape a failure takes. **Depended on, never depending** — it names no other module and touches no I/O. | `causeOf` · `isMissing` | no |
 | `cli` | Command wiring only. **No logic.** | `init` · `doctor` · `chat add` · `agent add` | no |
 | `home` | The home on disk: layout, validation, health, scaffolding, change hints. **The only thing that knows a path.** | designed — [ADR 001](../adr/001-home-interface.md). `openHome(root)` → unit handles; read · plan · converge. **No ports** — see that ADR's Amendments | no |
 | `blobs` | Content-addressed binary store. Dedup by hash. | put · get · exists, all by hash | no |
@@ -46,6 +47,7 @@ work ────────────> harness ──┬─> knowledge
 import ──────────> archive, transcript, blobs, home (a Place)
 ingest ──────────> channel, blobs, transcript, home (a Place)
 archive ─────────> transcript ─> blobs
+failure <────────  every module; it depends on nothing
 channel ─────────> home (a Place), transcript (types only)
 media ───────────> blobs, knowledge
 speaker ─────────> harness, channel (send, pre-bound)

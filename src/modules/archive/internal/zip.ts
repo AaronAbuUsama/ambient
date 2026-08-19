@@ -3,6 +3,7 @@ import { buffer } from "node:stream/consumers";
 import { openPromise, type Entry, type ZipFile } from "yauzl";
 
 import type { ArchiveMediaEntry, ArchiveProblem, ArchiveProblemDetail } from "../types.ts";
+import { causeOf } from "~/modules/failure/service.ts";
 
 type OpenedZip = {
   readonly form: "zip-text" | "zip-media";
@@ -14,9 +15,6 @@ type OpenedZip = {
 };
 
 const failed = (detail: ArchiveProblemDetail): ArchiveProblem => ({ problems: [detail] });
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
-
 const nameOf = (entry: Entry): { readonly name: string } | ArchiveProblem => {
   try {
     // Measured real export: 0/1,140 entries set ZIP's UTF-8 bit; all raw names are UTF-8.

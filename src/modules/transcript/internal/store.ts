@@ -4,6 +4,7 @@ import * as fs from "node:fs/promises";
 import type { Place } from "~/modules/home/types.ts";
 import { bytesOf, lineOf } from "./parse.ts";
 import type { TranscriptLine, TranscriptProblemDetail } from "../types.ts";
+import { causeOf, isMissing } from "~/modules/failure/service.ts";
 
 type Loaded = {
   readonly lines: readonly TranscriptLine[];
@@ -12,13 +13,6 @@ type Loaded = {
 };
 
 export type LoadResult = Loaded | { readonly problem: TranscriptProblemDetail };
-
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
-
-/** The one question this module asks of a caught error: was the file simply absent? */
-const isMissing = (cause: unknown): boolean =>
-  cause instanceof Error && "code" in cause && cause.code === "ENOENT";
 
 export const load = async (place: Place): Promise<LoadResult> => {
   let text: string;

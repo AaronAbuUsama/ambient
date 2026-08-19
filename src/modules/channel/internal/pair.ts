@@ -13,8 +13,9 @@
  */
 
 import { createWhatsAppRuntime } from "whatsappd";
+import { causeOf } from "~/modules/failure/service.ts";
 import type { Awaitable, CredentialStore, RuntimeSession, Status } from "whatsappd";
-import { backendFor, causeOf } from "./mirror.ts";
+import { backendFor } from "./mirror.ts";
 import type { Account, ChannelProblem, PairProgress, PairReport } from "../types.ts";
 
 export type OpenSession = (credentials: CredentialStore) => Awaitable<RuntimeSession>;

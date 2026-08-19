@@ -12,7 +12,7 @@
 import { defineRule } from "@oxlint/plugins";
 
 /** No source file under `src/` is longer than this. */
-export const LIMIT = 250;
+const LIMIT = 250;
 
 /**
  * The declared exceptions, each with the reason it is not split. A file earns a

@@ -42,9 +42,6 @@ export const backendFor = (account: Account): LibsqlBackend =>
     media: fileMediaStore({ directory: account.media.path }),
   });
 
-export const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
-
 /** A group carries its own subject; a 1:1 is named through the alias map. */
 const subjectOf = (chat: ChatRecord, snapshot: Snapshot): string => {
   if (chat.subject !== undefined && chat.subject !== "") return chat.subject;

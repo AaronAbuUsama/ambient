@@ -4,13 +4,7 @@ import * as fs from "node:fs/promises";
 import type { Place } from "~/modules/home/types.ts";
 import type { BlobBytes, BlobHash, BlobProblem, PutBlobResult } from "../types.ts";
 import { hasher, legalHash } from "./hash.ts";
-
-/** The one question this module asks of a caught error: was the file simply absent? */
-const isMissing = (cause: unknown): boolean =>
-  cause instanceof Error && "code" in cause && cause.code === "ENOENT";
-
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
+import { causeOf, isMissing } from "~/modules/failure/service.ts";
 
 /** The root Place is the authority; only hash and private incoming leaves exist beneath it. */
 const at = (root: Place, leaf: string): string => `${root.path}/${leaf}`;

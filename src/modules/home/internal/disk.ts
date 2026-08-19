@@ -11,6 +11,7 @@ import * as fsp from "node:fs/promises";
 import * as path from "node:path";
 
 import type { Place, ProblemDetail } from "../types.ts";
+import { causeOf } from "~/modules/failure/service.ts";
 
 /**
  * The only mint. Branding cannot be expressed without one assertion, and this is
@@ -92,9 +93,6 @@ export type Found =
   | { readonly kind: "unreadable"; readonly cause: string };
 
 export type Read = Found | { readonly kind: "text"; readonly text: string };
-
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
 
 const real = (p: string): string | undefined => {
   try {

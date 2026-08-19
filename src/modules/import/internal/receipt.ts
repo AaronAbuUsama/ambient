@@ -13,6 +13,7 @@ import * as fs from "node:fs/promises";
 
 import * as Result from "effect/Result";
 import * as Schema from "effect/Schema";
+import { causeOf } from "~/modules/failure/service.ts";
 
 export interface ReceiptCounts {
   readonly messages: number;
@@ -48,9 +49,6 @@ export interface ReceiptInput {
   readonly messagesSkipped: number;
   readonly findings: readonly ReceiptFinding[];
 }
-
-const causeOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
 
 /**
  * Temp-then-rename, so a file is old or new and never torn.

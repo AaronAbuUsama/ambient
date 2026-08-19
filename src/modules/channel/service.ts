@@ -9,8 +9,10 @@
 import * as fs from "node:fs";
 
 import { createSession, qrAuth } from "whatsappd";
+
+import { causeOf } from "~/modules/failure/service.ts";
 import { lineOf } from "./internal/line.ts";
-import { allMessages, backendFor, causeOf, peerOf } from "./internal/mirror.ts";
+import { allMessages, backendFor, peerOf } from "./internal/mirror.ts";
 import { runPair } from "./internal/pair.ts";
 import type {
   ChannelProblem,

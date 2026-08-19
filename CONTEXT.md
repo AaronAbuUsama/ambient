@@ -152,6 +152,21 @@ Transcript's own dedup makes the second pass free. The word is kept for LOOPS, w
 position in a queue is a real thing.
 _Avoid_: offset, checkpoint (`checkpoint` is an OpenKnowledge verb), watermark.
 
+### Failure
+
+**Failure**:
+A way one module can fail, as a declared value in that module's `types.ts` — never an
+exception. Every fallible function returns its Failure or its result, and the caller
+narrows with `"problems" in result`. [errors.md](docs/rules/errors.md) is the rule.
+_Avoid_: error, exception, throw (an Error is Node's class, which we read and discard).
+
+**Cause**:
+The text a caught Node error leaves behind, once it is a Failure. It is what a person
+reads in `unreadable — EACCES …`, and it is the only part of an exception we keep.
+_Avoid_: message, reason, stack.
+
+---
+
 ### What a read produces
 
 **Message**:
