@@ -88,8 +88,8 @@ Each open question carries a **kind**, and the kind decides who does it:
 | Kind | You type | You do |
 |---|---|---|
 | `research` | nothing — it was fired at step 1 | read the findings file when it lands |
-| `spike` | `/prototype` | react to the artefact. That is its whole job |
-| `grilling` | `/grilling` | **answer.** The agent must not answer for you |
+| `spike` | [`/prototype`](../../.agents/skills/vendor/prototype/SKILL.md) | react to the artefact. That is its whole job |
+| `grilling` | [`/grilling`](../../.agents/skills/vendor/grilling/SKILL.md) | **answer.** The agent must not answer for you |
 | `task` | nothing | go and do the thing, then say what you found |
 
 **One decision per session, except research.** The answer appends one line to **Decided** and
@@ -135,6 +135,11 @@ One ticket per session, fresh context each time:
 read the ticket → /new-module if it adds one → /tdd → /code-review → commit
 vp check && vp test && vp run shape && pnpm dlx fallow dupes
 ```
+
+[`tdd`](../../.agents/skills/vendor/tdd/SKILL.md) and
+[`code-review`](../../.agents/skills/vendor/code-review/SKILL.md) are the copies this
+repository vendored. `/code-review` is also the name of a harness built-in with a different
+job, so the path is how you say which one you mean.
 
 `new-module` **refuses a module with no [`seams.md`](../design/seams.md) row.** That is why the
 seam delta is step 2's job and why IMPORT needed a ticket 00 it should not have needed.

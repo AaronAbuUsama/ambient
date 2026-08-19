@@ -1,6 +1,6 @@
 # 01 — the skills resolve inside this repository
 
-**Status:** ready-for-agent · **Blocks:** 02 · **Blocked by:** nothing
+**Status:** done · **Blocks:** 02 · **Blocked by:** nothing
 
 ## Why this is first
 

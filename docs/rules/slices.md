@@ -123,8 +123,10 @@ never narrative order**, and `design.md` is where all three are already written 
 
 ### 5 · Build
 
-`new-module` scaffolds; `tdd` builds one red-green step at a time; `code-review` closes.
-One ticket per session.
+`new-module` scaffolds; [`tdd`](../../.agents/skills/vendor/tdd/SKILL.md) builds one
+red-green step at a time; [`code-review`](../../.agents/skills/vendor/code-review/SKILL.md)
+closes — the vendored copies, named by path because a plugin and a harness built-in
+answer to those words too. One ticket per session.
 
 ### 6 · Close
 
