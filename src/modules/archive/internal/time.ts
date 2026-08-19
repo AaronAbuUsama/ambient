@@ -1,33 +1,33 @@
 import type { RawLine } from "./line.ts";
 
-const partsOf = (
-  formatter: Intl.DateTimeFormat,
-  instant: number,
-):
-  | {
-      readonly year: number;
-      readonly month: number;
-      readonly day: number;
-      readonly hour: number;
-      readonly minute: number;
-      readonly second: number;
-    }
-  | undefined => {
-  let year: number | undefined;
-  let month: number | undefined;
-  let day: number | undefined;
-  let hour: number | undefined;
-  let minute: number | undefined;
-  let second: number | undefined;
-  for (const part of formatter.formatToParts(new Date(instant))) {
-    const value = Number(part.value);
-    if (part.type === "year") year = value;
-    if (part.type === "month") month = value;
-    if (part.type === "day") day = value;
-    if (part.type === "hour") hour = value;
-    if (part.type === "minute") minute = value;
-    if (part.type === "second") second = value;
-  }
+type Parts = {
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+  readonly hour: number;
+  readonly minute: number;
+  readonly second: number;
+};
+
+/**
+ * The Wall clock of an Instant in one Zone, field by field.
+ *
+ * `formatToParts` returns the fields in whatever order the locale writes them,
+ * and may omit any of them — a Zone the runtime does not know yields no parts at
+ * all. So they are read by name and required together: a partial Wall clock is
+ * not a worse answer than none, it is a wrong one.
+ */
+const partsOf = (formatter: Intl.DateTimeFormat, instant: number): Parts | undefined => {
+  const found = new Map(
+    formatter.formatToParts(new Date(instant)).map((part) => [part.type, Number(part.value)]),
+  );
+  const year = found.get("year");
+  const month = found.get("month");
+  const day = found.get("day");
+  const hour = found.get("hour");
+  const minute = found.get("minute");
+  const second = found.get("second");
+
   return year === undefined ||
     month === undefined ||
     day === undefined ||
