@@ -33,7 +33,7 @@ slice closes, delete its detail and leave two lines in the Ledger.
 | **INGEST** | ● closed | A **live account** → transcripts + blobs. `channel` hides `whatsappd`; `ingest` owns the order of the writes. `pair · peers · ingest`. **No Cursor** — the Mirror is current state. Raw only. |
 | **KNOWLEDGE** | ◐ active | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
-| **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
+| **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. Where the Effect **runtime** lands — `Schema` already landed at the parse boundary, [ADR 006](../adr/006-schema-is-the-parse-boundary.md). |
 | **CAPABILITIES** | ○ | Chat folders as runtime instances; the reflector MCP; background agents. |
 | **MOUTH** | ○ | The speaker. |
 | **MEDIA** | ○ off-path | STT, vision, extraction. Hash-keyed, cached. Any time after IMPORT. |
@@ -184,6 +184,7 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | Running a slice, step by step, from the operator's seat | [../walkthroughs/slice.md](../walkthroughs/slice.md) |
 | The Transcript line, and the two shapes it beat — **plus amendment 1, where `LiveReaction` stopped being a line** | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
 | Why `channel` binds to a durable runtime, and what a one-shot sync costs | [../adr/005-channel-binds-to-the-durable-runtime.md](../adr/005-channel-binds-to-the-durable-runtime.md) |
+| Why external data is decoded by a Schema, and where `effect` enters | [../adr/006-schema-is-the-parse-boundary.md](../adr/006-schema-is-the-parse-boundary.md) |
 | Pairing, the Mirror read, the two refusals, and the sixteen gate rows | [../planning/ingest/spec.md](../planning/ingest/spec.md) |
 | Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../history/method-deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |

@@ -1,6 +1,6 @@
 # ADR 006 — Effect's `Schema` is the parse boundary, and `effect` enters at the RC
 
-**Status:** accepted for `home`, proposed for `transcript`, 2026-08-19 · **Slice:** DRIVER
+**Status:** accepted, 2026-08-19 · **Slice:** DRIVER
 · **Amends:** [effect.md](../rules/effect.md) · **Supersedes:** nothing
 
 ## Context
@@ -129,3 +129,46 @@ as a quiet edit.
    after step 2, `effect.md`'s tax argument was right and this ADR is wrong at `home` as well.
 4. **The rc does not stabilise.** If `4.0.0` does not ship, or ships with a changed `Schema`
    surface, this is a dependency on a moving target and step 3 must not have happened yet.
+
+## Amendments
+
+### 1 · 2026-08-19 — accepted for `transcript`; both falsifiers answered
+
+**Steps 2 and 3 are done.** The status line said *proposed for `transcript`* because step 3
+had not been attempted. It has, so the status is now plain `accepted`. The body is not
+rewritten; this is what changed and what was measured.
+
+**Falsifier 1 did not fire.** It asked whether the issue-to-`ProblemDetail` mapping plus the
+declarations exceed ~130 lines on `home/internal/yaml.ts`. Measured in code lines, excluding
+comment and blank: **98, against the 108 it replaced**, and `yaml.ts` + `config.ts` +
+`schema.ts` together went **336 → 272**. All 23 rows of `home`'s gate passed unchanged,
+including the exact strings it pins — `sources.personal.mode must be one of ingest|speak, got
+"listen"`.
+
+*Instrument: `grep -vE` over comment and blank lines at `94e4389`, 2026-08-19.*
+
+**Falsifier 2 did not fire either, and the ground it stood on was worse than this ADR knew.**
+It asked whether `optionalKey` encodes to the bytes already on disk. The honest answer is that
+*nothing* did: `archive/internal/classify.ts` writes `kind` second and the hand-written
+`parse.ts` rebuilt it sixth, so no line read back could regenerate the bytes it came from, and
+13,134 Archive lines sat on disk in an order nothing could reproduce. It never showed, because
+`same()`'s key sorter compared sorted keys — a symptom fix hiding its own cause.
+
+Declaring each shape in the order the file already has it makes the encoding canonical, so a
+decoded line now re-encodes to the exact bytes it came from. The gate row that pinned the
+divergence asserts the equality instead.
+
+*Instrument: `transcript.test.ts`, the roundtrip gate, Live and Archive, 107 tests at `c6f96c6`.*
+
+**Two things the ADR predicted, confirmed.** `pnpm add` failed on `ERR_PNPM_IGNORED_BUILDS`
+for `msgpackr-extract`, answered `false` to match `baileys` and `protobufjs`. And the reader
+cost is real: `parse.ts` is now a Schema declaration, and a person reading it must know
+`Schema`.
+
+**One thing it did not predict.** `classify.ts` is a **fourth** hand-written translation of
+the line format — the Context table names three. Its optional keys are built by hand and
+`compact` keeps them absent, because the encoder declares them with `optionalKey` and refuses
+an explicit `undefined`. The format now enforces what D1 cost 638 rewritten lines to learn.
+
+**Still open.** `effect@4.0.0-rc.110` is pinned exactly and remains a moving target; falsifier
+4 stands until `4.0.0` ships with an unchanged `Schema` surface.
