@@ -96,8 +96,9 @@ export type Read = Found | { readonly kind: "text"; readonly text: string };
 export const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
-const codeOf = (cause: unknown): string =>
-  cause instanceof Error && "code" in cause && typeof cause.code === "string" ? cause.code : "";
+/** The one question asked of a caught error here: was the path simply absent? */
+const isMissing = (cause: unknown): boolean =>
+  cause instanceof Error && "code" in cause && cause.code === "ENOENT";
 
 const real = (p: string): string | undefined => {
   try {
@@ -116,7 +117,7 @@ export const look = (h: Layout, abs: string): Found => {
   try {
     st = fs.lstatSync(abs);
   } catch (e) {
-    return codeOf(e) === "ENOENT" ? { kind: "absent" } : { kind: "unreadable", cause: causeOf(e) };
+    return isMissing(e) ? { kind: "absent" } : { kind: "unreadable", cause: causeOf(e) };
   }
   if (st.isSymbolicLink()) {
     const target = real(abs);

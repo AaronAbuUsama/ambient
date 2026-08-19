@@ -5,11 +5,9 @@ import type { Place } from "~/modules/home/types.ts";
 import type { BlobBytes, BlobHash, BlobProblem, PutBlobResult } from "../types.ts";
 import { hasher, legalHash } from "./hash.ts";
 
-const record = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const codeOf = (cause: unknown): string | undefined =>
-  record(cause) && typeof cause.code === "string" ? cause.code : undefined;
+/** The one question this module asks of a caught error: was the file simply absent? */
+const isMissing = (cause: unknown): boolean =>
+  cause instanceof Error && "code" in cause && cause.code === "ENOENT";
 
 const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
@@ -48,7 +46,7 @@ export const put = async (root: Place, source: BlobBytes): Promise<PutBlobResult
       await fs.unlink(incoming);
       return { hash: address, bytes, stored: false };
     } catch (cause: unknown) {
-      if (codeOf(cause) !== "ENOENT") {
+      if (!isMissing(cause)) {
         await fs.unlink(incoming).catch(() => undefined);
         return { problems: [{ _tag: "Unreadable", cause: causeOf(cause) }] };
       }
@@ -74,7 +72,7 @@ export const get = async (root: Place, hash: BlobHash): Promise<Uint8Array | Blo
   try {
     return Uint8Array.from(await fs.readFile(at(root, hash)));
   } catch (cause: unknown) {
-    return codeOf(cause) === "ENOENT"
+    return isMissing(cause)
       ? { problems: [{ _tag: "Missing", hash }] }
       : { problems: [{ _tag: "Unreadable", cause: causeOf(cause) }] };
   }
@@ -87,8 +85,6 @@ export const exists = async (root: Place, hash: BlobHash): Promise<boolean | Blo
     await fs.access(at(root, hash));
     return true;
   } catch (cause: unknown) {
-    return codeOf(cause) === "ENOENT"
-      ? false
-      : { problems: [{ _tag: "Unreadable", cause: causeOf(cause) }] };
+    return isMissing(cause) ? false : { problems: [{ _tag: "Unreadable", cause: causeOf(cause) }] };
   }
 };
