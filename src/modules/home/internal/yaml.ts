@@ -1,134 +1,162 @@
 /**
- * YAML in, `unknown` out, then narrowed one key at a time.
+ * YAML in, a decoded value out. `Schema` is the parse boundary — [ADR 006](../../../../docs/adr/006-schema-is-the-parse-boundary.md).
  *
- * Every narrower takes an `Out` accumulator, pushes what is wrong and returns
- * `undefined` — so a caller collects every problem in a file rather than
- * stopping at the first, and never needs a type assertion to proceed.
+ * **`unknown` never crosses a signature here.** Text goes in and a `Checked<T>`
+ * comes out, so nothing downstream narrows anything and nothing needs a type
+ * assertion to proceed. The eight hand-written combinators this replaced —
+ * `record`, `text`, `textList`, `textMap`, `oneOf`, `need`, `unknownKeys`,
+ * `done` — are the ~130 lines ADR 006 falsifier 1 was measured against.
+ *
+ * **We keep the `yaml` package.** Effect ships no YAML lexer and does not need
+ * to: turning text into data stays `yaml`'s job, and checking that the data has
+ * the right shape becomes Schema's.
+ *
+ * **Two things stay ours.** The words a person reads in `got "…"` are
+ * presentation, and `ProblemDetail` is this repo's own vocabulary — `doctor`
+ * prints it. Mapping a Schema issue onto one is the `detailsOf` walk below.
  */
 
+import * as Result from "effect/Result";
+import { decodeUnknownResult } from "effect/Schema";
+import type { Codec } from "effect/Schema";
+import type { AST, Union } from "effect/SchemaAST";
+import type { Issue } from "effect/SchemaIssue";
 import { parseDocument } from "yaml";
 
 import type { Checked } from "./problem.ts";
 import type { ProblemDetail } from "../types.ts";
 
-export type Out = ProblemDetail[];
+/**
+ * Every problem in the file rather than the first, because `doctor` reports a
+ * Config file's faults at one time; an unknown key as a named problem rather
+ * than a silently dropped field; and the offending value retained, so a person
+ * is told what was actually found.
+ */
+const OPTIONS = { errors: "all", onExcessProperty: "error", reportInput: true } as const;
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v);
+/** `sources.personal.allow[0]` — the form every `ProblemDetail.key` already uses. */
+const keyOf = (path: readonly PropertyKey[]): string =>
+  path.reduce<string>(
+    (at, step) =>
+      Number.isInteger(step)
+        ? `${at}[${String(step)}]`
+        : at === ""
+          ? String(step)
+          : `${at}.${String(step)}`,
+    "",
+  );
 
-/** What a human sees in `got "…"`. Never a stringified object. */
-export const show = (v: unknown): string => {
-  if (v === null || v === undefined) return "nothing";
-  if (typeof v === "string") return v;
-  if (typeof v === "number" || typeof v === "boolean" || typeof v === "bigint") return String(v);
-  if (Array.isArray(v)) return "a list";
-  return typeof v === "object" ? "a mapping" : typeof v;
+/**
+ * What a person sees in `got "…"`. Never a stringified object.
+ *
+ * It takes the `Issue` rather than the value so that no signature in this module
+ * accepts `unknown`, and it asks `Array.isArray` / `instanceof Object` rather
+ * than `typeof`: a primitive string, number or boolean falls through to
+ * `String`, which is the answer we want for all three.
+ */
+const gotOf = (issue: Issue): string => {
+  const value: unknown = "input" in issue ? issue.input : undefined;
+  if (value === null || value === undefined) return "nothing";
+  if (Array.isArray(value)) return "a list";
+  if (value instanceof Object) return "a mapping";
+  // SAFETY: null, undefined, arrays and every object have returned above, and
+  // those are exhaustive over the non-primitives — so what reaches here is a
+  // primitive, whose `String` is the text a person should read. TypeScript does
+  // not narrow `unknown` through `instanceof`, which is the only reason the
+  // assertion is needed to say what the three returns above already established.
+  return String(value as string | number | boolean | bigint | symbol);
 };
 
-export const record = (out: Out, key: string, v: unknown): Record<string, unknown> | undefined => {
-  if (isRecord(v)) return v;
-  out.push({ _tag: "BadValue", key, expected: "a mapping", got: show(v) });
-  return undefined;
-};
+/** The literals of a union, in the `one of a|b` form the gate already pins. */
+const literalsOf = (ast: Union<AST>): readonly string[] =>
+  ast.types.flatMap((type) => (type._tag === "Literal" ? [String(type.literal)] : []));
 
-export const text = (out: Out, key: string, v: unknown): string | undefined => {
-  if (typeof v === "string") return v;
-  out.push({ _tag: "BadValue", key, expected: "text", got: show(v) });
-  return undefined;
-};
-
-export const textList = (out: Out, key: string, v: unknown): readonly string[] | undefined => {
-  if (!Array.isArray(v)) {
-    out.push({ _tag: "BadValue", key, expected: "a list of text", got: show(v) });
-    return undefined;
-  }
-  const items: string[] = [];
-  let good = true;
-  for (const [i, item] of v.entries()) {
-    const s = text(out, `${key}[${i}]`, item);
-    if (s === undefined) good = false;
-    else items.push(s);
-  }
-  return good ? items : undefined;
-};
-
-export const textMap = (
-  out: Out,
-  key: string,
-  v: unknown,
-): Readonly<Record<string, string>> | undefined => {
-  const rec = record(out, key, v);
-  if (rec === undefined) return undefined;
-  const map: Record<string, string> = {};
-  let good = true;
-  for (const [k, item] of Object.entries(rec)) {
-    const s = text(out, `${key}.${k}`, item);
-    if (s === undefined) good = false;
-    else map[k] = s;
-  }
-  return good ? map : undefined;
-};
-
-export const oneOf = <T extends string>(
-  out: Out,
-  key: string,
-  v: unknown,
-  of: readonly T[],
-): T | undefined => {
-  const hit = of.find((o) => o === v);
-  if (hit !== undefined) return hit;
-  out.push({ _tag: "BadValue", key, expected: `one of ${of.join("|")}`, got: show(v) });
-  return undefined;
-};
-
-/** Fail-closed: an unknown key is a named problem, never a silent default. */
-export const unknownKeys = (
-  out: Out,
-  prefix: string,
-  rec: Record<string, unknown>,
-  known: readonly string[],
-): void => {
-  for (const k of Object.keys(rec)) {
-    if (!known.includes(k)) out.push({ _tag: "UnknownKey", key: prefix + k, known });
+/** This repo's words for a form, not Schema's. `doctor`'s reader has not changed. */
+const expectedOf = (ast: AST | undefined): string => {
+  if (ast === undefined) return "a valid value";
+  switch (ast._tag) {
+    case "String":
+      return "text";
+    case "Number":
+      return "a number";
+    case "Boolean":
+      return "true or false";
+    case "Objects":
+      return "a mapping";
+    case "Union": {
+      const literals = literalsOf(ast);
+      return literals.length > 0 ? `one of ${literals.join("|")}` : "a valid value";
+    }
+    default:
+      return "a valid value";
   }
 };
 
-export const need = <T>(
-  out: Out,
-  prefix: string,
-  rec: Record<string, unknown>,
-  key: string,
-  read: (v: unknown) => T | undefined,
-): T | undefined => {
-  if (!(key in rec)) {
-    out.push({ _tag: "MissingKey", key: prefix + key });
-    return undefined;
+/** The closed key set an `UnexpectedKey` was measured against. */
+const knownOf = (ast: AST): readonly string[] =>
+  ast._tag === "Objects" ? ast.propertySignatures.map((signature) => String(signature.name)) : [];
+
+/**
+ * One issue tree to a flat list of `ProblemDetail`.
+ *
+ * `Composite` fans out, `Pointer` extends the key path, and the leaves are the
+ * three problems this repo already had words for.
+ */
+const detailsOf = (issue: Issue, path: readonly PropertyKey[]): readonly ProblemDetail[] => {
+  switch (issue._tag) {
+    case "Composite":
+      return issue.issues.flatMap((inner) => detailsOf(inner, path));
+    case "Pointer":
+      return detailsOf(issue.issue, [...path, ...issue.path]);
+    case "MissingKey":
+      return [{ _tag: "MissingKey", key: keyOf(path) }];
+    case "UnexpectedKey":
+      return [{ _tag: "UnknownKey", key: keyOf(path), known: knownOf(issue.ast) }];
+    case "AnyOf":
+      return [
+        {
+          _tag: "BadValue",
+          key: keyOf(path),
+          expected: expectedOf(issue.ast),
+          got: gotOf(issue),
+        },
+      ];
+    default:
+      return [
+        {
+          _tag: "BadValue",
+          key: keyOf(path),
+          expected: expectedOf("ast" in issue ? issue.ast : undefined),
+          got: gotOf(issue),
+        },
+      ];
   }
-  return read(rec[key]);
 };
 
 const firstLine = (message: string): string =>
   (message.split("\n")[0] ?? message).replace(/ at line \d+, column \d+:?$/, "");
 
-/** With line and column when it will not parse. */
-export const parseYaml = (src: string): Checked<unknown> => {
-  const doc = parseDocument(src, { prettyErrors: true });
-  if (doc.errors.length > 0) {
+/**
+ * Text to a domain value, or every reason it is not one.
+ *
+ * The `yaml` package answers "is this a document"; `Schema` answers "is this the
+ * document we meant". A malformed document reports with its line and column,
+ * because that is the only problem a person fixes by looking at a position.
+ */
+export const decodeYaml = <T>(schema: Codec<T, unknown, never, never>, src: string): Checked<T> => {
+  const document = parseDocument(src, { prettyErrors: true });
+  if (document.errors.length > 0) {
     return {
-      problems: doc.errors.map((e) => ({
+      problems: document.errors.map((error) => ({
         _tag: "Malformed" as const,
-        line: e.linePos?.[0].line ?? 1,
-        column: e.linePos?.[0].col,
-        detail: `malformed YAML — ${firstLine(e.message)}`,
+        line: error.linePos?.[0].line ?? 1,
+        column: error.linePos?.[0].col,
+        detail: `malformed YAML — ${firstLine(error.message)}`,
       })),
     };
   }
-  return { value: doc.toJS() };
-};
-
-/** A value only when nothing went wrong, and never an empty failure. */
-export const done = <T>(out: Out, value: T | undefined): Checked<T> => {
-  if (value !== undefined && out.length === 0) return { value };
-  if (out.length === 0) out.push({ _tag: "BadValue", key: "", expected: "complete", got: "" });
-  return { problems: out };
+  const decoded = decodeUnknownResult(schema, OPTIONS)(document.toJS());
+  return Result.isFailure(decoded)
+    ? { problems: detailsOf(decoded.failure.issue, []) }
+    : { value: decoded.success };
 };

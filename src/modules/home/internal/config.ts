@@ -1,22 +1,25 @@
 /**
- * The three config schemas and the ontology vocabulary, validated fail-closed:
- * an unknown key is a named problem, never a silent default and never a dropped
- * field. Nothing here knows a path — text in, a value or a list of problems out.
+ * The three config schemas, declared rather than narrowed.
+ *
+ * Fail-closed is `onExcessProperty: "error"` in [yaml.ts](./yaml.ts) now, not a
+ * hand-written `unknownKeys` pass: an unknown key is still a named problem and
+ * never a silent default. Nothing here knows a path — text in, a value or a list
+ * of problems out.
+ *
+ * **A section is a mapping of name to entry**, and the name is the key. Schema
+ * decodes it as a `Record`; the two-line reshapes below put the key back on the
+ * value as `name`, which is the form the rest of `home` already reads.
+ *
+ * **Roles are resolved here**, so a role never hands out a name that does not
+ * exist. That is a cross-reference between two parts of one document rather than
+ * a shape, so it stays a hand-written pass over the decoded value — `DanglingRef`
+ * is a problem about meaning, and a schema cannot see it.
  */
 
+import * as Schema from "effect/Schema";
+
 import type { Checked } from "./problem.ts";
-import type { Out } from "./yaml.ts";
-import {
-  done,
-  need,
-  oneOf,
-  parseYaml,
-  record,
-  text,
-  textList,
-  textMap,
-  unknownKeys,
-} from "./yaml.ts";
+import { decodeYaml } from "./yaml.ts";
 import type { McpServer, ModelProfile, ProblemDetail, Role, Source, Thinking } from "../types.ts";
 
 /** The global `config.yaml`, before cross-file references are resolved. */
@@ -42,121 +45,84 @@ export type AgentConfig = {
   readonly scope: string;
 };
 
-const THINKING = ["off", "low", "medium", "high"] as const satisfies readonly Thinking[];
-const KINDS = ["whatsapp", "email"] as const;
-const MODES = ["ingest", "speak"] as const;
+const THINKING = Schema.Literals(["off", "low", "medium", "high"]);
 const ROLES = ["default", "speaker", "digest", "media", "synthesis"] as const;
 
-const SOURCE_KEYS = ["kind", "mode", "allow"] as const;
-const MCP_KEYS = ["command", "args", "env"] as const;
-const MODEL_KEYS = ["provider", "baseUrl", "model", "thinking"] as const;
-const GLOBAL_KEYS = ["sources", "mcp", "models", "roles"] as const;
-const CHAT_KEYS = ["source", "peer", "tools", "mcp", "agents"] as const;
-const AGENT_KEYS = ["model", "thinking", "mcp", "scope"] as const;
+const SourceEntry = Schema.Struct({
+  kind: Schema.Literals(["whatsapp", "email"]),
+  mode: Schema.Literals(["ingest", "speak"]),
+  allow: Schema.Array(Schema.String),
+});
 
-/** One entry of a named section — `sources.personal`, `mcp.openknowledge`, `models.fast`. */
-type Named = { readonly name: string; readonly at: string; readonly r: Record<string, unknown> };
+const McpEntry = Schema.Struct({
+  command: Schema.String,
+  args: Schema.optionalKey(Schema.Array(Schema.String)),
+  env: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+});
+
+const ModelEntry = Schema.Struct({
+  provider: Schema.String,
+  baseUrl: Schema.optionalKey(Schema.String),
+  model: Schema.String,
+  thinking: THINKING,
+});
+
+const GlobalDocument = Schema.Struct({
+  sources: Schema.Record(Schema.String, SourceEntry),
+  mcp: Schema.Record(Schema.String, McpEntry),
+  models: Schema.Record(Schema.String, ModelEntry),
+  roles: Schema.Struct({
+    default: Schema.String,
+    speaker: Schema.String,
+    digest: Schema.String,
+    media: Schema.String,
+    synthesis: Schema.String,
+  }),
+});
+
+const ChatDocument = Schema.Struct({
+  source: Schema.String,
+  peer: Schema.String,
+  tools: Schema.Array(Schema.String),
+  mcp: Schema.Array(Schema.String),
+  agents: Schema.Array(Schema.String),
+});
+
+const AgentDocument = Schema.Struct({
+  model: Schema.String,
+  thinking: THINKING,
+  mcp: Schema.Array(Schema.String),
+  scope: Schema.String,
+});
 
 /**
- * Every named section reads the same: a mapping of name to mapping, each with a
- * closed key set. Entries whose value is not a mapping are reported and dropped.
+ * A role naming a model that does not exist is a `DanglingRef`, not a bad value.
+ *
+ * `known` is every profile name, so the message can say what was available. The
+ * whole document is refused when any role dangles, because a half-resolved
+ * policy is the state `ModelPolicy` exists to make unrepresentable.
  */
-const section = (
-  out: Out,
-  root: Record<string, unknown>,
-  key: string,
-  keys: readonly string[],
-): readonly Named[] => {
-  const entries: Named[] = [];
-  const rec = need(out, "", root, key, (v) => record(out, key, v));
-  for (const [name, v] of Object.entries(rec ?? {})) {
-    const at = `${key}.${name}`;
-    const r = record(out, at, v);
-    if (r === undefined) continue;
-    unknownKeys(out, `${at}.`, r, keys);
-    entries.push({ name, at, r });
-  }
-  return entries;
-};
-
-/** A config file opens the same way everywhere: parse, require a mapping, close its keys. */
-type Opened =
-  | { readonly out: Out; readonly r: Record<string, unknown> }
-  | { readonly problems: readonly ProblemDetail[] };
-
-const open = (src: string, keys: readonly string[]): Opened => {
-  const parsed = parseYaml(src);
-  if ("problems" in parsed) return parsed;
-  const out: Out = [];
-  const r = record(out, "", parsed.value);
-  if (r === undefined) return { problems: out };
-  unknownKeys(out, "", r, keys);
-  return { out, r };
-};
-
-const readSources = (out: Out, root: Record<string, unknown>): readonly Source[] => {
-  const sources: Source[] = [];
-  for (const { name, at, r } of section(out, root, "sources", SOURCE_KEYS)) {
-    const kind = need(out, `${at}.`, r, "kind", (x) => oneOf(out, `${at}.kind`, x, KINDS));
-    const mode = need(out, `${at}.`, r, "mode", (x) => oneOf(out, `${at}.mode`, x, MODES));
-    const allow = need(out, `${at}.`, r, "allow", (x) => textList(out, `${at}.allow`, x));
-    if (kind !== undefined && mode !== undefined && allow !== undefined) {
-      sources.push({ name, kind, mode, allow });
-    }
-  }
-  return sources;
-};
-
-const readServers = (out: Out, root: Record<string, unknown>): readonly McpServer[] => {
-  const servers: McpServer[] = [];
-  for (const { name, at, r } of section(out, root, "mcp", MCP_KEYS)) {
-    const command = need(out, `${at}.`, r, "command", (x) => text(out, `${at}.command`, x));
-    const args = "args" in r ? textList(out, `${at}.args`, r.args) : [];
-    const env = "env" in r ? textMap(out, `${at}.env`, r.env) : {};
-    if (command !== undefined && args !== undefined && env !== undefined) {
-      servers.push({ name, command, args, env });
-    }
-  }
-  return servers;
-};
-
-const readProfiles = (out: Out, root: Record<string, unknown>): readonly ModelProfile[] => {
-  const profiles: ModelProfile[] = [];
-  for (const { name, at, r } of section(out, root, "models", MODEL_KEYS)) {
-    const provider = need(out, `${at}.`, r, "provider", (x) => text(out, `${at}.provider`, x));
-    const model = need(out, `${at}.`, r, "model", (x) => text(out, `${at}.model`, x));
-    const thinking = need(out, `${at}.`, r, "thinking", (x) =>
-      oneOf(out, `${at}.thinking`, x, THINKING),
-    );
-    const baseUrl = "baseUrl" in r ? text(out, `${at}.baseUrl`, r.baseUrl) : undefined;
-    if (provider !== undefined && model !== undefined && thinking !== undefined) {
-      profiles.push({ name, provider, model, thinking, baseUrl });
-    }
-  }
-  return profiles;
-};
-
-/** Roles are resolved here, so a role never hands out a name that does not exist. */
-const readRoles = (
-  out: Out,
-  root: Record<string, unknown>,
+const resolveRoles = (
+  roles: Readonly<Record<Role, string>>,
   profiles: readonly ModelProfile[],
-): Readonly<Record<Role, ModelProfile>> | undefined => {
-  const known = profiles.map((p) => p.name);
-  const roles: Partial<Record<Role, ModelProfile>> = {};
-  const rec = need(out, "", root, "roles", (v) => record(out, "roles", v));
-  if (rec !== undefined) {
-    unknownKeys(out, "roles.", rec, ROLES);
-    for (const role of ROLES) {
-      const name = need(out, "roles.", rec, role, (x) => text(out, `roles.${role}`, x));
-      if (name === undefined) continue;
-      const hit = profiles.find((p) => p.name === name);
-      if (hit === undefined) {
-        out.push({ _tag: "DanglingRef", key: `roles.${role}`, to: name, kind: "model", known });
-      } else roles[role] = hit;
-    }
+): Checked<Readonly<Record<Role, ModelProfile>>> => {
+  const known = profiles.map((profile) => profile.name);
+  const problems: ProblemDetail[] = [];
+  const resolved: Partial<Record<Role, ModelProfile>> = {};
+  for (const role of ROLES) {
+    const wanted = roles[role];
+    const hit = profiles.find((profile) => profile.name === wanted);
+    if (hit === undefined) {
+      problems.push({
+        _tag: "DanglingRef",
+        key: `roles.${role}`,
+        to: wanted,
+        kind: "model",
+        known,
+      });
+    } else resolved[role] = hit;
   }
-  const { default: fallback, speaker, digest, media, synthesis } = roles;
+  const { default: fallback, speaker, digest, media, synthesis } = resolved;
   if (
     fallback === undefined ||
     speaker === undefined ||
@@ -164,49 +130,43 @@ const readRoles = (
     media === undefined ||
     synthesis === undefined
   ) {
-    return undefined;
+    return { problems };
   }
-  return { default: fallback, speaker, digest, media, synthesis };
+  return { value: { default: fallback, speaker, digest, media, synthesis } };
 };
 
 export const readGlobalConfig = (src: string): Checked<GlobalConfig> => {
-  const doc = open(src, GLOBAL_KEYS);
-  if ("problems" in doc) return doc;
-  const { out, r: root } = doc;
-  const sources = readSources(out, root);
-  const mcp = readServers(out, root);
-  const profiles = readProfiles(out, root);
-  const roles = readRoles(out, root, profiles);
-  return done(out, roles === undefined ? undefined : { sources, mcp, profiles, roles });
+  const decoded = decodeYaml(GlobalDocument, src);
+  if ("problems" in decoded) return decoded;
+  const document = decoded.value;
+
+  const sources: readonly Source[] = Object.entries(document.sources).map(([name, entry]) => ({
+    name,
+    kind: entry.kind,
+    mode: entry.mode,
+    allow: entry.allow,
+  }));
+  const mcp: readonly McpServer[] = Object.entries(document.mcp).map(([name, entry]) => ({
+    name,
+    command: entry.command,
+    args: entry.args ?? [],
+    env: entry.env ?? {},
+  }));
+  const profiles: readonly ModelProfile[] = Object.entries(document.models).map(
+    ([name, entry]) => ({
+      name,
+      provider: entry.provider,
+      baseUrl: entry.baseUrl,
+      model: entry.model,
+      thinking: entry.thinking,
+    }),
+  );
+
+  const roles = resolveRoles(document.roles, profiles);
+  return "problems" in roles ? roles : { value: { sources, mcp, profiles, roles: roles.value } };
 };
 
-export const readChatConfig = (src: string): Checked<ChatConfig> => {
-  const doc = open(src, CHAT_KEYS);
-  if ("problems" in doc) return doc;
-  const { out, r } = doc;
-  const source = need(out, "", r, "source", (v) => text(out, "source", v));
-  const peer = need(out, "", r, "peer", (v) => text(out, "peer", v));
-  const tools = need(out, "", r, "tools", (v) => textList(out, "tools", v));
-  const mcp = need(out, "", r, "mcp", (v) => textList(out, "mcp", v));
-  const agents = need(out, "", r, "agents", (v) => textList(out, "agents", v));
-  const complete =
-    source !== undefined &&
-    peer !== undefined &&
-    tools !== undefined &&
-    mcp !== undefined &&
-    agents !== undefined;
-  return done(out, complete ? { source, peer, tools, mcp, agents } : undefined);
-};
+export const readChatConfig = (src: string): Checked<ChatConfig> => decodeYaml(ChatDocument, src);
 
-export const readAgentConfig = (src: string): Checked<AgentConfig> => {
-  const doc = open(src, AGENT_KEYS);
-  if ("problems" in doc) return doc;
-  const { out, r } = doc;
-  const model = need(out, "", r, "model", (v) => text(out, "model", v));
-  const thinking = need(out, "", r, "thinking", (v) => oneOf(out, "thinking", v, THINKING));
-  const mcp = need(out, "", r, "mcp", (v) => textList(out, "mcp", v));
-  const scope = need(out, "", r, "scope", (v) => text(out, "scope", v));
-  const complete =
-    model !== undefined && thinking !== undefined && mcp !== undefined && scope !== undefined;
-  return done(out, complete ? { model, thinking, mcp, scope } : undefined);
-};
+export const readAgentConfig = (src: string): Checked<AgentConfig> =>
+  decodeYaml(AgentDocument, src);
