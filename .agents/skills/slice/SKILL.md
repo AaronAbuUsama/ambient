@@ -121,6 +121,29 @@ different job.
 
 **One step per run.** Advance by one, report, and stop. The principal types it again.
 
+### Step 3, by kind
+
+Step 3 is the only one of the six with no skill of its own. It does not need one: it needs
+two rows.
+
+| Kind | Dispatch | How |
+|---|---|---|
+| `research` | `.agents/skills/vendor/research/SKILL.md` | a background subagent, AFK and parallel — nobody waits on it |
+| `spike` | `.agents/skills/vendor/prototype/SKILL.md` | throwaway code, run to find out |
+| `task` | **hand back** | with its checklist: what to look up, and where |
+
+**Three kinds. There is no fourth row, and the missing one is `grilling` — that absence is
+the mechanism.** There is nothing to dispatch a grilling question to, so an agent cannot
+answer one. It goes to the principal and only the
+principal, and *"an agent that answers its own grilling questions has broken this"* stops
+being prose an agent might obey and becomes a table with nowhere to route it.
+
+Do not add a row for it. Do not route it to a subagent, to a vendored skill, or to your own
+reasoning. If a grilling question is blocking, say so and hand back.
+
+**`spike` is our word; `prototype` is theirs.** The kind keeps our name — see
+[`CONTEXT.md`](../../../CONTEXT.md) — and the path is the vendored skill's.
+
 ### Then regenerate the page
 
 **After every step this skill dispatches**, dispatch

@@ -1,6 +1,6 @@
 # 06 — the frontier dispatches itself, and cannot answer itself
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 02
+**Status:** done · **Blocks:** nothing · **Blocked by:** 02
 
 Step 3 is the only one of six with no skill. The answer is not a seventh skill — it is two
 rows in a table that already exists.
