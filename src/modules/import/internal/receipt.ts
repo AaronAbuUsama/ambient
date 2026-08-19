@@ -11,6 +11,9 @@
 import { randomUUID } from "node:crypto";
 import * as fs from "node:fs/promises";
 
+import * as Result from "effect/Result";
+import * as Schema from "effect/Schema";
+
 export interface ReceiptCounts {
   readonly messages: number;
   readonly events: number;
@@ -19,6 +22,15 @@ export interface ReceiptCounts {
   readonly resolved: number;
   readonly unresolved: number;
 }
+
+/** What the reader could not do, named — `archive`'s `unparsed` and its unresolved markers. */
+export type ReceiptFinding =
+  | {
+      readonly kind: "unreadable-line";
+      readonly line: number;
+      readonly reason: "no-message" | "malformed-wall-clock";
+    }
+  | { readonly kind: "unresolved-markers"; readonly count: number };
 
 export interface ReceiptInput {
   readonly dir: string;
@@ -29,12 +41,12 @@ export interface ReceiptInput {
   readonly zone: { readonly name: string; readonly given: boolean };
   readonly primary: Uint8Array | string;
   readonly counts: ReceiptCounts;
-  readonly span: unknown;
+  readonly span: { readonly oldest: number; readonly newest: number } | undefined;
   readonly written: number;
   readonly skipped: number;
   readonly messagesWritten: number;
   readonly messagesSkipped: number;
-  readonly findings: readonly unknown[];
+  readonly findings: readonly ReceiptFinding[];
 }
 
 const causeOf = (cause: unknown): string =>
@@ -63,24 +75,34 @@ const atomic = async (
   }
 };
 
-/** A Receipt already on disk, or undefined when this Archive is new here. */
-const existing = async (at: string): Promise<Record<string, unknown> | undefined> => {
+/**
+ * A Receipt already on disk, or undefined when this Archive is new here.
+ *
+ * Only `reruns` is named, and `onExcessProperty: "preserve"` keeps every other
+ * key exactly as it was written. That is the whole point: the Receipt describes
+ * the import and not the last run, so a re-run appends to `reruns` and must not
+ * touch a single other field.
+ */
+const Rerun = Schema.Struct({
+  at: Schema.String,
+  written: Schema.Number,
+  skipped: Schema.Number,
+});
+
+const PriorReceipt = Schema.Struct({ reruns: Schema.optionalKey(Schema.Array(Rerun)) });
+
+const decodePrior = Schema.decodeUnknownResult(PriorReceipt, { onExcessProperty: "preserve" });
+
+const existing = async (at: string): Promise<typeof PriorReceipt.Type | undefined> => {
+  let value: unknown;
   try {
-    const parsed: unknown = JSON.parse(await fs.readFile(at, "utf8"));
-    // SAFETY: the guard on this line has established that `parsed` is a non-null
-    // object, and `Record<string, unknown>` claims nothing more than that — a read
-    // by string key yields `unknown`, which holds for every non-null object, arrays
-    // included. It does not claim the keys of a Receipt: the only two reads,
-    // `...prior` and `prior["reruns"]`, keep their values `unknown` and the second
-    // is narrowed by `toReruns` before use. A hand-edited or torn receipt.json is a
-    // wrong Receipt, never an unsound type.
-    return typeof parsed === "object" && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : undefined;
+    value = JSON.parse(await fs.readFile(at, "utf8"));
   } catch {
     // Absent, or torn by a kill mid-write. Either way this run writes a fresh one.
     return undefined;
   }
+  const decoded = decodePrior(value);
+  return Result.isFailure(decoded) ? undefined : decoded.success;
 };
 
 /**
@@ -113,7 +135,7 @@ export async function persist(
     ? {
         ...prior,
         reruns: [
-          ...toReruns(prior["reruns"]),
+          ...(prior.reruns ?? []),
           { at: stamp, written: input.written, skipped: input.skipped },
         ],
       }
@@ -136,5 +158,3 @@ export async function persist(
   const cause = await atomic(at, `${JSON.stringify(receipt, undefined, 2)}\n`, false);
   return cause === undefined ? { rerun } : { cause, rerun };
 }
-
-const toReruns = (value: unknown): readonly unknown[] => (Array.isArray(value) ? value : []);
