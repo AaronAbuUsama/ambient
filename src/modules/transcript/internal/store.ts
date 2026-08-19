@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import * as fs from "node:fs/promises";
 
 import type { Place } from "~/modules/home/types.ts";
-import { lineOf, record } from "./parse.ts";
+import { bytesOf, lineOf } from "./parse.ts";
 import type { TranscriptLine, TranscriptProblemDetail } from "../types.ts";
 
 type Loaded = {
@@ -16,15 +16,16 @@ export type LoadResult = Loaded | { readonly problem: TranscriptProblemDetail };
 const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
-const codeOf = (cause: unknown): string | undefined =>
-  record(cause) && typeof cause.code === "string" ? cause.code : undefined;
+/** The one question this module asks of a caught error: was the file simply absent? */
+const isMissing = (cause: unknown): boolean =>
+  cause instanceof Error && "code" in cause && cause.code === "ENOENT";
 
 export const load = async (place: Place): Promise<LoadResult> => {
   let text: string;
   try {
     text = await fs.readFile(place.path, "utf8");
   } catch (cause: unknown) {
-    if (codeOf(cause) === "ENOENT") return { lines: [], completeText: "", torn: false };
+    if (isMissing(cause)) return { lines: [], completeText: "", torn: false };
     return { problem: { _tag: "Unreadable", cause: causeOf(cause) } };
   }
   const lastNewline = text.lastIndexOf("\n");
@@ -45,8 +46,9 @@ export const load = async (place: Place): Promise<LoadResult> => {
   return { lines, completeText, torn: completeText.length !== text.length };
 };
 
+/** Canonical bytes, from the one declaration in `parse.ts`. */
 const encoded = (lines: readonly TranscriptLine[]): string =>
-  lines.map((line) => `${JSON.stringify(line)}\n`).join("");
+  lines.map((line) => `${bytesOf(line)}\n`).join("");
 
 export const append = async (
   place: Place,

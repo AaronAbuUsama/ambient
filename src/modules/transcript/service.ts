@@ -2,6 +2,7 @@
 
 import type { Place } from "~/modules/home/types.ts";
 import { keyOf } from "./internal/key.ts";
+import { bytesOf } from "./internal/parse.ts";
 import { acquire } from "./internal/lock.ts";
 import { append, load, replace } from "./internal/store.ts";
 import type {
@@ -30,26 +31,22 @@ const merged = (stored: TranscriptLine, incoming: TranscriptLine): TranscriptLin
     ? { ...incoming, media: stored.media }
     : incoming;
 
-const record = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
 /**
- * Key order is not a change.
+ * Key order is not a change, and it is no longer this function's problem.
  *
  * `stored` was rebuilt by `internal/store.ts` from what is on disk; `next` is the
  * caller's own object. Comparing the two with `JSON.stringify` let a field ordering
  * difference alone set `changed`, and `changed` renames a whole new file over this
  * one — on 638 of 1,000 lines, measured. Defect D1, gate row 11.
+ *
+ * The fix was a key-sorting replacer: sort both sides, then compare. It worked, but
+ * it treated the symptom — two producers of one type that could disagree about
+ * shape. `internal/parse.ts` now holds one declaration that both decodes and
+ * encodes, so `bytesOf` is canonical by construction and equal lines are equal
+ * strings. ADR 006 step 3; the sorter is what it removes.
  */
-const same = (stored: TranscriptLine, next: TranscriptLine): boolean => {
-  const ordered = (line: TranscriptLine): string =>
-    JSON.stringify(line, (_key: string, value: unknown) =>
-      record(value)
-        ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => (a < b ? -1 : 1)))
-        : value,
-    );
-  return ordered(stored) === ordered(next);
-};
+const same = (stored: TranscriptLine, next: TranscriptLine): boolean =>
+  bytesOf(stored) === bytesOf(next);
 
 export const readTranscript: ReadTranscript = async (place) => {
   const loaded = await load(place);

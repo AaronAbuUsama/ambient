@@ -1,197 +1,154 @@
 /**
- * One JSON value → one Transcript line, or nothing.
+ * The Transcript line format, declared once — [ADR 006](../../../../docs/adr/006-schema-is-the-parse-boundary.md) step 3.
  *
- * The trust boundary. Every field arrives as `unknown` and is narrowed here, so
- * a line that does not conform is refused rather than half-read — `types.md`.
- * Split out of `store.ts` when reactions landed and it crossed 250 lines:
- * deciding whether bytes are a line, and putting a line into a file, are two
- * jobs and only one of them touches disk.
+ * This file used to be the decode half of a two-way translation nobody had
+ * written as one: it narrowed `unknown` a key at a time, `internal/store.ts`
+ * encoded with `JSON.stringify`, and `service.ts` compared two results with a
+ * hand-written key sorter because the two could disagree about shape. One
+ * declaration now serves all three.
+ *
+ * **Key order is the format.** 14,045 lines are already on disk and the order
+ * below is the order they were written in — `archive/internal/classify.ts` for
+ * the two Archive shapes, `channel/internal/line.ts` for the Live one.
+ * `LiveMessage` is the one place this is not `types.ts`'s order: the producer
+ * writes `msgKind` before `text` and the file has it that way, so the
+ * declaration follows the disk and not the type. ADR 006 falsifier 2 is exactly
+ * this, and the roundtrip gate in `transcript.test.ts` is what holds it.
+ *
+ * **`optionalKey`, never `optional`.** An absent optional must stay an absent
+ * key, because a key that is present and `undefined` is the shape difference
+ * that rewrote 638 of 1,000 lines — D1, `service.ts:36-43`.
  */
 
-import type {
-  ArchiveEvent,
-  ArchiveMedia,
-  LiveMedia,
-  LiveReaction,
-  LiveWho,
-  TranscriptLine,
-} from "../types.ts";
+import * as Result from "effect/Result";
+import * as Schema from "effect/Schema";
 
-/** Narrowing starts here: `unknown` is an object with string keys, or it is not. */
-export const record = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
+import type { TranscriptLine } from "../types.ts";
 
-const whoOf = (value: unknown): LiveWho | undefined => {
-  if (
-    !record(value) ||
-    typeof value.id !== "string" ||
-    (value.mode !== "lid" && value.mode !== "pn") ||
-    (value.alt !== undefined && typeof value.alt !== "string") ||
-    (value.pushName !== undefined && typeof value.pushName !== "string")
-  )
-    return undefined;
-  return {
-    id: value.id,
-    mode: value.mode,
-    ...(value.alt === undefined ? {} : { alt: value.alt }),
-    ...(value.pushName === undefined ? {} : { pushName: value.pushName }),
-  };
-};
+const StoredMedia = Schema.Struct({
+  state: Schema.Literal("Stored"),
+  hash: Schema.String,
+});
 
-const liveMediaOf = (value: unknown): LiveMedia | undefined => {
-  if (!record(value) || typeof value.state !== "string") return undefined;
-  if (value.state === "Stored" && typeof value.hash === "string") {
-    return { state: "Stored", hash: value.hash };
-  }
-  if (
-    value.state === "NoHandle" ||
-    value.state === "Expired" ||
-    value.state === "Failed" ||
-    value.state === "NeverDriven"
-  )
-    return { state: value.state };
-  return undefined;
-};
+const ArchiveMedia = Schema.Union([
+  StoredMedia,
+  Schema.Struct({
+    state: Schema.Literal("NoHandle"),
+    why: Schema.Literals(["placeholder", "not-in-archive"]),
+  }),
+]);
 
-/** One malformed entry refuses the whole line: a half-read reaction set is a lie. */
-const reactionsOf = (value: unknown): readonly LiveReaction[] | undefined => {
-  if (!Array.isArray(value)) return undefined;
-  const out: LiveReaction[] = [];
-  for (const entry of value) {
-    if (
-      !record(entry) ||
-      typeof entry.subject !== "string" ||
-      typeof entry.emoji !== "string" ||
-      (entry.by !== undefined && typeof entry.by !== "string") ||
-      (entry.at !== undefined && typeof entry.at !== "number")
-    )
-      return undefined;
-    out.push({
-      subject: entry.subject,
-      emoji: entry.emoji,
-      ...(entry.by === undefined ? {} : { by: entry.by }),
-      ...(entry.at === undefined ? {} : { at: entry.at }),
-    });
-  }
-  return out;
-};
+const LiveMedia = Schema.Union([
+  StoredMedia,
+  Schema.Struct({ state: Schema.Literal("NoHandle") }),
+  Schema.Struct({ state: Schema.Literal("Expired") }),
+  Schema.Struct({ state: Schema.Literal("Failed") }),
+  Schema.Struct({ state: Schema.Literal("NeverDriven") }),
+]);
 
-const archiveMediaOf = (value: unknown): ArchiveMedia | undefined => {
-  if (!record(value)) return undefined;
-  if (value.state === "Stored" && typeof value.hash === "string") {
-    return { state: "Stored", hash: value.hash };
-  }
-  return value.state === "NoHandle" &&
-    (value.why === "placeholder" || value.why === "not-in-archive")
-    ? { state: "NoHandle", why: value.why }
-    : undefined;
-};
+const ArchiveWho = Schema.Struct({ label: Schema.String });
 
-const archiveEventOf = (value: unknown): ArchiveEvent["event"] | undefined =>
-  value === "added" ||
-  value === "removed" ||
-  value === "left" ||
-  value === "renamed" ||
-  value === "icon" ||
-  value === "admin" ||
-  value === "number-changed" ||
-  value === "other"
-    ? value
-    : undefined;
+const LiveWho = Schema.Struct({
+  id: Schema.String,
+  mode: Schema.Literals(["lid", "pn"]),
+  alt: Schema.optionalKey(Schema.String),
+  pushName: Schema.optionalKey(Schema.String),
+});
 
-const optionalTrue = (value: unknown): boolean => value === undefined || value === true;
+const LiveReaction = Schema.Struct({
+  subject: Schema.String,
+  emoji: Schema.String,
+  by: Schema.optionalKey(Schema.String),
+  at: Schema.optionalKey(Schema.Number),
+});
 
-const quotedOf = (value: unknown): { readonly id: string; readonly from: string } | undefined =>
-  record(value) && typeof value.id === "string" && typeof value.from === "string"
-    ? { id: value.id, from: value.from }
-    : undefined;
+/** `classify.ts`'s order. */
+const ArchiveMessageLine = Schema.Struct({
+  from: Schema.Literal("archive"),
+  kind: Schema.Literal("message"),
+  wall: Schema.String,
+  at: Schema.Number,
+  zone: Schema.String,
+  who: ArchiveWho,
+  text: Schema.String,
+  edited: Schema.optionalKey(Schema.Literal(true)),
+  deleted: Schema.optionalKey(Schema.Literal(true)),
+  media: Schema.optionalKey(ArchiveMedia),
+});
 
+/** `classify.ts`'s order. */
+const ArchiveEventLine = Schema.Struct({
+  from: Schema.Literal("archive"),
+  kind: Schema.Literal("event"),
+  wall: Schema.String,
+  at: Schema.Number,
+  zone: Schema.String,
+  event: Schema.Literals([
+    "added",
+    "removed",
+    "left",
+    "renamed",
+    "icon",
+    "admin",
+    "number-changed",
+    "other",
+  ]),
+  who: ArchiveWho,
+  subject: Schema.optionalKey(Schema.String),
+  raw: Schema.String,
+});
+
+/** `channel/internal/line.ts`'s order — `msgKind` before `text`, as the file has it. */
+const LiveMessageLine = Schema.Struct({
+  from: Schema.Literal("live"),
+  kind: Schema.Literal("message"),
+  at: Schema.Number,
+  id: Schema.String,
+  who: LiveWho,
+  msgKind: Schema.String,
+  text: Schema.optionalKey(Schema.String),
+  quoted: Schema.optionalKey(Schema.Struct({ id: Schema.String, from: Schema.String })),
+  mentions: Schema.optionalKey(Schema.Array(Schema.String)),
+  edited: Schema.optionalKey(Schema.Literal(true)),
+  viewOnce: Schema.optionalKey(Schema.Literal(true)),
+  ephemeral: Schema.optionalKey(Schema.Literal(true)),
+  reactions: Schema.optionalKey(Schema.Array(LiveReaction)),
+  media: Schema.optionalKey(LiveMedia),
+});
+
+const Line = Schema.Union([ArchiveMessageLine, ArchiveEventLine, LiveMessageLine]);
+
+/**
+ * Fail-closed: an unknown key refuses the line rather than dropping it silently,
+ * which is what stops a re-import from discarding a field a later reader adds.
+ */
+const decodeLine = Schema.decodeUnknownResult(Line, { onExcessProperty: "error" });
+const encodeLine = Schema.encodeResult(Line);
+
+/**
+ * One JSON value to one Transcript line, or nothing.
+ *
+ * The caller reports `MalformedLine` with a line number and never a reason, so
+ * this stays a yes-or-no: what a person needs in order to fix a torn Transcript
+ * is which line, not which key.
+ */
 export const lineOf = (value: unknown): TranscriptLine | undefined => {
-  if (!record(value) || typeof value.at !== "number") return undefined;
-  if (value.from === "archive") {
-    if (
-      typeof value.wall !== "string" ||
-      typeof value.zone !== "string" ||
-      !record(value.who) ||
-      typeof value.who.label !== "string"
-    )
-      return undefined;
-    const common = {
-      from: "archive" as const,
-      wall: value.wall,
-      at: value.at,
-      zone: value.zone,
-      who: { label: value.who.label },
-    };
-    const event = archiveEventOf(value.event);
-    if (
-      value.kind === "event" &&
-      event !== undefined &&
-      typeof value.raw === "string" &&
-      (value.subject === undefined || typeof value.subject === "string")
-    ) {
-      return {
-        ...common,
-        kind: "event",
-        event,
-        raw: value.raw,
-        ...(value.subject === undefined ? {} : { subject: value.subject }),
-      };
-    }
-    if (
-      value.kind !== "message" ||
-      typeof value.text !== "string" ||
-      !optionalTrue(value.edited) ||
-      !optionalTrue(value.deleted)
-    )
-      return undefined;
-    const media = value.media === undefined ? undefined : archiveMediaOf(value.media);
-    if (value.media !== undefined && media === undefined) return undefined;
-    return {
-      ...common,
-      kind: "message",
-      text: value.text,
-      ...(value.edited === undefined ? {} : { edited: true as const }),
-      ...(value.deleted === undefined ? {} : { deleted: true as const }),
-      ...(media === undefined ? {} : { media }),
-    };
-  }
-  if (value.from !== "live") return undefined;
-  const who = whoOf(value.who);
-  if (who === undefined) return undefined;
-  if (
-    value.kind !== "message" ||
-    typeof value.id !== "string" ||
-    typeof value.msgKind !== "string" ||
-    (value.text !== undefined && typeof value.text !== "string") ||
-    !optionalTrue(value.edited) ||
-    !optionalTrue(value.viewOnce) ||
-    !optionalTrue(value.ephemeral) ||
-    (value.mentions !== undefined &&
-      (!Array.isArray(value.mentions) ||
-        !value.mentions.every((mention) => typeof mention === "string"))) ||
-    (value.quoted !== undefined && quotedOf(value.quoted) === undefined)
-  )
-    return undefined;
-  const media = value.media === undefined ? undefined : liveMediaOf(value.media);
-  const quoted = value.quoted === undefined ? undefined : quotedOf(value.quoted);
-  const reactions = value.reactions === undefined ? undefined : reactionsOf(value.reactions);
-  if (value.media !== undefined && media === undefined) return undefined;
-  if (value.reactions !== undefined && reactions === undefined) return undefined;
-  return {
-    from: "live",
-    kind: "message",
-    at: value.at,
-    id: value.id,
-    who,
-    msgKind: value.msgKind,
-    ...(value.text === undefined ? {} : { text: value.text }),
-    ...(quoted === undefined ? {} : { quoted }),
-    ...(value.mentions === undefined ? {} : { mentions: value.mentions }),
-    ...(value.edited === undefined ? {} : { edited: true as const }),
-    ...(value.viewOnce === undefined ? {} : { viewOnce: true as const }),
-    ...(value.ephemeral === undefined ? {} : { ephemeral: true as const }),
-    ...(reactions === undefined ? {} : { reactions }),
-    ...(media === undefined ? {} : { media }),
-  };
+  const decoded = decodeLine(value);
+  return Result.isFailure(decoded) ? undefined : decoded.success;
+};
+
+/**
+ * One Transcript line to its canonical bytes.
+ *
+ * Canonical is the point. Two producers of the same line encode to the same
+ * string, so comparing two lines is comparing two strings — which is what lets
+ * `service.ts` drop the key sorter it needed when they could disagree.
+ */
+export const bytesOf = (line: TranscriptLine): string => {
+  const encoded = encodeLine(line);
+  // SAFETY: `line` is a `TranscriptLine`, so it satisfies the same union that
+  // decoded it and encoding cannot fail. The `JSON.stringify` arm is a value and
+  // not an exception, per errors.md: a line that somehow did not encode is still
+  // written rather than lost, and the roundtrip gate proves the two agree.
+  return Result.isFailure(encoded) ? JSON.stringify(line) : JSON.stringify(encoded.success);
 };

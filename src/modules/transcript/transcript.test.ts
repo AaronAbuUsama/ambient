@@ -427,17 +427,20 @@ it("roundtrip — an Archive line's reader form is a fixed point too", async () 
 });
 
 /**
- * The producer's bytes are not the reader's, and the file holds the producer's.
+ * Producer bytes and reader bytes are the same bytes. Falsifier 2, strong form.
  *
- * `classify.ts` writes `kind` second; `internal/parse.ts` rebuilds it sixth, after
- * the `common` block. Same keys, same values, different order — so no line read
- * back can regenerate the bytes it came from. `same()` sorts before comparing, so
- * nothing rewrites and the system is correct; but 13,134 Archive lines sit on disk
- * in an order nothing can reproduce, and ADR 006 falsifier 2 — "`optionalKey` does
- * not encode to the bytes already on disk" — has to answer *which* bytes. This row
- * exists so that fact is pinned rather than rediscovered.
+ * They were not. `archive/internal/classify.ts` writes `kind` second and the old
+ * hand-written `parse.ts` rebuilt it sixth, so no line read back could regenerate
+ * the bytes it came from, and 13,134 Archive lines sat on disk in an order nothing
+ * could reproduce. Nothing broke, because `same()` sorted keys before comparing —
+ * but the sorter was treating the symptom.
+ *
+ * One declaration in `internal/parse.ts` now both decodes and encodes, in the key
+ * order the file already has, so the encoding is canonical and ADR 006 falsifier 2
+ * — "`optionalKey` does not encode to the bytes already on disk" — is answered
+ * here rather than argued.
  */
-it("roundtrip — the Archive producer's key order is not the reader's, and the file has the producer's", async () => {
+it("roundtrip — a decoded line re-encodes to the exact bytes it came from", async () => {
   const line: ArchiveLine = { ...bareArchive(), edited: true };
   const first = await place();
   await writeTranscript(first, [line]);
@@ -447,10 +450,7 @@ it("roundtrip — the Archive producer's key order is not the reader's, and the 
   if ("problems" in back) throw new Error("readTranscript refused the Archive line");
   const second = await place();
   await writeTranscript(second, back);
-  const reread = fs.readFileSync(second.path, "utf8");
 
-  expect(reread).not.toBe(produced);
-  expect(JSON.parse(reread.trim())).toStrictEqual(JSON.parse(produced.trim()));
+  expect(fs.readFileSync(second.path, "utf8")).toBe(produced);
   expect(produced).toContain('{"from":"archive","kind":"message"');
-  expect(reread).toContain('"who":{"label":"Rex"},"kind":"message"');
 });
