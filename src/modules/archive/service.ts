@@ -4,8 +4,9 @@ import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import * as fs from "node:fs/promises";
 
-import type { ArchiveLine } from "~/modules/transcript/types.ts";
-import { classify, type ArchiveBase } from "./internal/classify.ts";
+import type { ArchiveBase } from "./internal/classify.ts";
+import { foldLines } from "./internal/fold.ts";
+import { tallyOf } from "./internal/tally.ts";
 import {
   cleanBody,
   detectDayFirst,
@@ -46,78 +47,29 @@ export const readArchive: ReadArchive = (text, zone) => {
   if (dayFirst === undefined) return { problems: [{ _tag: "AmbiguousDateOrder" }] };
 
   const counts = senderCounts(messageRows);
-  const resultLines: ArchiveLine[] = [];
-  const markers: { line: number; name: string }[] = [];
-  const unparsed: UnparsedLine[] = [];
-  let continuations = 0;
-  let open: ArchiveBase | undefined;
 
-  const close = (): void => {
-    if (open !== undefined) {
-      const classified = classify({ ...open, text: open.text.trimEnd() });
-      const line = resultLines.push(classified.line) - 1;
-      if (classified.marker !== undefined) markers.push({ line, name: classified.marker });
+  // One opening line to the message it opens, or the reason it opens nothing.
+  const opening = (raw: RawLine, line: number): ArchiveBase | UnparsedLine => {
+    const sender = splitSender(raw, counts);
+    const at = instantOf(raw, dayFirst, formatter);
+    if (sender === undefined || at === undefined) {
+      return { line, reason: at === undefined ? "malformed-wall-clock" : "no-message" };
     }
-    open = undefined;
+    return {
+      from: "archive",
+      kind: "message",
+      wall: raw.wall,
+      at,
+      zone,
+      who: { label: sender.sender },
+      text: cleanBody(sender.body),
+      whatsappMarked: sender.whatsappMarked,
+    };
   };
 
-  for (const [index, source] of lines.entries()) {
-    const raw = matched[index];
-    if (raw !== undefined && raw.candidates.length > 0) {
-      close();
-      const sender = splitSender(raw, counts);
-      const at = instantOf(raw, dayFirst, formatter);
-      if (sender === undefined || at === undefined) {
-        unparsed.push({
-          line: index + 1,
-          reason: at === undefined ? "malformed-wall-clock" : "no-message",
-        });
-        continue;
-      }
-      open = {
-        from: "archive",
-        kind: "message",
-        wall: raw.wall,
-        at,
-        zone,
-        who: { label: sender.sender },
-        text: cleanBody(sender.body),
-        whatsappMarked: sender.whatsappMarked,
-      };
-      continue;
-    }
-    if (open === undefined) {
-      if (source.trim() !== "") unparsed.push({ line: index + 1, reason: "no-message" });
-      continue;
-    }
-    open = { ...open, text: `${open.text}\n${cleanBody(source)}` };
-    continuations++;
-  }
-  close();
+  const folded = foldLines(lines, matched, opening);
 
-  const first = resultLines[0];
-  const last = resultLines.at(-1);
-  const messages = resultLines.filter((line) => line.kind === "message");
-  return {
-    lines: resultLines,
-    markers,
-    continuations,
-    unparsed,
-    span:
-      first === undefined || last === undefined ? undefined : { oldest: first.at, newest: last.at },
-    counts: {
-      messages: messages.length,
-      events: resultLines.length - messages.length,
-      placeholders: messages.filter(
-        (line) => line.media?.state === "NoHandle" && line.media.why === "placeholder",
-      ).length,
-      edits: messages.filter((line) => line.edited === true).length,
-      deletions: messages.filter((line) => line.deleted === true).length,
-      markers: markers.length,
-      resolved: 0,
-      unresolved: markers.length,
-    },
-  } satisfies ArchiveRead;
+  return { ...folded, ...tallyOf(folded) } satisfies ArchiveRead;
 };
 
 const failed = (cause: unknown): ArchiveProblem => ({
