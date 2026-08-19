@@ -26,14 +26,72 @@ that retraction is recorded at deficit 25 rather than erased.**
 
 | Deficit | Status |
 |---|---|
-| 1 · the call graph was never drawn | **closed** — Design is step 2 of [slices.md](../../rules/slices.md) and produces `design.md`, definition-of-done row 10 reads it, and [walkthroughs/import.md](../../walkthroughs/import.md) is the worked example |
-| 2 · `design-it-twice` skipped where it applied | **closed** — [ADR 004](../../adr/004-transcript-line-is-a-union-on-provenance.md) supplies it late, and `plan-slice` checks the bar from now on |
+| 1 · the call graph was never drawn | **closed** — Design is step 2 of [slices.md](../rules/slices.md) and produces `design.md`, definition-of-done row 10 reads it, and [walkthroughs/import.md](../walkthroughs/import.md) is the worked example |
+| 2 · `design-it-twice` skipped where it applied | **closed** — [ADR 004](../adr/004-transcript-line-is-a-union-on-provenance.md) supplies it late, and `plan-slice` checks the bar from now on |
 | 3 · the pipeline did not know its preconditions | **closed** — `plan-slice` names `new-module`'s seam-row precondition; the seven skills it dispatches to are vendored, so they always resolve |
 | 4 · the grill was not rooted in modules | **closed** — `map-slice` traces callers and dependents before a question is asked |
-| 5 · the documentation layout mixed three kinds of thing | **closed** — six directories, one statement per home, decided by [docs/README.md](../../README.md); nothing loose at the docs root |
-| 6 · the conventions were not cohesive enough to hand over | **closed** — [walkthroughs/slice.md](../../walkthroughs/slice.md) is the operator's page, and `render-slice` draws a slice as one page |
+| 5 · the documentation layout mixed three kinds of thing | **closed** — six directories, one statement per home, decided by [docs/README.md](../README.md); nothing loose at the docs root |
+| 6 · the conventions were not cohesive enough to hand over | **closed** — [walkthroughs/slice.md](../walkthroughs/slice.md) is the operator's page, and `render-slice` draws a slice as one page |
 | **carried** · the Receipt described the last run | **closed** — it now keeps the run that wrote the lines and appends to `reruns` |
 | **carried** · `cli` was the composition owner | **closed** — the operation moved to the `import` module; the handler is 74 lines, from 176 |
+
+## What answered every other deficit
+
+**Closed 2026-08-19 by DRIVER.** The register's job is finished: what it holds is either
+answered by a decision this slice made, or it is a ticket file under
+[`docs/planning/driver/issues/`](../planning/driver/issues) with a number of its own. Nothing is left
+in a state only this document can express.
+
+| # | Answered by |
+|---|---|
+| 7 · the step report has no specification | **[step-report.md](../design/step-report.md)** — it has one, with a permanent home, and the driver is its only emitter |
+| 8 · the frontier is reported cut off from what produced it | the same template — *what closed* is a required section, not an option |
+| 9 · research reported as answers with no questions | the same template — every answer arrives with its question |
+| 10 · **there is no entry point, nothing runs a step** | **built.** [`.agents/skills/slice/SKILL.md`](../../.agents/skills/slice/SKILL.md). **See the amendment below — this was never declined** |
+| 11 · `render-slice`'s job is not legible from outside it | the template, plus one call site: the driver dispatches it, and the six restatements are gone |
+| 12 · the up-front / just-in-time boundary | **ticket [11](../planning/driver/issues/11-the-up-front-just-in-time-boundary.md)** |
+| 13 · the page template threw before step 6 | fixed during the INGEST run |
+| 14 · the template hardcoded one slice's name | fixed during the INGEST run |
+| 15 · the diagram checklist passed an unreadable diagram | **ticket [12](../planning/driver/issues/12-the-diagram-checklist-passes-unreadable-diagrams.md)** |
+| 16 · no geometry for the case the recipe tells you to use | **ticket [13](../planning/driver/issues/13-recipe-c-has-no-geometry-for-its-own-instruction.md)** |
+| 17 · `map-slice` and `sections.md` disagree on step 1 | **ticket [14](../planning/driver/issues/14-map-slice-and-sections-disagree-on-step-1.md)** — half of the disagreement is already deleted, with `map-slice`'s *Finish* item |
+| 18 · `sections.md` contradicts itself on empty sections | **ticket [15](../planning/driver/issues/15-sections-contradicts-itself-on-empty-sections.md)** |
+| 19 · who owns an answer landing in the wrong step | **ticket [16](../planning/driver/issues/16-an-answer-is-recorded-when-it-lands.md)** |
+| 20 · the map can permanently delete scope | **ticket [17](../planning/driver/issues/17-out-of-scope-is-agreed-not-asserted.md)** — the gate exists; the rule text does not name it yet |
+| 21 · nothing asserts the page was regenerated | the driver dispatches `render-slice` after every step, and the spec's gate row 10 asserts the page is newer than every `.md` beside it |
+| 22 · ids used as if they were words | the template forbids a bare id in a heading or a lead sentence |
+| 23 · the frontier diagram carries filenames, not questions | **ticket [18](../planning/driver/issues/18-the-frontier-diagram-carries-questions-not-filenames.md)** |
+| 24 · a deficit can be closed and cannot be un-closed | **ticket [19](../planning/driver/issues/19-a-deficit-can-be-retracted.md)** |
+| 25 · `new-module`'s precondition has never once refused | **closed.** `vp run shape` names any module owning no `seams.md` row and exits non-zero — the reverted fix revived rather than re-derived |
+| 26 · Build makes decisions with nowhere to put them | **closed.** [step-report.md](../design/step-report.md) is the home |
+| 27 · the canvases and their container disagree | **ticket [20](../planning/driver/issues/20-the-canvases-and-their-container-agree.md)**, with the instrument corrected: re-check at **1280**, not 1440 |
+| 28 · the no-personal-data rule has no check | **declined.** Principal, 2026-08-19: *"drop that rule altogether… we don't need that rule."* Not fixed, not open, not closed |
+
+---
+
+## Amendments
+
+**Corrections to this document, written as amendments and never as edits to the body** —
+[decisions.md](../rules/decisions.md). The record of being wrong is the point.
+
+**1 · Deficit 10 was never declined.** The second-cohort table calls it *"not a deficit.
+Built, and reverted six minutes later because the principal does not want one."* That is
+wrong, and it was wrong when written. What the principal declined was one **implementation** —
+`scripts/slice.ts`, a markdown parser — not the entry point itself. He had asked for it
+directly: *"there should be like one skill to drive the whole process."* The entry point was
+built on 2026-08-19 as [`.agents/skills/slice/SKILL.md`](../../.agents/skills/slice/SKILL.md),
+and it reads state with `ls` and `grep` rather than parsing anything, which is the distinction
+the original entry lost. **Deficit 10 is the most important thing in this register, and for
+one day it read as retired.**
+
+**2 · The no-fix rule was an instruction to stop one agent, not a standing law.** The header
+above states it as though it governs the register permanently: *"Deficits are logged here and
+not fixed."* Its origin is narrower — an agent had begun fixing defects while the evidence was
+still accumulating, and *"if anyone's tried to fix defects, revert them"* stopped that agent.
+Read as permanent, it forbids the pass this slice is: METHOD deciding, in one pass, what the
+method becomes. The rule held until the evidence stopped accumulating. It has stopped.
+
+---
 
 **Still open, deliberately:** the **template repo**. It is a plan, not a need — deriving it
 before the method has been used on a real slice would freeze conventions from one-and-a-half.
@@ -46,7 +104,7 @@ The rest of this document is the evidence, kept as written.
 
 **We codified the artefacts and not the method.**
 
-Eleven files under [`docs/rules/`](../../rules/) say what a *file* must look like — six slots,
+Eleven files under [`docs/rules/`](../rules) say what a *file* must look like — six slots,
 no `throw`, 250 lines, `~/modules/…`, no `any`. `vp run shape` enforces every one.
 
 **Nothing says how a decision becomes a file.** So when the method mattered, it fell back to
@@ -61,17 +119,17 @@ defends it. The process degraded, because nothing does.
 |---|---|---|
 | Interfaces designed before code | **yes** — design-it-twice on two seams | **no** |
 | ADR for a load-bearing interface | **two** (001 `home`, 002 `work`) | **none.** ADR 003 is about a *mechanism*, not an interface |
-| Call-graph artefact | [`walkthroughs/doctor.md`](../../walkthroughs/doctor.md) | **none** |
+| Call-graph artefact | [`walkthroughs/doctor.md`](../walkthroughs/doctor.md) | **none** |
 | Seam rows existed before scaffolding | yes | **no — it became ticket 00** |
 | Tests derived from | the spec's §4 gate, written first | the model's judgement, per ticket |
 
 ### Deficit 1 — the call-graph artefact exists, and was skipped
 
-[`README.md`](../../../README.md) calls `walkthroughs/doctor.md` *"the shortest path to owning
+[`README.md`](../../README.md) calls `walkthroughs/doctor.md` *"the shortest path to owning
 this codebase"* — it traces one command from keypress to output through every file it
 touches. **That is the call graph, and this repo invented it, praised it, and then did not
 require it.** There was no walkthrough for `import` when this was written, and `import` is a
-real verb with four modules behind it. [walkthroughs/import.md](../../walkthroughs/import.md)
+real verb with four modules behind it. [walkthroughs/import.md](../walkthroughs/import.md)
 now exists — written after the code, which is the wrong order and says so.
 
 **And it is where tests come from.** Every arrow in a trace is a seam; every seam is a test
@@ -79,7 +137,7 @@ point. Letting the model decide what to test, per ticket, is what replaced this.
 
 ### Deficit 2 — `design-it-twice` has a stated trigger, and `transcript` met it
 
-[`seams.md`](../../design/seams.md) says it is spent *"only where an interface is written
+[`seams.md`](../design/seams.md) says it is spent *"only where an interface is written
 through by many callers **and** hard to change later."*
 
 `transcript` is written through by **two Readers plus KNOWLEDGE**, and its line format is on
@@ -90,7 +148,7 @@ It may well be right. Nobody looked.
 
 ### Deficit 3 — the pipeline did not know its own preconditions
 
-[`new-module`](../../../.claude/skills/new-module/SKILL.md) refuses a module with no
+[`new-module`](../../.claude/skills/new-module/SKILL.md) refuses a module with no
 `seams.md` row: *"A module with no row is not a module yet."* `grill-with-docs` does not know
 that skill exists, so the grill produced a module boundary with no seam rows, and the gap was
 only caught while writing tickets — by reading the skill on the way past.
@@ -110,7 +168,7 @@ returning what** — arrived because they were forced in, not because the skill 
 was split across `docs/planning/<slice>/` and `docs/adr/`. Three kinds, two-and-a-half folders.
 
 **Closed.** Six directories, each holding one kind of statement, with the test that decides
-which in [docs/README.md](../../README.md). Nothing at the docs root but that map.
+which in [docs/README.md](../README.md). Nothing at the docs root but that map.
 
 ### Deficit 6 — the conventions are not cohesive enough to hand over
 
@@ -157,7 +215,7 @@ pipeline, and extract whatever survives. That is this repo's own principle appli
   `domain-modeling`) are generic and good and we already depend on their words. The pipeline
   ones (`grill-with-docs`, `to-spec`, `to-tickets`) are the ones that did not fit.
 - **Does the method get a gate?** A rule that cannot be run is not a rule
-  ([`legibility.md`](../../rules/legibility.md)) — so what checks that a walkthrough exists,
+  ([`legibility.md`](../rules/legibility.md)) — so what checks that a walkthrough exists,
   or that a seam row precedes a module?
 
 ## Carried forward, not to be lost
@@ -167,7 +225,7 @@ pipeline, and extract whatever survives. That is this repo's own principle appli
   to keep the first run's numbers and record re-runs, or name receipts by run.
 - **INGEST's open question** — how a one-shot full sync survives a crash between seven
   ~4,800-message batches, on a callback that must not block. **Answered 2026-08-18** by `R1`
-  and `R2`: it does not survive one. See [ingest/scope.md](../ingest/scope.md), Decided 13–18.
+  and `R2`: it does not survive one. See [ingest/scope.md](../planning/ingest/scope.md), Decided 13–18.
 
 ---
 
@@ -180,22 +238,22 @@ found: **nine of these were invisible until a slice existed that was not closed.
 | # | Deficit | Where the fix goes |
 |---|---|---|
 | **The process has no surface** — raised by the principal, and the more serious group | | |
-| 7 | The step report has no specification | [slices.md](../../rules/slices.md), and each step's skill |
-| 8 | The frontier is reported cut off from what produced it | [slices.md](../../rules/slices.md) § 3 |
-| 9 | Research is reported as answers with no questions | [map-slice](../../../.agents/skills/map-slice/SKILL.md) *Finish* |
+| 7 | The step report has no specification | [slices.md](../rules/slices.md), and each step's skill |
+| 8 | The frontier is reported cut off from what produced it | [slices.md](../rules/slices.md) § 3 |
+| 9 | Research is reported as answers with no questions | [map-slice](../../.agents/skills/map-slice/SKILL.md) *Finish* |
 | 10 | **There is no entry point. Nothing runs a step.** | **not a deficit.** Built, and reverted six minutes later because the principal does not want one. See 24 |
-| 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../../.agents/skills/render-slice/SKILL.md) |
-| 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../../rules/slices.md) *Why*, or [roadmap.md](../../design/roadmap.md) |
+| 11 | `render-slice`'s job is not legible from outside it | [render-slice](../../.agents/skills/render-slice/SKILL.md) |
+| 12 | The up-front / just-in-time planning boundary is nowhere written | [slices.md](../rules/slices.md) *Why*, or [roadmap.md](../design/roadmap.md) |
 | **The artefacts break at step 1** — found by the run | | |
 | 13 | The page template threw on any slice before step 6 | **fixed this run** |
 | 14 | The template hardcoded one slice's name and status | **fixed this run** |
-| 15 | The diagram checklist passed on an unreadable diagram | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) |
-| 16 | `diagrams.md` has no geometry for the case it tells you to use | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) |
+| 15 | The diagram checklist passed on an unreadable diagram | [diagrams.md](../../.agents/skills/render-slice/references/diagrams.md) |
+| 16 | `diagrams.md` has no geometry for the case it tells you to use | [diagrams.md](../../.agents/skills/render-slice/references/diagrams.md) |
 | 17 | `map-slice` and `sections.md` disagree about what step 1 fills | one of the two is wrong |
-| 18 | `sections.md` contradicts itself on empty sections | [sections.md](../../../.agents/skills/render-slice/references/sections.md) |
-| 19 | Nothing says who owns an answer that lands in the wrong step | [slices.md](../../rules/slices.md) § 3 |
-| 20 | The map can permanently delete scope, and that is a decision | [slices.md](../../rules/slices.md) § 1 |
-| 21 | Nothing asserts the page was regenerated | [definition-of-done.md](../../design/definition-of-done.md) — carried, confirmed |
+| 18 | `sections.md` contradicts itself on empty sections | [sections.md](../../.agents/skills/render-slice/references/sections.md) |
+| 19 | Nothing says who owns an answer that lands in the wrong step | [slices.md](../rules/slices.md) § 3 |
+| 20 | The map can permanently delete scope, and that is a decision | [slices.md](../rules/slices.md) § 1 |
+| 21 | Nothing asserts the page was regenerated | [definition-of-done.md](../design/definition-of-done.md) — carried, confirmed |
 
 ---
 
@@ -203,7 +261,7 @@ found: **nine of these were invisible until a slice existed that was not closed.
 
 ### Deficit 7 — the step report has no specification, so it is improvised every time
 
-[slices.md](../../rules/slices.md) specifies **artefacts** and **gates** exhaustively. It says
+[slices.md](../rules/slices.md) specifies **artefacts** and **gates** exhaustively. It says
 nothing about what the agent *says* when a step ends. The only reporting instruction in the
 whole chain is one line in `map-slice`:
 
@@ -244,7 +302,7 @@ stating what had been asked.
 > here's what was done, here's what the research question was, here's what came back."*
 
 **And `research` is precisely the kind where this matters most.** It is the one kind that is
-**AFK and parallel** — [slices.md](../../rules/slices.md) says so and makes it the exception to
+**AFK and parallel** — [slices.md](../rules/slices.md) says so and makes it the exception to
 one-decision-per-session — so it is the one kind whose dispatch the principal never witnesses.
 Every other kind he would see happen. The kind that most needs its question restated is the
 one with no instruction to restate it.
@@ -278,8 +336,8 @@ consumer, because there is no step report (deficit 7) to carry it.
 ### Deficit 12 — the boundary between up-front and just-in-time planning is nowhere written
 
 The vendored skills want all wayfinding **up front**. This repo rejected that: planning is
-just-in-time, per slice, which is what [slices.md](../../rules/slices.md) is. But
-[roadmap.md](../../design/roadmap.md) was written up front and is **correct** to have been —
+just-in-time, per slice, which is what [slices.md](../rules/slices.md) is. But
+[roadmap.md](../design/roadmap.md) was written up front and is **correct** to have been —
 the slice names, their order, and what breaks going backwards are not derivable slice by slice.
 
 **So there are two kinds of planning and the line between them is stated nowhere.** The
@@ -305,7 +363,7 @@ at all.
 **Cause: the template was extracted from one rendered page** — IMPORT, closed, twelve sections,
 exactly four data blocks — so the shape of that page became a hard requirement of every page.
 
-**It was predicted in writing and shipped anyway.** [SESSION-HANDOFF.md](SESSION-HANDOFF.md):
+**It was predicted in writing and shipped anyway.** [SESSION-HANDOFF.md](method-handoff.md):
 *"The template has only rendered a closed slice. Every section had content; the empty-state path
 is untested, and INGEST will test it at step 1."*
 
@@ -320,7 +378,7 @@ slice at step 1. Same cause as 13: extracted, not parameterised. **Fixed this ru
 ### Deficit 15 — the diagram checklist passed on an unreadable diagram
 
 Two defects, both obvious in one second of looking, both invisible to every numeric check in
-[diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md):
+[diagrams.md](../../.agents/skills/render-slice/references/diagrams.md):
 
 - **Four connectors shared one vertical corridor** at `x=356`, two of them overlapping in `y`.
   They rendered as **one continuous line**; which question fed which gate row was untraceable.
@@ -382,7 +440,7 @@ one line: an answer is recorded when it lands, whatever step is running.
 
 ### Deficit 20 — the map can permanently delete scope, and that is a decision
 
-[slices.md](../../rules/slices.md) § 1: *"Out of scope is a scoping act, not a step on the route
+[slices.md](../rules/slices.md) § 1: *"Out of scope is a scoping act, not a step on the route
 … it never graduates."* The map writes it, and the map is the agent's.
 
 The same rule says: **facts are the agent's job, decisions are the principal's.**
@@ -395,7 +453,7 @@ close it.
 
 ### Deficit 21 — nothing asserts the page was regenerated
 
-Carried from [SESSION-HANDOFF.md](SESSION-HANDOFF.md) and **confirmed still true**. Every step
+Carried from [SESSION-HANDOFF.md](method-handoff.md) and **confirmed still true**. Every step
 is required to end by regenerating the page; no definition-of-done row, and no check, would
 notice a page a step out of date. Same class as the row that already exists for the call graph
 — read, not run.
@@ -425,7 +483,7 @@ two defects those rounds exposed.
 | # | Deficit | Where the fix goes |
 |---|---|---|
 | 22 | **Ids were used as if they were words.** `T1`, `S1`, `R1` in a report to someone who has never opened `scope.md` | the template below |
-| 23 | The frontier diagram carries **filenames, not questions** — `T1  linked-device slots free` | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md) recipe C |
+| 23 | The frontier diagram carries **filenames, not questions** — `T1  linked-device slots free` | [diagrams.md](../../.agents/skills/render-slice/references/diagrams.md) recipe C |
 
 ### Deficit 22 — ids were used as if they were words
 
@@ -466,18 +524,18 @@ un-close, enforce, or record a decision made while building.
 
 | # | Deficit | Where the fix goes |
 |---|---|---|
-| 24 | **A deficit can be closed and cannot be un-closed.** 318 lines were built and reverted, and this document says it never happened | this file's status table, and [decisions.md](../../rules/decisions.md) |
+| 24 | **A deficit can be closed and cannot be un-closed.** 318 lines were built and reverted, and this document says it never happened | this file's status table, and [decisions.md](../rules/decisions.md) |
 | 25 | **`new-module`'s precondition is a sentence, so it has never once refused.** Ticket 00 exists in both slices that have had one | **written, proven, and reverted.** Open — see below |
-| 26 | **Build makes decisions and the method has nowhere to put them.** Two were made inside ticket 00 alone | [slices.md](../../rules/slices.md) § 5 |
-| 27 | **`render-slice`'s canvases are narrower than the container it forces them into**, so three of the four recipes clip | [diagrams.md](../../../.agents/skills/render-slice/references/diagrams.md), or the shell |
-| 28 | **The page's no-personal-data rule has no check, and the `raw` block invites breaking it** | [sections.md](../../../.agents/skills/render-slice/references/sections.md) |
+| 26 | **Build makes decisions and the method has nowhere to put them.** Two were made inside ticket 00 alone | [slices.md](../rules/slices.md) § 5 |
+| 27 | **`render-slice`'s canvases are narrower than the container it forces them into**, so three of the four recipes clip | [diagrams.md](../../.agents/skills/render-slice/references/diagrams.md), or the shell |
+| 28 | **The page's no-personal-data rule has no check, and the `raw` block invites breaking it** | [sections.md](../../.agents/skills/render-slice/references/sections.md) |
 
 ### Deficit 24 — a deficit can be closed, and cannot be un-closed
 
 `0c7eae3` at **09:55:49** closed deficit 10. It added `scripts/slice.ts` (178 lines),
 `.agents/skills/slice/SKILL.md` (122 lines) and its symlink, a row in
-[AGENTS.md](../../../AGENTS.md)'s skill table, six lines to
-[slices.md](../../rules/slices.md), and flipped this document's own entry for 10.
+[AGENTS.md](../../AGENTS.md)'s skill table, six lines to
+[slices.md](../rules/slices.md), and flipped this document's own entry for 10.
 
 `00d9b09` at **10:01:10** reverted all 318 lines. Its message is `git revert`'s default —
 *"This reverts commit 0c7eae3…"* — and **nothing anywhere says why.**
@@ -487,7 +545,7 @@ so line 175 above reads *"there is no entry point, a new skill"* exactly as it d
 09:55, and the document now asserts something that is true only by accident. A reader who
 finds this file tomorrow learns that the entry point was never attempted. A reader who runs
 `git log` learns it existed for six minutes. Those are two answers alive in two places, which
-is the failure [decisions.md](../../rules/decisions.md) was written to stop:
+is the failure [decisions.md](../rules/decisions.md) was written to stop:
 
 > *"A silently corrected ADR reads as if the design were right first time, which teaches the
 > next reader nothing and quietly removes the evidence."*
@@ -520,17 +578,17 @@ alternative to them is silence.
 
 ### Deficit 25 — `new-module`'s precondition is a sentence, so it has never once refused
 
-[`new-module/SKILL.md:11`](../../../.agents/skills/new-module/SKILL.md) is quoted in three
+[`new-module/SKILL.md:11`](../../.agents/skills/new-module/SKILL.md) is quoted in three
 documents as the thing that stops a module existing before its seam row:
 
 > *"the module must already own something in `docs/design/seams.md` … A module with no row
 > is not a module yet."*
 
 **It is prose in a skill file.** It refuses only if the agent reading it decides to. Nothing
-runs, and [legibility.md](../../rules/legibility.md) has the sentence for exactly this: *a
+runs, and [legibility.md](../rules/legibility.md) has the sentence for exactly this: *a
 rule that cannot be run is not a rule.*
 
-[`scripts/shape.ts`](../../../scripts/shape.ts) has three sections — source files (`:73`), the
+[`scripts/shape.ts`](../../scripts/shape.ts) has three sections — source files (`:73`), the
 six slots (`:105`), cross-links (`:121`). The six-slot loop reads `src/modules/*` and asks
 whether each has its files. **Nothing reads `seams.md` at all.** So for the whole of INGEST's
 steps 1–4, `ingest` was a module in `design.md`, in the call graph, in five tickets, and in
@@ -552,7 +610,7 @@ step 5:
 Two files, two slices, one job. **`00` is not a ticket, it is a missing check with a number.**
 
 **A fix was written, it worked, and it was reverted. This deficit is open.**
-[`shape.ts`](../../../scripts/shape.ts) grew a fourth section — every module named in a
+[`shape.ts`](../../scripts/shape.ts) grew a fourth section — every module named in a
 `docs/planning/<slice>/design.md` § Seam delta, and every directory under `src/modules/`,
 must own a row in `seams.md`. Run against the tree as it stood at `00d9b09`, four days of
 `clean`, it said:
@@ -566,8 +624,8 @@ shape: 1 problems
 Not because it was wrong — it fired on exactly the state it was written for — but because
 fixing a deficit is a decision about what the method becomes, and that decision is METHOD's
 to make in one pass rather than an agent's to make in passing. Thirty-eight lines of
-`shape.ts`, plus the check-feet of [modules.md](../../rules/modules.md) and
-[slices.md](../../rules/slices.md) and a paragraph in `new-module`, went back.
+`shape.ts`, plus the check-feet of [modules.md](../rules/modules.md) and
+[slices.md](../rules/slices.md) and a paragraph in `new-module`, went back.
 
 **Recording it is the point.** Deficit 24, two entries up, is that a retraction leaves no
 trace; this is the first one that does. The evidence above — that the check exists, that it
@@ -593,15 +651,15 @@ Ticket 00's *Done when* is three lines, and one of them is *"`pnpm install` reso
 | `whatsappd` pinned to `0.4.0-alpha.3` from the registry, **not** `link:../whatsappd` | a `link:` makes `pnpm install` here depend on a directory outside this repository | the ticket's `## Comments` |
 | `baileys` and `protobufjs` `allowBuilds: false` | `pnpm` refuses to install while they are unanswered, so `vp check` failed on `ERR_PNPM_IGNORED_BUILDS` before reading a single file | the ticket's `## Comments` |
 
-Neither is an ADR and neither should be — [decisions.md](../../rules/decisions.md) reserves
+Neither is an ADR and neither should be — [decisions.md](../rules/decisions.md) reserves
 those for *"a decision that shapes the codebase"*, and a pinned alpha and a build-script
 policy are below that bar. **But the rule has no bar below that one.** The only decision
-surface in [slices.md](../../rules/slices.md) is step 3, the frontier, whose gate is *"Open
+surface in [slices.md](../rules/slices.md) is step 3, the frontier, whose gate is *"Open
 and Fog are both empty"* — by construction it is closed before Build begins. So a decision
 made at step 5 has exactly one home, a `## Comments` block that no gate reads and no step
 report carries.
 
-**And the gate cannot see it.** [definition-of-done.md](../../design/definition-of-done.md) is
+**And the gate cannot see it.** [definition-of-done.md](../design/definition-of-done.md) is
 sixteen rows of command-or-observable-state; `close-slice` will read every one of them and
 will not read a Comments block. Both facts above are load-bearing for the next person who runs
 `pnpm install` in this repo, and both are one `git log` away from invisible.
@@ -634,7 +692,7 @@ recipes do not produce, or the recipes move to 1040. Which, is METHOD's call.
 
 ### Deficit 28 — the no-personal-data rule has no check, and `raw` invites breaking it
 
-[sections.md](../../../.agents/skills/render-slice/references/sections.md) says it three times:
+[sections.md](../../.agents/skills/render-slice/references/sections.md) says it three times:
 *"No personal data. Counts, spans and hashes only. Message text, chat subjects, phone numbers
 and display names stay in `.spike-private/`."*
 
@@ -654,9 +712,9 @@ taken from a real account.
 ## The step report — the template
 
 **Moved.** It is a specification with a permanent lifetime, and this directory lasts only
-*"until the slice closes"* per [`docs/README.md`](../../README.md). It now lives at
-[`docs/design/step-report.md`](../../design/step-report.md), and
-[`.agents/skills/slice/SKILL.md`](../../../.agents/skills/slice/SKILL.md) is the one thing
+*"until the slice closes"* per [`docs/README.md`](../README.md). It now lives at
+[`docs/design/step-report.md`](../design/step-report.md), and
+[`.agents/skills/slice/SKILL.md`](../../.agents/skills/slice/SKILL.md) is the one thing
 that emits it.
 
 It fixed deficits 7, 8, 9, 11 and 22, and it is now also the home for a decision made

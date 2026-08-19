@@ -20,7 +20,7 @@ slice closes, delete its detail and leave two lines in the Ledger.
 >
 > **METHOD is still active, and INGEST was its first full run.** All six steps executed on
 > one Slice for the first time. It produced product *and* four cohorts of deficits in
-> [../planning/method/deficits.md](../planning/method/deficits.md) — the fourth found by
+> [../planning/method/deficits.md](../history/method-deficits.md) — the fourth found by
 > running step 5, and the standing rule there is that deficits are **logged, not fixed**.
 >
 > **KNOWLEDGE is next.** It now has both halves of its material: an Archive's history and a
@@ -185,7 +185,7 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The Transcript line, and the two shapes it beat — **plus amendment 1, where `LiveReaction` stopped being a line** | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
 | Why `channel` binds to a durable runtime, and what a one-shot sync costs | [../adr/005-channel-binds-to-the-durable-runtime.md](../adr/005-channel-binds-to-the-durable-runtime.md) |
 | Pairing, the Mirror read, the two refusals, and the sixteen gate rows | [../planning/ingest/spec.md](../planning/ingest/spec.md) |
-| Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../planning/method/deficits.md) |
+| Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../history/method-deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
 | What OpenKnowledge already solves | [../history/research/open-knowledge.md](../history/research/open-knowledge.md) |
 | Why the old repo failed | [../history/grills/001-old-repo-teardown.md](../history/grills/001-old-repo-teardown.md) |

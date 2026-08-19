@@ -13,9 +13,9 @@ Branch `main`, tip **`e49e7a9`**, working tree clean.
 **METHOD turns how a slice gets built from folklore into skills**, because IMPORT shipped green
 while its topology was wrong and nothing noticed.
 
-The rule is [`docs/rules/slices.md`](../../rules/slices.md). The operator's page is
-[`docs/walkthroughs/slice.md`](../../walkthroughs/slice.md). Why it was needed is
-[`deficits.md`](deficits.md).
+The rule is [`docs/rules/slices.md`](../rules/slices.md). The operator's page is
+[`docs/walkthroughs/slice.md`](../walkthroughs/slice.md). Why it was needed is
+[`deficits.md`](method-deficits.md).
 
 ---
 
@@ -33,7 +33,7 @@ It fired once, on INGEST, and produced what the shape predicts: ten open questio
 about work nobody had designed.
 
 Now: **Map → Design → Frontier → Plan → Build → Close.** Six steps.
-[`design-slice`](../../../.agents/skills/design-slice/SKILL.md) produces `design.md`, and its gate
+[`design-slice`](../../.agents/skills/design-slice/SKILL.md) produces `design.md`, and its gate
 is the one that matters:
 
 > A `grilling` question that cannot name a block of `design.md` is not finished. Either it belongs
@@ -62,7 +62,7 @@ plus the formula `legendRuleY = canvasHeight − 68`, because freehand placement
 ### `impeccable` is a tool, not a dependency
 
 It designed `assets/shell.html` once and is **not vendored**. Vendored for artefacts:
-`diagram-design` plus the template. Recorded in [`artefacts.md`](../../rules/artefacts.md) and
+`diagram-design` plus the template. Recorded in [`artefacts.md`](../rules/artefacts.md) and
 `vendor/README.md`. Vendor is back to **2.1 MB, nine skills**.
 
 ---
@@ -94,7 +94,7 @@ db720d5  fix the formatting vp check caught in the shell and font assets
 e49e7a9  IMPORT gets a design.md, and INGEST is wiped to be redone properly
 ```
 
-**IMPORT is the worked example.** [`design.md`](../import/design.md) holds the caller, call graph,
+**IMPORT is the worked example.** [`design.md`](../planning/import/design.md) holds the caller, call graph,
 interfaces, seam delta, conformance table and crash story. `import.html` renders all twelve
 sections and is gitignored, regenerated from that markdown.
 
@@ -143,11 +143,11 @@ passed its own assertions.
 
 | What | Where |
 |---|---|
-| The contract | [`AGENTS.md`](../../../AGENTS.md) |
-| The lexicon | [`CONTEXT.md`](../../../CONTEXT.md) |
-| How a slice is built | [`docs/rules/slices.md`](../../rules/slices.md) |
-| The operator's page | [`docs/walkthroughs/slice.md`](../../walkthroughs/slice.md) |
-| The worked design | [`docs/planning/import/design.md`](../import/design.md) |
-| The worked call graph, as a tour | [`docs/walkthroughs/import.md`](../../walkthroughs/import.md) |
-| Doc map | [`docs/README.md`](../../README.md) |
-| Where we are | [`docs/design/roadmap.md`](../../design/roadmap.md) |
+| The contract | [`AGENTS.md`](../../AGENTS.md) |
+| The lexicon | [`CONTEXT.md`](../../CONTEXT.md) |
+| How a slice is built | [`docs/rules/slices.md`](../rules/slices.md) |
+| The operator's page | [`docs/walkthroughs/slice.md`](../walkthroughs/slice.md) |
+| The worked design | [`docs/planning/import/design.md`](../planning/import/design.md) |
+| The worked call graph, as a tour | [`docs/walkthroughs/import.md`](../walkthroughs/import.md) |
+| Doc map | [`docs/README.md`](../README.md) |
+| Where we are | [`docs/design/roadmap.md`](../design/roadmap.md) |

@@ -7,7 +7,7 @@ came from the principal reading a report he could not follow.
 
 ## Done when
 
-- The template at the foot of [`deficits.md`](../../method/deficits.md) moves to a file with
+- The template at the foot of [`deficits.md`](../../../history/method-deficits.md) moves to a file with
   a permanent lifetime. It is a specification, and `docs/planning/` lasts *"until the slice
   closes"* per [`docs/README.md`](../../../README.md).
 - The driver emits it after every dispatch. **One emitter, not six.**

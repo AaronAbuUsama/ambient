@@ -89,7 +89,7 @@ paired through the auth-only store and lost its sync. Kept as evidence, deletabl
 
 ## What this Slice also produced, which is not product
 
-[`method/deficits.md`](../method/deficits.md) gained **cohorts two and three — deficits 7–23**,
+[`method/deficits.md`](../../history/method-deficits.md) gained **cohorts two and three — deficits 7–23**,
 found by running the six-step rule rather than reading it. Ten are missing surfaces in the
 method itself; the sharpest is **10: there is no entry point, nothing runs a step.** The step
 report now has a template at the foot of that file, and it is a cap on length as much as a

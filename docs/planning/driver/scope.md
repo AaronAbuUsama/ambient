@@ -1,7 +1,7 @@
 # DRIVER — scope
 
 Mapped 2026-08-19, against the skills tree, [`scripts/shape.ts`](../../../scripts/shape.ts)
-and the four cohorts in [`method/deficits.md`](../method/deficits.md). **This is a scope, not
+and the four cohorts in [`method/deficits.md`](../../history/method-deficits.md). **This is a scope, not
 a spec.** It records what the process does not have and what that has cost; the shape is
 [`design-slice`](../../../.agents/skills/design-slice/SKILL.md)'s at step 2.
 
@@ -30,7 +30,7 @@ than with the principal reconstructing state out loud.
 - **Deficit 10 is live, not declined.** The register records *"not a deficit — the principal
   does not want one"*; what actually happened was a degraded agent being stopped mid-run.
   Principal, this session: *"it's not that I didn't want it, I did want it."*
-  [`deficits.md`](../method/deficits.md) needs this as an amendment, not an edit.
+  [`deficits.md`](../../history/method-deficits.md) needs this as an amendment, not an edit.
 - **The no-fix rule is lifted for this slice.** It was a standing instruction to stop that
   same agent, promoted into a constitution by a later one. Principal, this session: *"we do
   need to fix it… before we do the next slice."*
@@ -47,7 +47,7 @@ than with the principal reconstructing state out loud.
   That is what makes it an artefact rather than a working file.
 - **The seam-row check is wanted, as a check and not as a mechanism.** `new-module` refusing
   a module with no seam row *"showed where the process was not self-consistent"* — principal,
-  this session. The proven check at [deficit 25](../method/deficits.md) is revived rather than
+  this session. The proven check at [deficit 25](../../history/method-deficits.md) is revived rather than
   re-derived. **Amended later the same session:** this was first written as *"the tripwires
   are wanted"*, and the tripwire framing is withdrawn — see G2 below. It is one more thing
   `shape.ts` checks, with no ceremony around it.
@@ -256,7 +256,7 @@ step 2 was added to guarantee.
 - **G10 → the register converts, then archives.** The nine deficits DRIVER does not answer —
   12, 15, 16, 17, 18, 19, 20, 23, 24 and the sharpened 27 — become ticket files under
   `issues/` at step 4, in the form [`issues.md`](../../rules/issues.md) already requires.
-  Every other entry is marked with what answered it. [`deficits.md`](../method/deficits.md)
+  Every other entry is marked with what answered it. [`deficits.md`](../../history/method-deficits.md)
   then moves to [`docs/history/`](../../history/) as the evidence record it always was, and
   **METHOD's roadmap row closes.** *Measured: 28 deficits — 6 closed, 2 fixed, 1 declined, 19
   open, of which DRIVER's decisions answer or dissolve about ten.* Keeping it live was
@@ -328,7 +328,7 @@ answer clears the fog ahead of it, and what becomes specifiable becomes a questi
 
 - **The page's no-personal-data rule.** Principal, this session: *"drop that rule
   altogether… that is very very specific to the thing and no, we don't need that rule."*
-  [Deficit 28](../method/deficits.md) is therefore **declined** — not fixed, not open,
+  [Deficit 28](../../history/method-deficits.md) is therefore **declined** — not fixed, not open,
   not closed. It is the first entry to need a state the register cannot express, which is
   the live case for the filing work.
 
