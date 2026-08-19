@@ -5,7 +5,6 @@
  */
 
 import { openHome } from "~/modules/home/service.ts";
-import type { Command } from "./internal/command.ts";
 import { misuse, report } from "./internal/command.ts";
 import { agentAdd } from "./internal/commands/agent-add.ts";
 import { chatAdd } from "./internal/commands/chat-add.ts";
@@ -32,7 +31,7 @@ const USAGE = `ambient — a durable conversational home
   --home <path>                override $AMBIENT_HOME (default ~/.ambient)
 `;
 
-const COMMANDS: Readonly<Record<string, Command>> = {
+const COMMANDS = {
   init,
   doctor,
   chat: chatAdd,
@@ -43,6 +42,19 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   ingest,
 };
 
+/**
+ * argv's first token becomes a command name here, or it is not one.
+ *
+ * The table used to be annotated `Readonly<Record<string, Command>>`, which said
+ * every string is a command and made the `undefined` check below unreachable to
+ * the type system while being load-bearing at runtime. The table is closed, so
+ * the honest question is whether this token is one of its keys — and after that
+ * the lookup cannot miss.
+ */
+type CommandName = keyof typeof COMMANDS;
+
+const isCommandName = (name: string): name is CommandName => name in COMMANDS;
+
 export const run: Run = async (argv, defaultRoot, givenZone, say) => {
   const args = [...argv];
   const flag = args.indexOf("--home");
@@ -51,8 +63,8 @@ export const run: Run = async (argv, defaultRoot, givenZone, say) => {
 
   const [name, ...rest] = args;
   if (name === undefined || name === "--help" || name === "-h") return misuse(USAGE);
+  if (!isCommandName(name)) return misuse(`unknown command "${name}"\n\n${USAGE}`);
   const command = COMMANDS[name];
-  if (command === undefined) return misuse(`unknown command "${name}"\n\n${USAGE}`);
 
   const home = openHome(override ?? defaultRoot);
   if ("problems" in home) return report(home.problems);
