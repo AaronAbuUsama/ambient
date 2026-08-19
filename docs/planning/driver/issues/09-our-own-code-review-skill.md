@@ -32,3 +32,11 @@ decision *agent rules are enforced by the reviewer* actually handed over.
   quotes what the vendored skill consumes, line by line.
 - Row 9 of [definition-of-done.md](../../../design/definition-of-done.md) **splits**, and row
   10 is not one row. Both corrections come from that findings file and land here.
+
+## Comments
+
+**2026-08-19 — deferred by the principal.** Blocked by 08, which was deferred rather than
+built; see that ticket. The vendored code-review skill still points both its axes at files
+this repo does not have — `CODING_STANDARDS.md`, `CONTRIBUTING.md`, and an issue tracker that
+does not exist — so nothing regressed by waiting. It stays `ready-for-agent` with its
+measurements intact.

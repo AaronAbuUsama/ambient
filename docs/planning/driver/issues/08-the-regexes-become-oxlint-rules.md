@@ -31,3 +31,22 @@ word inside a comment or a string — it is the wrong instrument for a rule abou
 
 Another session has been working in `src/` and in the lint configuration. Check `git log`
 before starting, and do not begin while `vp check` is red for reasons that are not yours.
+
+## Comments
+
+**2026-08-19 — deferred by the principal, and METHOD closed without it.**
+
+Not started, and not because it was hard. Its own Coordination clause forbids beginning while
+another session is in `src/` and the lint configuration and `vp check` is red for reasons that
+are not ours. Both conditions held for the whole run: that session committed `8fd2c9d`,
+`5ef71c8` — which moved the anti-slop plugin this ticket must sit beside — and `94e4389`,
+and left `parse.ts` uncommitted with 139 insertions.
+
+**The evidence for the ticket got stronger while it waited.** `vp run shape` currently fails
+on `src/modules/transcript/internal/parse.ts:151` for the word `throw` **inside a comment** —
+which is the exact false positive this ticket exists to remove, caught in the wild rather than
+argued for.
+
+Principal's call: the driver works and is worth dogfooding now; this is a check-quality
+improvement, not a blocker. It stays `ready-for-agent` and keeps its measurements. Pick it up
+once that session's Effect migration has landed and `vp check` is green.

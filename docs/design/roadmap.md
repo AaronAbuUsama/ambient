@@ -11,21 +11,15 @@ slice closes, delete its detail and leave two lines in the Ledger.
 
 ## You are here
 
-> **INGEST closed** — 16/16 gate; `vp check`, 75 tests, shape clean and 0 duplication.
-> `ambient pair · peers · ingest` exist. Proven on the real account: **85 conversations
-> listed** with no socket, no lease and no runtime, and **911 Live lines ingested onto the
-> 13,134 Archive lines** of `capxul-devs`, whose 2,900,784 bytes came through
-> byte-for-byte identical. 71 attachments became 67 Blobs; 43 the Source no longer holds are
-> declared rather than dropped. A second ingest wrote nothing and did not rewrite the file.
+> **METHOD closed** — the six steps have a driver. `/slice <SLICE>` reads where a slice is
+> from seven `ls`/`grep` signals, reports, asks, dispatches one step by repository path, and
+> owns the **one** call site for `render-slice` and the step report, which had six and none.
+> `vp run shape` refuses a module with no [`seams.md`](seams.md) row. **08** and **09** are
+> deferred.
 >
-> **METHOD is still active, and INGEST was its first full run.** All six steps executed on
-> one Slice for the first time. It produced product *and* four cohorts of deficits in
-> [../planning/method/deficits.md](../history/method-deficits.md) — the fourth found by
-> running step 5, and the standing rule there is that deficits are **logged, not fixed**.
->
-> **KNOWLEDGE is next.** It now has both halves of its material: an Archive's history and a
-> Live account kept current. What it does not have is MEDIA — an unprocessed voice note is a
-> hole, not a degraded entry — so KNOWLEDGE can start, but *trusting* it cannot.
+> **KNOWLEDGE is active.** Both halves of its material exist — an Archive's history and a
+> Live account kept current — but not MEDIA, and an unprocessed voice note is a hole rather
+> than a degraded entry. It can start; *trusting* it cannot.
 
 ---
 
@@ -35,9 +29,9 @@ slice closes, delete its detail and leave two lines in the Ledger.
 |---|---|---|
 | **SKELETON** | ● closed | Home layout, `ambient` CLI, config + schema validation. The conventions, as code. |
 | **IMPORT** | ● closed | An **archive** → transcripts + blobs. `archive`, `transcript`, `blobs`, one CLI verb. No credential. Raw only. |
-| **METHOD** | ◐ active | How a slice is built, as skills rather than folklore. `map-slice`, `plan-slice`, `close-slice`, vendored dependencies. **Not product.** |
+| **METHOD** | ● closed | How a slice is built, as skills rather than folklore. `/slice` drives the six steps; `map-slice` … `close-slice` do them. **Not product.** |
 | **INGEST** | ● closed | A **live account** → transcripts + blobs. `channel` hides `whatsappd`; `ingest` owns the order of the writes. `pair · peers · ingest`. **No Cursor** — the Mirror is current state. Raw only. |
-| **KNOWLEDGE** | ○ next | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
+| **KNOWLEDGE** | ◐ active | The OpenKnowledge project, templates, ontology validator/queue/indexer, hand-operated passes → skills. |
 | **HARNESS** | ○ | Pi session construction: `cwd`, model policy, per-session MCP list, skills, typed receipts. |
 | **LOOPS** | ○ | Triggers, cadences, the lease, the job runner. The one place Effect lands. |
 | **CAPABILITIES** | ○ | Chat folders as runtime instances; the reflector MCP; background agents. |
@@ -88,6 +82,12 @@ their rubrics in [../history/grills/003-roadmap-order.md](../history/grills/003-
 ## Ledger
 
 Append-only. Two lines per closed slice, or per pivot. Newest first.
+
+- **2026-08-19** — **METHOD closed.** `/slice` drives the six steps: seven `ls`/`grep` signals,
+  report, ask, dispatch by repository path. Alignment moved to the front of step 1; the deficit
+  register became tickets in [history](../history/method-deficits.md).
+  **Learned: `disable-model-invocation: true` blocks skill-to-skill dispatch, not only a model
+  auto-starting one** — flagging the six step skills would have left the driver unable to call any.
 
 - **2026-08-18** — **INGEST closed.** `channel` binds to `whatsappd`'s durable runtime
   ([ADR 005](../adr/005-channel-binds-to-the-durable-runtime.md)) and Ambient writes nothing

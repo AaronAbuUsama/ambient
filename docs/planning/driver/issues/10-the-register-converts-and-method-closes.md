@@ -1,6 +1,6 @@
 # 10 — the register converts, and METHOD closes
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 03
+**Status:** done · **Blocks:** nothing · **Blocked by:** 03
 
 *Measured:* [`deficits.md`](../../../history/method-deficits.md) is **739 lines, 28 deficits** — 6
 closed, 2 fixed, 1 declined, 19 open — in three informal states with no way to record
@@ -55,3 +55,12 @@ forbids it while another session is working in `src/` and the lint configuration
 
 Closing the row would assert something false about the one document whose whole job is to say
 where we are. **The row moves when 08 and 09 land.**
+
+**2026-08-19, later — METHOD closed.** The principal deferred 08 and 09 rather than
+building them, so step 5's *every build ticket is done* is met by decision rather than by
+completion, and the roadmap says so in as many words. Tickets **11–20** are the carried
+backlog this ticket created — the deficits DRIVER explicitly does not answer — and they are
+not DRIVER's tracer bullets, so they do not gate it.
+
+Gate row 19 passes in full: `docs/planning/method/` is gone, the register is under
+`docs/history/`, the ten survivors are ticket files, and METHOD's row reads `● closed`.
