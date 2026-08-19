@@ -24,6 +24,10 @@ const LONGER = {
   "src/modules/home/home.test.ts":
     "SKELETON's gate plus the `home` interface resolutions later areas add. " +
     "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
+  "src/modules/transcript/transcript.test.ts":
+    "Gate rows 11-13 and the roundtrip gate are one gate on one file format — row 11 asserts " +
+    "the inode the roundtrip rows extend. Splitting it would put half the Transcript gate in a " +
+    "file nobody knows to open, and a seventh file at a module root is not one of the six slots.",
 };
 
 /**

@@ -240,3 +240,100 @@ it("row 13 — two writers never both succeed with one set lost", async () => {
     expect([first, second].filter((result) => "problems" in result)).toHaveLength(1);
   }
 });
+
+// ── the roundtrip gate ────────────────────────────────────────────────
+//
+// The `toEqual`s above cannot see this class of change: `toEqual` treats
+// `{ text: undefined }` and `{}` as identical. Key PRESENCE is what differed in
+// D1, where a shape difference alone rewrote 638 of 1,000 lines — `service.ts:36-43`.
+// Every assertion below is `toStrictEqual`, or bytes.
+
+const RT_AT = Date.parse("2026-08-18T09:00:00Z");
+
+/** Every required key of a `LiveMessage`, and not one optional. */
+const bare = (): LiveMessage => ({
+  from: "live",
+  kind: "message",
+  at: RT_AT,
+  id: "R",
+  who: { id: "1@lid", mode: "lid" },
+  msgKind: "conversation",
+});
+
+/** One case per optional on `LiveMessage` — `types.ts:92-106`. */
+const OPTIONALS = [
+  ["text", { text: "hello" }],
+  ["quoted", { quoted: { id: "Q", from: "1@lid" } }],
+  ["mentions", { mentions: ["2@lid"] }],
+  ["edited", { edited: true }],
+  ["viewOnce", { viewOnce: true }],
+  ["ephemeral", { ephemeral: true }],
+  ["reactions", { reactions: [{ subject: "2@lid", emoji: "🔥" }] }],
+  ["media", { media: { state: "Stored", hash: "a".repeat(64) } }],
+] as const satisfies readonly (readonly [string, Partial<LiveMessage>])[];
+
+for (const [name, extra] of OPTIONALS) {
+  it(`roundtrip — \`${name}\` present survives the file, key for key`, async () => {
+    const transcript = await place();
+    const line: LiveMessage = { ...bare(), ...extra };
+    expect(wrote(await writeTranscript(transcript, [line])).lines).toStrictEqual([line]);
+    expect(await readTranscript(transcript)).toStrictEqual([line]);
+  });
+
+  it(`roundtrip — \`${name}\` absent leaves no key behind`, async () => {
+    const transcript = await place();
+    const line = bare();
+    await writeTranscript(transcript, [line]);
+    const back = await readTranscript(transcript);
+    if ("problems" in back) throw new Error("readTranscript refused the bare line");
+    expect(name in back[0]).toBe(false);
+    expect(back).toStrictEqual([line]);
+  });
+}
+
+it("roundtrip — the bare line writes exactly its six keys, and a re-write is a no-op", async () => {
+  const transcript = await place();
+  const line = bare();
+  expect(wrote(await writeTranscript(transcript, [line]))).toMatchObject({ written: 1 });
+
+  // The bytes, exactly. An `undefined`-valued optional would appear here as a key.
+  expect(fs.readFileSync(transcript.path, "utf8")).toBe(
+    `{"from":"live","kind":"message","at":${RT_AT},"id":"R",` +
+      `"who":{"id":"1@lid","mode":"lid"},"msgKind":"conversation"}\n`,
+  );
+
+  const before = fs.readFileSync(transcript.path);
+  const inode = fs.statSync(transcript.path).ino;
+  expect(wrote(await writeTranscript(transcript, [line]))).toMatchObject({
+    written: 0,
+    skipped: 1,
+  });
+  expect(fs.readFileSync(transcript.path)).toEqual(before);
+  // `same()` at `service.ts:44` — a rewrite renames a whole new file over this one.
+  expect(fs.statSync(transcript.path).ino).toBe(inode);
+});
+
+/**
+ * `encoded(parse(encoded(x))) === encoded(x)`.
+ *
+ * Stated through the public interface rather than over `internal/`, so it still
+ * means this when a codec replaces either side. ADR 006 falsifier 2 is
+ * "`optionalKey` does not encode to the bytes already on disk"; this is the
+ * property that answers it, and 14,045 lines already depend on the answer.
+ */
+it("roundtrip — decoding and re-encoding a line reproduces its bytes, for every optional", async () => {
+  for (const [, extra] of OPTIONALS) {
+    const first = await place();
+    const line: LiveMessage = { ...bare(), ...extra };
+    await writeTranscript(first, [line]);
+    const bytes = fs.readFileSync(first.path, "utf8");
+
+    const back = await readTranscript(first);
+    if ("problems" in back) throw new Error("readTranscript refused a written line");
+
+    const second = await place();
+    await writeTranscript(second, back);
+    expect(fs.readFileSync(second.path, "utf8")).toBe(bytes);
+    expect(back).toStrictEqual([line]);
+  }
+});
