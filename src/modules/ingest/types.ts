@@ -70,7 +70,7 @@ export type IngestRequest = {
 export type RunIngest = (request: IngestRequest) => Promise<IngestReport | IngestFailure>;
 
 /** Rendering lives here, not in `cli`. */
-export type Describe = (problem: IngestProblem) => string;
+export type DescribeIngestProblem = (problem: IngestProblem) => string;
 
 /**
  * The one-line outcome a human reads. `into` is a caller-supplied label — this

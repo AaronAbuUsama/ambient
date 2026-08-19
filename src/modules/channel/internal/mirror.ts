@@ -46,7 +46,7 @@ export const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
 /** A group carries its own subject; a 1:1 is named through the alias map. */
-export const subjectOf = (chat: ChatRecord, snapshot: Snapshot): string => {
+const subjectOf = (chat: ChatRecord, snapshot: Snapshot): string => {
   if (chat.subject !== undefined && chat.subject !== "") return chat.subject;
   const contactId = snapshot.contactAliases[chat.chatId];
   const contact =

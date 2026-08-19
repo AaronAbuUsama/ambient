@@ -1,7 +1,7 @@
 /** The line grammar of an Archive's `_chat.txt`. */
 
 /** Direction marks are removed from values after their structural position is recorded. */
-export const withoutDirectionMarks = (text: string): string => text.replace(/[‎‏‪-‮]/g, "");
+const withoutDirectionMarks = (text: string): string => text.replace(/[‎‏‪-‮]/g, "");
 
 const ENVELOPE = /^\[([^\]]+)\]([\s\S]*)$/;
 const LEADING_DIRECTION_MARKS = /^[‎‏‪-‮]+/;

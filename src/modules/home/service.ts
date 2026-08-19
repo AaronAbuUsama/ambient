@@ -22,7 +22,7 @@ import { readAgent, readChat, readGlobal } from "./internal/read.ts";
 import type {
   AgentHandle,
   ChatHandle,
-  Describe,
+  DescribeHomeProblem,
   HomeProblem,
   OpenHome,
   Place,
@@ -106,4 +106,4 @@ export const openHome: OpenHome = (root) => {
 };
 
 /** Rendering lives in `home`, not in `cli`. */
-export const describe: Describe = rendered;
+export const describe: DescribeHomeProblem = rendered;

@@ -13,7 +13,13 @@ import {
 import { describe as describeBlob, openBlobs } from "~/modules/blobs/service.ts";
 import { describe as describeTranscript, writeTranscript } from "~/modules/transcript/service.ts";
 import { persist } from "./internal/receipt.ts";
-import type { Describe, ImportFailure, ImportProblem, RunImport, Summarise } from "./types.ts";
+import type {
+  DescribeImportProblem,
+  ImportFailure,
+  ImportProblem,
+  RunImport,
+  Summarise,
+} from "./types.ts";
 
 const fail = (problem: ImportProblem): ImportFailure => ({ problems: [problem] });
 
@@ -101,7 +107,7 @@ export const runImport: RunImport = async (request) => {
   };
 };
 
-export const describe: Describe = (problem) => {
+export const describe: DescribeImportProblem = (problem) => {
   switch (problem._tag) {
     case "Unreadable":
       return `the Archive could not be read: ${problem.detail}`;

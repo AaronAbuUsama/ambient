@@ -10,7 +10,13 @@ import { describe as describeChannel, openMirror } from "~/modules/channel/servi
 import { describe as describeTranscript, writeTranscript } from "~/modules/transcript/service.ts";
 import type { TranscriptLine } from "~/modules/transcript/types.ts";
 import { storeMedia } from "./internal/media.ts";
-import type { Describe, IngestFailure, IngestProblem, RunIngest, Summarise } from "./types.ts";
+import type {
+  DescribeIngestProblem,
+  IngestFailure,
+  IngestProblem,
+  RunIngest,
+  Summarise,
+} from "./types.ts";
 
 const fail = (problem: IngestProblem): IngestFailure => ({ problems: [problem] });
 
@@ -71,7 +77,7 @@ export const runIngest: RunIngest = async (request) => {
   };
 };
 
-export const describe: Describe = (problem) => {
+export const describe: DescribeIngestProblem = (problem) => {
   switch (problem._tag) {
     case "ChannelRefused":
       return `the account could not be read: ${problem.detail}`;

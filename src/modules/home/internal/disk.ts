@@ -93,7 +93,7 @@ export type Found =
 
 export type Read = Found | { readonly kind: "text"; readonly text: string };
 
-export const causeOf = (cause: unknown): string =>
+const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
 const real = (p: string): string | undefined => {

@@ -44,7 +44,7 @@ export type SeedBatch = {
 };
 
 /** Media the runtime will consume into its own store, exactly as it does a live one. */
-export const image = (id: string, at: number, caption?: string): InboundMessage => ({
+const image = (id: string, at: number, caption?: string): InboundMessage => ({
   id,
   chatId: PEER,
   sender: { id: PEER, mode: "pn" },
@@ -63,7 +63,7 @@ export const image = (id: string, at: number, caption?: string): InboundMessage 
 });
 
 /** Media WhatsApp will not hand over. The runtime records the failure, not a hole. */
-export const broken = (id: string, at: number): InboundMessage => ({
+const broken = (id: string, at: number): InboundMessage => ({
   id,
   chatId: PEER,
   sender: { id: PEER, mode: "pn" },

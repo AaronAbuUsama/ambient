@@ -88,7 +88,7 @@ export interface ImportRequest {
 export type RunImport = (request: ImportRequest) => Promise<ImportReport | ImportFailure>;
 
 /** Rendering lives here, not in `cli`. */
-export type Describe = (problem: ImportProblem) => string;
+export type DescribeImportProblem = (problem: ImportProblem) => string;
 
 /**
  * The one-line outcome a human reads. `into` is a caller-supplied label for the

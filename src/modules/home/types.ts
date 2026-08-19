@@ -245,4 +245,4 @@ export type Home = {
 export type OpenHome = (root: string) => Home | HomeProblem;
 
 /** Rendering lives here, not in `cli`. */
-export type Describe = (problem: Problem) => string;
+export type DescribeHomeProblem = (problem: Problem) => string;
