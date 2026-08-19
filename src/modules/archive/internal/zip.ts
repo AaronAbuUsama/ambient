@@ -34,6 +34,12 @@ const openedStream = async (
   entry: Entry,
 ): Promise<AsyncIterable<Uint8Array> | ArchiveProblem> => {
   try {
+    // SAFETY: yauzl types this as `Readable`, whose async iterator yields `any`; the
+    // assertion only pins the element type. It is opened with no encoding argument,
+    // and a Node stream without an encoding emits `Buffer` chunks, which are
+    // `Uint8Array`s. The consumer — `blobs.put`, via `hash.update`, `byteLength` and
+    // `writeFile` — reads every chunk as bytes, so a string chunk would be a defect
+    // this type is what catches.
     return (await zip.openReadStreamPromise(entry)) as AsyncIterable<Uint8Array>;
   } catch (cause: unknown) {
     return failed({ _tag: "InvalidZip", cause: causeOf(cause) });

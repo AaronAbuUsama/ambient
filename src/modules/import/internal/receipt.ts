@@ -67,6 +67,13 @@ const atomic = async (
 const existing = async (at: string): Promise<Record<string, unknown> | undefined> => {
   try {
     const parsed: unknown = JSON.parse(await fs.readFile(at, "utf8"));
+    // SAFETY: the guard on this line has established that `parsed` is a non-null
+    // object, and `Record<string, unknown>` claims nothing more than that — a read
+    // by string key yields `unknown`, which holds for every non-null object, arrays
+    // included. It does not claim the keys of a Receipt: the only two reads,
+    // `...prior` and `prior["reruns"]`, keep their values `unknown` and the second
+    // is narrowed by `toReruns` before use. A hand-edited or torn receipt.json is a
+    // wrong Receipt, never an unsound type.
     return typeof parsed === "object" && parsed !== null
       ? (parsed as Record<string, unknown>)
       : undefined;
@@ -123,7 +130,7 @@ export async function persist(
         },
         counts: input.counts,
         findings: input.findings,
-        reruns: [] as readonly unknown[],
+        reruns: [],
       };
 
   const cause = await atomic(at, `${JSON.stringify(receipt, undefined, 2)}\n`, false);

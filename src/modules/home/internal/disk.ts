@@ -17,7 +17,15 @@ import type { Place, ProblemDetail } from "../types.ts";
  * the proven boundary where it is correct: `abs` was built by `home` from a root
  * `home` resolved, out of a name `home` checked.
  */
-export const placeAt = (abs: string): Place => ({ path: abs }) as Place;
+export const placeAt = (abs: string): Place =>
+  // SAFETY: `Place`'s brand is `[place]: true` keyed by `declare const place: unique
+  // symbol` — a phantom that exists in the type system and never at runtime, so there
+  // is no property to construct and `{ path: abs }` is already the whole value. The
+  // assertion adds a compile-time tag to a complete object; it hides nothing. It is
+  // sound *here* and nowhere else because this function is the only mint in the
+  // repository, and the tag's meaning — home made this path, checked its kind, and
+  // will not move it — is exactly what every caller of `placeAt` has established.
+  ({ path: abs }) as Place;
 
 export const at = (...segments: readonly string[]): string => path.join(...segments);
 
