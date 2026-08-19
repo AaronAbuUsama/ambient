@@ -454,3 +454,27 @@ it("roundtrip — a decoded line re-encodes to the exact bytes it came from", as
   expect(fs.readFileSync(second.path, "utf8")).toBe(produced);
   expect(produced).toContain('{"from":"archive","kind":"message"');
 });
+
+/**
+ * A line the reader cannot use is a value, not an exception — errors.md.
+ *
+ * Both ways a row can be unusable arrive at the same answer: bytes that are not
+ * JSON, and JSON that is not a Transcript line. `internal/parse.ts` owns the
+ * distinction and reports neither, because what fixes a torn Transcript is the
+ * line number.
+ */
+it("a complete row that is not a line is a MalformedLine, and never an exception", async () => {
+  const notJson = await place();
+  await writeTranscript(notJson, [bare()]);
+  fs.appendFileSync(notJson.path, "{not json at all}\n");
+  expect(await readTranscript(notJson)).toEqual({
+    problems: [{ _tag: "MalformedLine", line: 2 }],
+  });
+
+  const notALine = await place();
+  await writeTranscript(notALine, [bare()]);
+  fs.appendFileSync(notALine.path, '{"from":"nowhere","kind":"message"}\n');
+  expect(await readTranscript(notALine)).toEqual({
+    problems: [{ _tag: "MalformedLine", line: 2 }],
+  });
+});

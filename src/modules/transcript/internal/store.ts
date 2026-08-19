@@ -33,13 +33,9 @@ export const load = async (place: Place): Promise<LoadResult> => {
   const rows = completeText === "" ? [] : completeText.split("\n").slice(0, -1);
   const lines: TranscriptLine[] = [];
   for (const [index, row] of rows.entries()) {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(row);
-    } catch {
-      return { problem: { _tag: "MalformedLine", line: index + 1 } };
-    }
-    const line = lineOf(parsed);
+    // `lineOf` owns both failures — unparseable JSON and JSON that is not a line
+    // are one answer here, and always have been: the same `MalformedLine`.
+    const line = lineOf(row);
     if (line === undefined) return { problem: { _tag: "MalformedLine", line: index + 1 } };
     lines.push(line);
   }

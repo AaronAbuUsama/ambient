@@ -126,13 +126,21 @@ const decodeLine = Schema.decodeUnknownResult(Line, { onExcessProperty: "error" 
 const encodeLine = Schema.encodeResult(Line);
 
 /**
- * One JSON value to one Transcript line, or nothing.
+ * One row of the file to one Transcript line, or nothing.
  *
- * The caller reports `MalformedLine` with a line number and never a reason, so
- * this stays a yes-or-no: what a person needs in order to fix a torn Transcript
- * is which line, not which key.
+ * It takes the text rather than a parsed value so that `unknown` never crosses a
+ * signature: JSON that will not parse and JSON that is not a line are the same
+ * answer to the caller, which reports `MalformedLine` with a line number and
+ * never a reason. What a person needs in order to fix a torn Transcript is which
+ * line, not which key.
  */
-export const lineOf = (value: unknown): TranscriptLine | undefined => {
+export const lineOf = (row: string): TranscriptLine | undefined => {
+  let value: unknown;
+  try {
+    value = JSON.parse(row);
+  } catch {
+    return undefined;
+  }
   const decoded = decodeLine(value);
   return Result.isFailure(decoded) ? undefined : decoded.success;
 };
