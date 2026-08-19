@@ -139,16 +139,16 @@ it("round-trips Archive event, media, edit and deletion variants", async () => {
     who: { label: "Rex" },
     raw: "Rex added Sam",
   };
-  const shaped: ArchiveMessage = {
+  const annotated: ArchiveMessage = {
     ...message("caption"),
     edited: true,
     deleted: true,
     media: { state: "NoHandle", why: "placeholder" },
   };
-  const result = wrote(await writeTranscript(transcript, [event, shaped]));
-  expect(result.lines).toEqual([event, shaped]);
+  const result = wrote(await writeTranscript(transcript, [event, annotated]));
+  expect(result.lines).toEqual([event, annotated]);
   expect(result.messages).toEqual({ written: 1, skipped: 0 });
-  expect(await readTranscript(transcript)).toEqual([event, shaped]);
+  expect(await readTranscript(transcript)).toEqual([event, annotated]);
 });
 
 // ── Gate rows 11–13 ───────────────────────────────────────────────────
