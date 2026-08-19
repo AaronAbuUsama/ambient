@@ -17,10 +17,10 @@ const failed = (detail: ArchiveProblemDetail): ArchiveProblem => ({ problems: [d
 const causeOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
-const nameOf = (entry: Entry): string | ArchiveProblem => {
+const nameOf = (entry: Entry): { readonly name: string } | ArchiveProblem => {
   try {
     // Measured real export: 0/1,140 entries set ZIP's UTF-8 bit; all raw names are UTF-8.
-    return new TextDecoder("utf-8", { fatal: true }).decode(entry.fileNameRaw);
+    return { name: new TextDecoder("utf-8", { fatal: true }).decode(entry.fileNameRaw) };
   } catch {
     return failed({ _tag: "InvalidFilename" });
   }
@@ -54,23 +54,27 @@ const primaryOf = async (zip: ZipFile, entry: Entry): Promise<Uint8Array | Archi
   }
 };
 
-const textOf = (primary: Uint8Array): string | ArchiveProblem => {
+const textOf = (primary: Uint8Array): { readonly text: string } | ArchiveProblem => {
   try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(primary);
+    return { text: new TextDecoder("utf-8", { fatal: true }).decode(primary) };
   } catch {
     return failed({ _tag: "InvalidText" });
   }
 };
 
-export const looksLikeZip = async (path: string): Promise<boolean | ArchiveProblem> => {
+export const looksLikeZip = async (
+  path: string,
+): Promise<{ readonly zip: boolean } | ArchiveProblem> => {
   let handle: fs.FileHandle | undefined;
   try {
     handle = await fs.open(path, "r");
     const prefix = Buffer.alloc(4);
     const { bytesRead } = await handle.read(prefix, 0, prefix.byteLength, 0);
-    if (bytesRead < 4) return false;
+    if (bytesRead < 4) return { zip: false };
     const signature = prefix.readUInt32LE(0);
-    return signature === 0x04034b50 || signature === 0x06054b50 || signature === 0x08074b50;
+    return {
+      zip: signature === 0x04034b50 || signature === 0x06054b50 || signature === 0x08074b50,
+    };
   } catch (cause: unknown) {
     return failed({ _tag: "Unreadable", cause: causeOf(cause) });
   } finally {
@@ -86,11 +90,12 @@ export const openZip = async (path: string): Promise<OpenedZip | ArchiveProblem>
     const archive = zip;
     const named: { readonly entry: Entry; readonly name: string }[] = [];
     for await (const entry of archive.eachEntry()) {
-      const name = nameOf(entry);
-      if (typeof name !== "string") {
+      const decodedName = nameOf(entry);
+      if ("problems" in decodedName) {
         archive.close();
-        return name;
+        return decodedName;
       }
+      const { name } = decodedName;
       if (name.endsWith("/")) continue;
       if (unsafe(name)) {
         archive.close();
@@ -109,11 +114,12 @@ export const openZip = async (path: string): Promise<OpenedZip | ArchiveProblem>
       archive.close();
       return primary;
     }
-    const source = textOf(primary);
-    if (typeof source !== "string") {
+    const decoded = textOf(primary);
+    if ("problems" in decoded) {
       archive.close();
-      return source;
+      return decoded;
     }
+    const source = decoded.text;
     const media = named
       .filter(({ entry }) => entry !== transcript.entry)
       .map(

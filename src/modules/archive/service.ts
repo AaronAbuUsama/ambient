@@ -124,19 +124,19 @@ const failed = (cause: unknown): ArchiveProblem => ({
   problems: [{ _tag: "Unreadable", cause: cause instanceof Error ? cause.message : String(cause) }],
 });
 
-const hashFile = async (path: string): Promise<string | ArchiveProblem> => {
+const hashFile = async (path: string): Promise<{ readonly sha256: string } | ArchiveProblem> => {
   try {
     const hash = createHash("sha256");
     for await (const chunk of createReadStream(path)) hash.update(chunk);
-    return hash.digest("hex");
+    return { sha256: hash.digest("hex") };
   } catch (cause: unknown) {
     return failed(cause);
   }
 };
 
-const textOf = (primary: Uint8Array): string | ArchiveProblem => {
+const textOf = (primary: Uint8Array): { readonly text: string } | ArchiveProblem => {
   try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(primary);
+    return { text: new TextDecoder("utf-8", { fatal: true }).decode(primary) };
   } catch {
     return { problems: [{ _tag: "InvalidText" }] };
   }
@@ -144,10 +144,10 @@ const textOf = (primary: Uint8Array): string | ArchiveProblem => {
 
 export const openArchive: OpenArchive = async (path, zone) => {
   const zip = await looksLikeZip(path);
-  if (typeof zip !== "boolean") return zip;
-  if (zip) {
-    const sha256 = await hashFile(path);
-    if (typeof sha256 !== "string") return sha256;
+  if ("problems" in zip) return zip;
+  if (zip.zip) {
+    const hashed = await hashFile(path);
+    if ("problems" in hashed) return hashed;
     const opened = await openZip(path);
     if ("problems" in opened) return opened;
     const read = readArchive(opened.text, zone);
@@ -155,13 +155,13 @@ export const openArchive: OpenArchive = async (path, zone) => {
       opened.close();
       return read;
     }
-    return { ...opened, sha256, readerVersion: 2, read };
+    return { ...opened, sha256: hashed.sha256, readerVersion: 2, read };
   }
   try {
     const primary = Uint8Array.from(await fs.readFile(path));
-    const text = textOf(primary);
-    if (typeof text !== "string") return text;
-    const read = readArchive(text, zone);
+    const decoded = textOf(primary);
+    if ("problems" in decoded) return decoded;
+    const read = readArchive(decoded.text, zone);
     return "problems" in read
       ? read
       : {
