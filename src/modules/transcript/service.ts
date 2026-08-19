@@ -1,9 +1,8 @@
 /** `transcript` assembly. The interface is `types.ts`. */
 
 import type { Place } from "~/modules/home/types.ts";
-import { keyOf } from "./internal/key.ts";
-import { bytesOf } from "./internal/parse.ts";
 import { acquire } from "./internal/lock.ts";
+import { reconcile } from "./internal/reconcile.ts";
 import { append, load, replace } from "./internal/store.ts";
 import type {
   DescribeTranscriptProblem,
@@ -13,40 +12,6 @@ import type {
   TranscriptWrite,
   WriteTranscript,
 } from "./types.ts";
-
-/**
- * Stored bytes are never given back. A Blob is content-addressed and immutable, so a
- * later `Failed` is a statement about *fetching* and not about the bytes we already
- * hold — whichever Reader produced the line.
- *
- * This used to require `from === "archive"` on both sides, which made it a no-op for
- * a Live line: a re-delivery whose media had not been fetched overwrote a stored hash
- * while the call reported `written: 0`. Defect D2, gate row 12.
- */
-const merged = (stored: TranscriptLine, incoming: TranscriptLine): TranscriptLine =>
-  stored.kind === "message" &&
-  incoming.kind === "message" &&
-  stored.media?.state === "Stored" &&
-  incoming.media?.state !== "Stored"
-    ? { ...incoming, media: stored.media }
-    : incoming;
-
-/**
- * Key order is not a change, and it is no longer this function's problem.
- *
- * `stored` was rebuilt by `internal/store.ts` from what is on disk; `next` is the
- * caller's own object. Comparing the two with `JSON.stringify` let a field ordering
- * difference alone set `changed`, and `changed` renames a whole new file over this
- * one — on 638 of 1,000 lines, measured. Defect D1, gate row 11.
- *
- * The fix was a key-sorting replacer: sort both sides, then compare. It worked, but
- * it treated the symptom — two producers of one type that could disagree about
- * shape. `internal/parse.ts` now holds one declaration that both decodes and
- * encodes, so `bytesOf` is canonical by construction and equal lines are equal
- * strings. ADR 006 step 3; the sorter is what it removes.
- */
-const same = (stored: TranscriptLine, next: TranscriptLine): boolean =>
-  bytesOf(stored) === bytesOf(next);
 
 export const readTranscript: ReadTranscript = async (place) => {
   const loaded = await load(place);
@@ -60,46 +25,8 @@ const write = async (
   const loaded = await load(place);
   if ("problem" in loaded) return { problems: [loaded.problem] };
 
-  const positions = new Map<string, number[]>();
-  for (const [index, line] of loaded.lines.entries()) {
-    const key = keyOf(line);
-    const found = positions.get(key) ?? [];
-    found.push(index);
-    positions.set(key, found);
-  }
-
-  const occurrences = new Map<string, number>();
-  const lines: TranscriptLine[] = [...loaded.lines];
-  const additions: TranscriptLine[] = [];
-  let written = 0;
-  let skipped = 0;
-  let messagesWritten = 0;
-  let messagesSkipped = 0;
-  let changed = false;
-
-  for (const line of incoming) {
-    const key = keyOf(line);
-    const occurrence = occurrences.get(key) ?? 0;
-    occurrences.set(key, occurrence + 1);
-    const index = positions.get(key)?.[occurrence];
-    if (index === undefined) {
-      const next = lines.length;
-      lines.push(line);
-      additions.push(line);
-      positions.set(key, [...(positions.get(key) ?? []), next]);
-      written++;
-      if (line.kind === "message") messagesWritten++;
-      continue;
-    }
-    skipped++;
-    if (line.kind === "message") messagesSkipped++;
-    const next = merged(lines[index]!, line);
-    if (!same(lines[index]!, next)) {
-      lines[index] = next;
-      changed = true;
-    }
-  }
-
+  const { lines, additions, written, skipped, messagesWritten, messagesSkipped, changed } =
+    reconcile(loaded.lines, incoming);
   const messages = { written: messagesWritten, skipped: messagesSkipped };
   if (written === 0 && !changed && !loaded.torn) return { written, skipped, messages, lines };
   const problem = changed ? await replace(place, lines) : await append(place, loaded, additions);
