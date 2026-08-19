@@ -9,6 +9,7 @@ import type { Place } from "~/modules/home/types.ts";
 import { readTranscript, writeTranscript } from "./service.ts";
 import type {
   ArchiveEvent,
+  ArchiveLine,
   ArchiveMessage,
   LiveMedia,
   LiveMessage,
@@ -321,19 +322,135 @@ it("roundtrip — the bare line writes exactly its six keys, and a re-write is a
  * "`optionalKey` does not encode to the bytes already on disk"; this is the
  * property that answers it, and 14,045 lines already depend on the answer.
  */
-it("roundtrip — decoding and re-encoding a line reproduces its bytes, for every optional", async () => {
+it("roundtrip — the reader's form is a fixed point of encode-decode, for every optional", async () => {
   for (const [, extra] of OPTIONALS) {
-    const first = await place();
     const line: LiveMessage = { ...bare(), ...extra };
+    const first = await place();
     await writeTranscript(first, [line]);
-    const bytes = fs.readFileSync(first.path, "utf8");
-
     const back = await readTranscript(first);
     if ("problems" in back) throw new Error("readTranscript refused a written line");
+    expect(back).toStrictEqual([line]);
 
     const second = await place();
     await writeTranscript(second, back);
-    expect(fs.readFileSync(second.path, "utf8")).toBe(bytes);
-    expect(back).toStrictEqual([line]);
+    const once = fs.readFileSync(second.path, "utf8");
+    const again = await readTranscript(second);
+    if ("problems" in again) throw new Error("readTranscript refused a re-written line");
+
+    const third = await place();
+    await writeTranscript(third, again);
+    expect(fs.readFileSync(third.path, "utf8")).toBe(once);
   }
+});
+
+// ── the roundtrip gate, Archive side ──────────────────────────────────
+//
+// `internal/classify.ts` builds an `ArchiveMessage` and is a fourth producer of
+// this format, beside `parse.ts` decoding, `internal/store.ts` encoding and
+// `channel/internal/line.ts`. It writes through the same `writeTranscript`, so it
+// carries the same D1 risk and had no gate at all — and of the 14,045 lines
+// already on disk, the Archive path wrote 13,134 of them.
+
+/** Every required key of an `ArchiveMessage`, and not one optional. */
+const bareArchive = (): ArchiveMessage => ({
+  from: "archive",
+  kind: "message",
+  wall: "14/02/2025, 4:06:10 PM",
+  at: RT_AT,
+  zone: "Africa/Accra",
+  who: { label: "Rex" },
+  text: "hello",
+});
+
+/** Every required key of an `ArchiveEvent`, and not one optional. */
+const bareEvent = (): ArchiveEvent => ({
+  from: "archive",
+  kind: "event",
+  wall: "14/02/2025, 4:05:10 PM",
+  at: RT_AT,
+  zone: "Africa/Accra",
+  event: "added",
+  who: { label: "Rex" },
+  raw: "Rex added Sam",
+});
+
+/** One case per optional on `ArchiveMessage` and `ArchiveEvent` — `types.ts:11-52`. */
+const ARCHIVE_OPTIONALS = [
+  ["edited", (): ArchiveLine => ({ ...bareArchive(), edited: true }), bareArchive],
+  ["deleted", (): ArchiveLine => ({ ...bareArchive(), deleted: true }), bareArchive],
+  [
+    "media",
+    (): ArchiveLine => ({ ...bareArchive(), media: { state: "NoHandle", why: "placeholder" } }),
+    bareArchive,
+  ],
+  ["subject", (): ArchiveLine => ({ ...bareEvent(), subject: "Dinner" }), bareEvent],
+] as const satisfies readonly (readonly [string, () => ArchiveLine, () => ArchiveLine])[];
+
+for (const [name, withIt, without] of ARCHIVE_OPTIONALS) {
+  it(`roundtrip — Archive \`${name}\` present survives the file, key for key`, async () => {
+    const transcript = await place();
+    const line = withIt();
+    expect(wrote(await writeTranscript(transcript, [line])).lines).toStrictEqual([line]);
+    expect(await readTranscript(transcript)).toStrictEqual([line]);
+  });
+
+  it(`roundtrip — Archive \`${name}\` absent leaves no key behind`, async () => {
+    const transcript = await place();
+    const line = without();
+    await writeTranscript(transcript, [line]);
+    const back = await readTranscript(transcript);
+    if ("problems" in back) throw new Error("readTranscript refused a bare Archive line");
+    expect(name in back[0]).toBe(false);
+    expect(back).toStrictEqual([line]);
+  });
+}
+
+it("roundtrip — an Archive line's reader form is a fixed point too", async () => {
+  for (const [, withIt] of ARCHIVE_OPTIONALS) {
+    const line = withIt();
+    const first = await place();
+    await writeTranscript(first, [line]);
+    const back = await readTranscript(first);
+    if ("problems" in back) throw new Error("readTranscript refused a written Archive line");
+    expect(back).toStrictEqual([line]);
+
+    const second = await place();
+    await writeTranscript(second, back);
+    const once = fs.readFileSync(second.path, "utf8");
+    const again = await readTranscript(second);
+    if ("problems" in again) throw new Error("readTranscript refused a re-written Archive line");
+
+    const third = await place();
+    await writeTranscript(third, again);
+    expect(fs.readFileSync(third.path, "utf8")).toBe(once);
+  }
+});
+
+/**
+ * The producer's bytes are not the reader's, and the file holds the producer's.
+ *
+ * `classify.ts` writes `kind` second; `internal/parse.ts` rebuilds it sixth, after
+ * the `common` block. Same keys, same values, different order — so no line read
+ * back can regenerate the bytes it came from. `same()` sorts before comparing, so
+ * nothing rewrites and the system is correct; but 13,134 Archive lines sit on disk
+ * in an order nothing can reproduce, and ADR 006 falsifier 2 — "`optionalKey` does
+ * not encode to the bytes already on disk" — has to answer *which* bytes. This row
+ * exists so that fact is pinned rather than rediscovered.
+ */
+it("roundtrip — the Archive producer's key order is not the reader's, and the file has the producer's", async () => {
+  const line: ArchiveLine = { ...bareArchive(), edited: true };
+  const first = await place();
+  await writeTranscript(first, [line]);
+  const produced = fs.readFileSync(first.path, "utf8");
+
+  const back = await readTranscript(first);
+  if ("problems" in back) throw new Error("readTranscript refused the Archive line");
+  const second = await place();
+  await writeTranscript(second, back);
+  const reread = fs.readFileSync(second.path, "utf8");
+
+  expect(reread).not.toBe(produced);
+  expect(JSON.parse(reread.trim())).toStrictEqual(JSON.parse(produced.trim()));
+  expect(produced).toContain('{"from":"archive","kind":"message"');
+  expect(reread).toContain('"who":{"label":"Rex"},"kind":"message"');
 });
