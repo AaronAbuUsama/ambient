@@ -11,7 +11,7 @@ start a step until its gate passes.**
 
 | # | Step | Produces | Gate — move on when |
 |---|---|---|---|
-| 1 | **Map** | `docs/planning/<slice>/scope.md` | the destination is named, and every open question is either kinded or in the fog |
+| 1 | **Map** | `docs/planning/<slice>/scope.md` | **the principal agreed the destination and the shape of the questions before anything was measured or dispatched**, the destination is named, and every open question is either kinded or in the fog |
 | 2 | **Design** | `design.md` | every public symbol in it has a call site in it, the seam delta is written, and **every `grilling` question names a block of it** |
 | 3 | **Work the frontier** | answers, appended to **Decided** | **Open and Fog are both empty.** That is the way being clear |
 | 4 | **Plan** | `spec.md` + the build tickets | every build ticket exists and declares its blockers |
@@ -38,6 +38,17 @@ running a step bare is what the driver exists to stop.
 
 **The destination is named first**, because it fixes the scope and everything else is judged
 against it.
+
+**And it is agreed before anything is spent.** Draft the destination, the questions you
+think are open with their kinds, and the fog you think is there — then **stop and get
+agreement**. Nothing is measured and nothing is dispatched before it, including a `research`
+subagent. Alignment produces agreement, not an artefact, which is why this is still six
+steps and not seven.
+
+*Measured on DRIVER:* two of the three questions its own map classified as `research` the
+principal answered from memory in one sentence, and a subagent dispatched for a third died
+after 600 seconds having read nothing. **Out of scope is agreed here too** — the map can
+permanently delete scope, and that is a decision, not an assertion the agent gets to make.
 
 **The fog test is whether you can state the question precisely now — not whether you can
 answer it.** Sharp enough to phrase goes in Open; anything coarser stays in Fog and

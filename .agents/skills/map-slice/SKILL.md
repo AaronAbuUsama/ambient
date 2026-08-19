@@ -29,7 +29,39 @@ informative than one that was not.
 One or two lines: what reaching the end of this slice looks like. **It fixes the scope**, so
 everything else is judged against it, and *out of scope* means nothing until it exists.
 
-## 2 · Find the facts — this is the bulk of the work
+## 2 · Align before you spend anything
+
+**Draft it, then stop.** Put up the destination, the questions you *think* are open each
+with its kind, the fog you *think* is there, and what you propose is out of scope. Say how
+many would go out as `research` subagents, and how many only the principal can answer.
+
+```
+Before anything is spent — here is what I think this slice is, and what I think is open.
+React to it; nothing is dispatched until you do.
+
+  Destination   <two lines, drafted from roadmap.md and product.md>
+  Probably open <n questions, drafted, each with a kind>
+  Probably fog  <n patches>
+  Out of scope  <what this deliberately does not reach>
+
+  Of those, 3 are `research` and would go out to background agents now.
+  2 are yours and nobody else can answer them.
+
+Agreed? [y / amend / not yet]
+```
+
+**Nothing before that `y`.** No measuring, no tracing, and above all **no `research`
+subagent** — dispatching one is spending, and this gate exists because spending happened
+before agreement.
+
+*Measured on DRIVER:* two of the three questions its own map called `research` the principal
+answered from memory in one sentence, and a subagent dispatched for a third died after 600
+seconds having read nothing.
+
+**Out of scope is agreed here, not asserted.** The map can permanently delete scope, and
+that is a decision.
+
+## 3 · Find the facts — this is the bulk of the work
 
 **Facts are your job. Decisions are the principal's.** Never ask for something you can
 measure.
@@ -45,7 +77,7 @@ measure.
 - **Doubt a measurement that contradicts what the principal knows about their own data.**
   Three times in one session he was right and the measurement was wrong.
 
-## 3 · Write `scope.md` — five headings, no others
+## 4 · Write `scope.md` — five headings, no others
 
 ```markdown
 ## Destination     one or two lines
@@ -91,9 +123,10 @@ pieces**; one patch may graduate into several questions, or none.
 **An open question is a line, not a file.** It becomes a file only if it must outlive this
 session or run AFK in parallel.
 
-## 4 · Fire the research
+## 5 · Fire the research
 
-For each `research` question, dispatch a subagent using the vendored
+**Behind the gate at § 2, never before it.** For each `research` question the principal
+agreed to, dispatch a subagent using the vendored
 [`research`](../vendor/research/SKILL.md) skill. They are AFK and parallel —
 nobody is waiting on them, and they are the exception to one-decision-per-session.
 

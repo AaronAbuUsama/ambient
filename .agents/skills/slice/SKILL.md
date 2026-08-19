@@ -158,6 +158,40 @@ design — goes under *What this step decided*. That is its one home.
 
 ---
 
+## `/slice chart <NAME>` — start a slice
+
+Charting is the **front of the whole process**, and it is where alignment happens.
+
+Read the slice's row and its dependency edges in `docs/design/roadmap.md`, and
+`docs/design/product.md` for what it owns. Then **draft, and stop**:
+
+```
+KNOWLEDGE is `○ next` on the roadmap, and depends on IMPORT ● and INGEST ●, both closed.
+MEDIA is `○ off-path` and the roadmap says trusting KNOWLEDGE waits on it.
+
+Before anything is spent — here is what I think this slice is, and what I think is open.
+React to it; nothing is dispatched until you do.
+
+  Destination   <two lines, drafted from roadmap.md and product.md>
+  Probably open <n questions, drafted, each with a kind>
+  Probably fog  <n patches>
+  Out of scope  <what this deliberately does not reach>
+
+  Of those, 3 are `research` and would go out to background agents now.
+  2 are yours and nobody else can answer them.
+
+Agreed? [y / amend / not yet]
+```
+
+**Nothing is dispatched before that `y` — including a `research` subagent.** Dispatching one
+is spending. Only after agreement does `.agents/skills/map-slice/SKILL.md` run, and it
+carries the same gate so alignment happens whether or not this skill was the caller.
+
+**Create no directory here.** Charting produces agreement, not an artefact. `scope.md` is
+written by the map, at step 1, after the gate.
+
+---
+
 ## Failure branches
 
 Each is a value the reader sees, not an exception.

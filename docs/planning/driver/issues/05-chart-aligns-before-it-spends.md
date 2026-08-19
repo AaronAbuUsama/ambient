@@ -1,6 +1,6 @@
 # 05 — `/slice chart <NAME>` aligns before it spends
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 02
+**Status:** done · **Blocks:** nothing · **Blocked by:** 02
 
 *Measured, on this slice:* **two of the three `research` questions its own map raised, the
 principal answered from memory in one sentence** — and one subagent dispatched for a third
