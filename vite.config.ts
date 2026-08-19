@@ -24,16 +24,16 @@ export default defineConfig({
   // symlinked projection of `.agents/skills/`, so both names are listed — exclude one and
   // the tools find the same files by the other. We format and lint what we author.
   fmt: {
-    ignorePatterns: ["**/*.md", ".agents/skills/vendor/**", "tools/oxlint/anti-slop/**"],
+    ignorePatterns: ["**/*.md", ".agents/skills/vendor/**", "tools/**"],
   },
   lint: {
-    // The vendored skills are upstream source we never run. `tools/oxlint/anti-slop/` IS run —
-    // it is the plugin itself — but linting a plugin with itself is circular, so it is ignored
-    // as a target while being loaded as a rule source.
-    ignorePatterns: [".agents/skills/vendor/**", ".claude/skills/**", "tools/oxlint/anti-slop/**"],
+    // The vendored skills are upstream source we never run. `tools/` IS run — it is the
+    // anti-slop plugin itself — but linting a plugin with itself is circular, so it is
+    // ignored as a target while being loaded as a rule source.
+    ignorePatterns: [".agents/skills/vendor/**", ".claude/skills/**", "tools/**"],
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
-      { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+      { name: "anti-slop", specifier: "./tools/index.ts" },
     ],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.

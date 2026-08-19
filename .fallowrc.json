@@ -1,0 +1,4 @@
+{
+  "$schema": "https://docs.fallow.tools/schema/config.json",
+  "ignorePatterns": [".agents/skills/vendor/**", ".claude/skills/**", "tools/**"]
+}
