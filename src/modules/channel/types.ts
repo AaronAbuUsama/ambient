@@ -20,6 +20,7 @@
 
 import type { Place } from "~/modules/home/types.ts";
 import type { LiveMessage } from "~/modules/transcript/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 /**
  * Where one Source's durable state lives. `home` grants both Places and `channel`
@@ -174,8 +175,8 @@ export type PairRequest = {
 export type Pair = (request: PairRequest) => Promise<PairReport | ChannelProblem>;
 
 /** Rendering lives here, not in `cli`. */
-export type DescribeChannelProblem = (problem: ChannelProblemDetail) => string;
-export type DescribePairProgress = (progress: PairProgress) => string;
+export type DescribeChannelProblem = Describe<ChannelProblemDetail>;
+export type DescribePairProgress = Describe<PairProgress>;
 
 /** `into` is a caller-supplied label. This module has no idea what a Source is named. */
 export type SummarisePair = (report: PairReport, into: string) => string;

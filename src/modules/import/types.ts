@@ -20,6 +20,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 /** What one import did. Counts, never content — nothing here is a Message. */
 export interface ImportReport {
@@ -88,7 +89,7 @@ export interface ImportRequest {
 export type RunImport = (request: ImportRequest) => Promise<ImportReport | ImportFailure>;
 
 /** Rendering lives here, not in `cli`. */
-export type DescribeImportProblem = (problem: ImportProblem) => string;
+export type DescribeImportProblem = Describe<ImportProblem>;
 
 /**
  * The one-line outcome a human reads. `into` is a caller-supplied label for the

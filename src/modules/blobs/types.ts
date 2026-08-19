@@ -5,6 +5,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 export type BlobHash = string;
 export type BlobBytes = Uint8Array | AsyncIterable<Uint8Array>;
@@ -31,4 +32,4 @@ export type Blobs = {
 };
 
 export type OpenBlobs = (root: Place) => Blobs;
-export type DescribeBlobProblem = (problem: BlobProblemDetail) => string;
+export type DescribeBlobProblem = Describe<BlobProblemDetail>;

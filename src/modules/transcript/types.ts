@@ -7,6 +7,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 export type ArchiveMessage = {
   readonly from: "archive";
@@ -130,4 +131,4 @@ export type ReadTranscript = (
   place: Place,
 ) => Promise<readonly TranscriptLine[] | TranscriptProblem>;
 
-export type DescribeTranscriptProblem = (problem: TranscriptProblemDetail) => string;
+export type DescribeTranscriptProblem = Describe<TranscriptProblemDetail>;

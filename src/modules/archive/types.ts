@@ -5,6 +5,7 @@
  */
 
 import type { ArchiveLine } from "~/modules/transcript/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 export type UnparsedLine = {
   /** 1-based line number in the Archive's `_chat.txt`. */
@@ -68,4 +69,4 @@ export type OpenArchive = (path: string, zone: string) => Promise<OpenedArchive 
 
 export type ResolveMedia = (read: ArchiveRead, hashes: ReadonlyMap<string, string>) => ArchiveRead;
 
-export type DescribeArchiveProblem = (problem: ArchiveProblemDetail) => string;
+export type DescribeArchiveProblem = Describe<ArchiveProblemDetail>;

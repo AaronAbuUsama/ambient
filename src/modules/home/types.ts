@@ -15,6 +15,8 @@
  * `"problems" in result`.
  */
 
+import type { Describe } from "~/modules/failure/types.ts";
+
 // ── how a path escapes ────────────────────────────────────────────────
 
 declare const place: unique symbol;
@@ -245,4 +247,4 @@ export type Home = {
 export type OpenHome = (root: string) => Home | HomeProblem;
 
 /** Rendering lives here, not in `cli`. */
-export type DescribeHomeProblem = (problem: Problem) => string;
+export type DescribeHomeProblem = Describe<Problem>;

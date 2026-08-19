@@ -27,3 +27,16 @@ export type CauseOf = (cause: unknown) => string;
  * is worth a shared name until a second question is asked twice.
  */
 export type IsMissing = (cause: unknown) => boolean;
+
+/**
+ * Rendering one declared value as the line a person reads.
+ *
+ * Every module renders its own — `cli` prints what a module hands it and never
+ * knows what can go wrong inside it. The shape of that job was written out eight
+ * times; it is written here once, and each module still names its own in its own
+ * `types.ts`, so a reader still learns the whole interface from one file.
+ *
+ * It is not only for a Failure. `channel` renders pairing progress with it, which
+ * is the same job — one declared value in, one line out.
+ */
+export type Describe<D> = (detail: D) => string;

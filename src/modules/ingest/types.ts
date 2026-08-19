@@ -15,6 +15,7 @@
 
 import type { Account } from "~/modules/channel/types.ts";
 import type { Place } from "~/modules/home/types.ts";
+import type { Describe } from "~/modules/failure/types.ts";
 
 /** What one ingest did. Counts, never content — nothing here is a Message. */
 export type IngestReport = {
@@ -70,7 +71,7 @@ export type IngestRequest = {
 export type RunIngest = (request: IngestRequest) => Promise<IngestReport | IngestFailure>;
 
 /** Rendering lives here, not in `cli`. */
-export type DescribeIngestProblem = (problem: IngestProblem) => string;
+export type DescribeIngestProblem = Describe<IngestProblem>;
 
 /**
  * The one-line outcome a human reads. `into` is a caller-supplied label — this
