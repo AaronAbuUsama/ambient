@@ -8,6 +8,7 @@
 
 import * as fs from "node:fs";
 import * as os from "node:os";
+import * as ts from "typescript";
 import { afterEach, expect, it } from "vite-plus/test";
 
 import { describe as render, openHome } from "./service.ts";
@@ -255,9 +256,28 @@ it("17 · home opens no file whose size is bounded by traffic", () => {
   ]);
 });
 
+/**
+ * A `throw` *statement*, asked of the syntax tree.
+ *
+ * This assertion used to be `/\bthrow\b/` over the file's text, which matches the
+ * word in a comment or a string — it failed the repository on 2026-08-19 over prose
+ * reading "the honest fallback rather than a throw". `contract/no-throw` under
+ * `vp check` is the primary instrument now; this gate row keeps asserting the same
+ * invariant from inside the suite, and uses a parser so that it agrees with it.
+ */
+const throwsIn = (text: string): boolean => {
+  const parsed = ts.createSourceFile("gate.ts", text, ts.ScriptTarget.ESNext, true);
+  let found = false;
+  const walk = (node: ts.Node): void => {
+    if (ts.isThrowStatement(node)) found = true;
+    else node.forEachChild(walk);
+  };
+  walk(parsed);
+  return found;
+};
+
 it("18 · every failure is a declared value, never a throw", () => {
-  // The bare verb only: prose may still say "throws" or "throwing".
-  const offenders = sources().filter((f) => /\bthrow\b/.test(f.text));
+  const offenders = sources().filter((f) => throwsIn(f.text));
   expect(offenders.map((f) => f.rel)).toEqual([]);
 });
 

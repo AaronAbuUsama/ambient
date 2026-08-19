@@ -546,3 +546,31 @@ subtraction that stops axis one spending its 400 words on findings `vp check` al
 - **Whether `/code-review` resolves at all.** [`scope.md`](../scope.md):181–187 records that it
   does not — it resolves to a harness built-in with the same name and a different job, and
   seven of nine vendored skills are dangling. That is S1's, not R3's.
+
+---
+
+## Addendum · 2026-08-19, after ticket 08
+
+**§2.2's table and §2.3's summary are as measured before `d440bc1`, and three rows have
+moved.** They are left standing rather than edited — a findings file is evidence with a date
+on it. This is the re-measurement, and it is the list ticket 09 must carry.
+
+*Instrument: `grep -cE '^\s+"[a-z-]+/[a-z-]+": "error"' vite.config.ts` → **21** (15
+`anti-slop`, 4 `contract`, `typescript/no-explicit-any`, `vite-plus/prefer-vite-plus-imports`);
+`vp run shape` read top to bottom.*
+
+| # | Rule | Was | Is now |
+|---|---|---|---|
+| 4 | [imports.md](../../../rules/imports.md) | `shape.ts`, both clauses | **oxlint** — `contract/no-relative-escape`, `contract/no-foreign-internal`. Read off the import specifier, so a doc-comment link and a `${import.meta.dirname}/../..` no longer count |
+| 5 | [errors.md](../../../rules/errors.md) | `shape.ts`, no `throw` | **oxlint** — `contract/no-throw`, on a `ThrowStatement`. `vp test` gate 18 asserts the same invariant and now parses rather than greps |
+| 8 | [legibility.md](../../../rules/legibility.md) | `shape.ts`, rule 1 | **oxlint** — `contract/file-length`. `shape.ts` keeps the stale-exception-row half, which needs a walk of the tree |
+
+**Summary, re-measured.** oxlint touches **4** of the 12 rules (`types`, `imports`, `errors`,
+`legibility`) — was 1. `shape.ts` touches **2** substantively (`modules`, and `legibility`'s
+exception list) plus the seam-row check and the cross-link check, which applies to every
+document rule and validates no rule's content — was 4.
+
+**What has not moved, and is the whole of 09's case.** Seven rules — `language`, `slices`,
+`effect`, `knowledge`, `issues`, `decisions`, `artefacts` — still have **no mechanical check on
+any clause**, and all twelve still have at least one unchecked clause. Ticket 08 made four
+checks better instruments; it made none of the seven checked.
