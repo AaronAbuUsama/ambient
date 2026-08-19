@@ -93,10 +93,11 @@ export type Found =
 
 export type Read = Found | { readonly kind: "text"; readonly text: string };
 
-export const causeOf = (e: unknown): string => (e instanceof Error ? e.message : String(e));
+export const causeOf = (cause: unknown): string =>
+  cause instanceof Error ? cause.message : String(cause);
 
-const codeOf = (e: unknown): string =>
-  e instanceof Error && "code" in e && typeof e.code === "string" ? e.code : "";
+const codeOf = (cause: unknown): string =>
+  cause instanceof Error && "code" in cause && typeof cause.code === "string" ? cause.code : "";
 
 const real = (p: string): string | undefined => {
   try {
