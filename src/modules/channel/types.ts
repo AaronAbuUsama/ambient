@@ -20,7 +20,7 @@
 
 import type { Place } from "~/modules/home/types.ts";
 import type { LiveMessage } from "~/modules/transcript/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 /**
  * Where one Source's durable state lives. `home` grants both Places and `channel`
@@ -103,7 +103,7 @@ export type ChannelProblemDetail =
       readonly after: string;
     };
 
-export type ChannelProblem = { readonly problems: readonly ChannelProblemDetail[] };
+export type ChannelProblem = Problems<ChannelProblemDetail>;
 
 /**
  * One account's mirror, open. Each read runs in **one** transaction, so a page

@@ -20,7 +20,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 /** What one import did. Counts, never content — nothing here is a Message. */
 export interface ImportReport {
@@ -57,9 +57,7 @@ export type ImportProblem =
   /** The Receipt or the primary source could not be persisted — the import is NOT durable. */
   | { readonly _tag: "ReceiptUnwritable"; readonly cause: string };
 
-export interface ImportFailure {
-  readonly problems: readonly ImportProblem[];
-}
+export type ImportFailure = Problems<ImportProblem>;
 
 /**
  * What the caller must supply. `home` grants both places; `import` never builds a path.

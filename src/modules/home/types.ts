@@ -15,7 +15,7 @@
  * `"problems" in result`.
  */
 
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 // ── how a path escapes ────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ export type ProblemDetail =
 export type Problem = { readonly at: string; readonly detail: ProblemDetail };
 
 /** Why `home` said no — to a read, or to a `Place`. Narrow with `"problems" in result`. */
-export type HomeProblem = { readonly problems: readonly Problem[] };
+export type HomeProblem = Problems<Problem>;
 
 // ── the values a unit reads as ────────────────────────────────────────
 

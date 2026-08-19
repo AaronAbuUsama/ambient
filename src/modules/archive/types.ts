@@ -5,7 +5,7 @@
  */
 
 import type { ArchiveLine } from "~/modules/transcript/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 export type UnparsedLine = {
   /** 1-based line number in the Archive's `_chat.txt`. */
@@ -42,7 +42,7 @@ export type ArchiveProblemDetail =
   | { readonly _tag: "UnsafeEntry"; readonly name: string }
   | { readonly _tag: "MissingChatText" };
 
-export type ArchiveProblem = { readonly problems: readonly ArchiveProblemDetail[] };
+export type ArchiveProblem = Problems<ArchiveProblemDetail>;
 
 /** `text` is the complete `_chat.txt`; `zone` is an IANA Zone name. */
 export type ReadArchive = (text: string, zone: string) => ArchiveRead | ArchiveProblem;

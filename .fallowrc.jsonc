@@ -13,6 +13,11 @@
   // importers all live there.
   "ignoreFindings": ["tools/**"],
   "duplicates": { "ignore": ["tools/**"] },
+  // …and out of the health score, for the same reason. Its 64 complex functions are
+  // upstream's to answer for; measuring our maintainability against them says nothing
+  // we can act on. `health.ignore` drops them from the score without dropping the
+  // files from the module graph, which `ignorePatterns` would.
+  "health": { "ignore": ["tools/**"] },
 
   // `@libsql/client` is a peerDependency of `whatsappd` that we are required to
   // supply; "never imported" is the wrong test for a peer. `@oxlint/plugins` is

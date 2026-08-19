@@ -5,7 +5,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 export type BlobHash = string;
 export type BlobBytes = Uint8Array | AsyncIterable<Uint8Array>;
@@ -16,7 +16,7 @@ export type BlobProblemDetail =
   | { readonly _tag: "Unreadable"; readonly cause: string }
   | { readonly _tag: "Unwritable"; readonly cause: string };
 
-export type BlobProblem = { readonly problems: readonly BlobProblemDetail[] };
+export type BlobProblem = Problems<BlobProblemDetail>;
 
 export type PutBlobResult = {
   readonly hash: BlobHash;

@@ -7,7 +7,7 @@
  */
 
 import type { Place } from "~/modules/home/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 export type ArchiveMessage = {
   readonly from: "archive";
@@ -113,7 +113,7 @@ export type TranscriptProblemDetail =
   | { readonly _tag: "Unwritable"; readonly cause: string }
   | { readonly _tag: "MalformedLine"; readonly line: number };
 
-export type TranscriptProblem = { readonly problems: readonly TranscriptProblemDetail[] };
+export type TranscriptProblem = Problems<TranscriptProblemDetail>;
 
 export type TranscriptWrite = {
   readonly written: number;

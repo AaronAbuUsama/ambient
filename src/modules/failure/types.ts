@@ -40,3 +40,15 @@ export type IsMissing = (cause: unknown) => boolean;
  * is the same job — one declared value in, one line out.
  */
 export type Describe<D> = (detail: D) => string;
+
+/**
+ * The envelope every module hands back when it refuses.
+ *
+ * Plural on purpose. `doctor` reports everything wrong with a home at one time,
+ * so a Failure is a list even when it holds one thing, and no caller has to
+ * handle "one problem" and "several" differently.
+ *
+ * It is also the narrowing: a fallible function returns `T | Problems<D>`, and
+ * `"problems" in result` is what tells the two apart — errors.md.
+ */
+export type Problems<D> = { readonly problems: readonly D[] };

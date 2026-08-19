@@ -15,7 +15,7 @@
 
 import type { Account } from "~/modules/channel/types.ts";
 import type { Place } from "~/modules/home/types.ts";
-import type { Describe } from "~/modules/failure/types.ts";
+import type { Describe, Problems } from "~/modules/failure/types.ts";
 
 /** What one ingest did. Counts, never content — nothing here is a Message. */
 export type IngestReport = {
@@ -46,7 +46,7 @@ export type IngestProblem =
   /** The Transcript could not be appended to. */
   | { readonly _tag: "TranscriptRefused"; readonly detail: string };
 
-export type IngestFailure = { readonly problems: readonly IngestProblem[] };
+export type IngestFailure = Problems<IngestProblem>;
 
 /** What the caller must supply. `home` grants every Place; `ingest` never builds a path. */
 export type IngestRequest = {
