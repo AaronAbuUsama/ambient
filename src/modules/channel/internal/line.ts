@@ -50,8 +50,8 @@ const refOfRecord = (record: MessageRecord): string | undefined =>
 /** The caption is the message's text. A media message with a caption has both. */
 const textOf = (record: MessageRecord): string | undefined => {
   if (record.kind === "text") return record.text;
-  if ("text" in record && typeof record.text === "string") return record.text;
-  if ("media" in record && typeof record.media.caption === "string") return record.media.caption;
+  if ("text" in record && record.text !== undefined) return record.text;
+  if ("media" in record && record.media.caption !== undefined) return record.media.caption;
   if (record.kind === "poll") return record.name;
   if (record.kind === "location") return record.name ?? record.address;
   return undefined;

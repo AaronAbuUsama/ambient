@@ -162,16 +162,26 @@ it("round-trips Archive event, media, edit and deletion variants", async () => {
  * not the reader's — `internal/store.ts` rebuilds a loaded line as `from, kind,
  * at, id, who, msgKind, text`. Row 11 is about exactly that difference.
  */
-const live = (id: string, media?: LiveMedia): LiveMessage => ({
-  from: "live",
-  kind: "message",
-  at: Date.parse("2026-08-18T09:00:00Z"),
-  id,
-  who: { id: "1@lid", mode: "lid" },
-  text: "hello",
-  msgKind: "conversation",
-  ...(media === undefined ? {} : { media }),
-});
+/**
+ * The fixture must keep an absent optional absent, exactly as the two producers
+ * do: `internal/parse.ts` declares `media` with `optionalKey` and its encoder
+ * refuses an explicit `undefined`, so a fixture built carelessly would not encode.
+ */
+const compact = <T extends object>(value: T): T =>
+  // SAFETY: every key removed holds `undefined`, and only an optional key can.
+  Object.fromEntries(Object.entries(value).filter(([, held]) => held !== undefined)) as T;
+
+const live = (id: string, media?: LiveMedia): LiveMessage =>
+  compact({
+    from: "live",
+    kind: "message",
+    at: Date.parse("2026-08-18T09:00:00Z"),
+    id,
+    who: { id: "1@lid", mode: "lid" },
+    text: "hello",
+    msgKind: "conversation",
+    media,
+  });
 
 const ids = (lines: readonly import("./types.ts").TranscriptLine[]): readonly string[] =>
   lines.flatMap((line) => (line.from === "live" && line.kind === "message" ? [line.id] : []));

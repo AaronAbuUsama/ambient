@@ -55,7 +55,9 @@ export const image = (id: string, at: number, caption?: string): InboundMessage 
   kind: "image",
   media: {
     mimetype: "image/png",
-    ...(caption === undefined ? {} : { caption }),
+    // `caption` is read as a value by `internal/line.ts` and never for its
+    // presence, and the runtime stores it the same way — so it may simply be here.
+    caption,
     download: async () => await Promise.resolve(Buffer.from(MEDIA_BYTES)),
   },
 });
