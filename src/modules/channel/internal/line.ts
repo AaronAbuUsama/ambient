@@ -17,6 +17,22 @@ import type { MessageRecord } from "whatsappd";
 import type { LiveMedia, LiveMessage, LiveReaction } from "~/modules/transcript/types.ts";
 
 /**
+ * Drop the keys whose value is undefined, so an absent optional stays an absent
+ * key rather than a present one holding nothing.
+ *
+ * That distinction is the whole of defect D1, and it is now load-bearing twice
+ * over: `transcript`'s encoder declares these fields with `optionalKey` and
+ * refuses an explicit `undefined`, so a line built carelessly would not encode.
+ * Four lines, duplicated in `archive/internal/classify.ts` for the Archive
+ * shapes, because modules.md forbids reaching into another module's internal/.
+ */
+const compact = <T extends object>(value: T): T =>
+  // SAFETY: every key removed holds `undefined`. Under `strict` without
+  // `exactOptionalPropertyTypes` only an optional key can hold `undefined`, so
+  // what is left still satisfies every required key of `T`.
+  Object.fromEntries(Object.entries(value).filter(([, held]) => held !== undefined)) as T;
+
+/**
  * What the Source says about the bytes, mapped onto our own vocabulary.
  *
  * A record with media always produces a media state — `NeverDriven` is the honest
@@ -45,12 +61,14 @@ const textOf = (record: MessageRecord): string | undefined => {
 const reactionsOf = (record: MessageRecord): readonly LiveReaction[] | undefined =>
   record.reactions.length === 0
     ? undefined
-    : record.reactions.map((reaction) => ({
-        subject: reaction.subject,
-        emoji: reaction.emoji,
-        ...(reaction.by === undefined ? {} : { by: reaction.by }),
-        ...(reaction.at === undefined ? {} : { at: reaction.at }),
-      }));
+    : record.reactions.map((reaction) =>
+        compact({
+          subject: reaction.subject,
+          emoji: reaction.emoji,
+          by: reaction.by,
+          at: reaction.at,
+        }),
+      );
 
 export type Mapped = { readonly line: LiveMessage; readonly ref?: string };
 
@@ -61,26 +79,26 @@ export const lineOf = (record: MessageRecord): Mapped => {
   const reactions = reactionsOf(record);
   const media = mediaOf(record);
   const ref = refOfRecord(record);
-  const line: LiveMessage = {
+  const line: LiveMessage = compact({
     from: "live",
     kind: "message",
     at: record.timestamp,
     id: record.messageId,
-    who: {
+    who: compact({
       id: record.sender.id,
       mode: record.sender.mode,
-      ...(record.sender.alt === undefined ? {} : { alt: record.sender.alt }),
-      ...(record.pushName === undefined ? {} : { pushName: record.pushName }),
-    },
+      alt: record.sender.alt,
+      pushName: record.pushName,
+    }),
     msgKind: record.kind,
-    ...(text === undefined ? {} : { text }),
-    ...(quoted === undefined ? {} : { quoted }),
-    ...(mentions === undefined ? {} : { mentions }),
-    ...(record.editedAt === undefined ? {} : { edited: true as const }),
-    ...(record.flags?.viewOnce === true ? { viewOnce: true as const } : {}),
-    ...(record.flags?.ephemeral === true ? { ephemeral: true as const } : {}),
-    ...(reactions === undefined ? {} : { reactions }),
-    ...(media === undefined ? {} : { media }),
-  };
+    text,
+    quoted,
+    mentions,
+    edited: record.editedAt === undefined ? undefined : (true as const),
+    viewOnce: record.flags?.viewOnce === true ? (true as const) : undefined,
+    ephemeral: record.flags?.ephemeral === true ? (true as const) : undefined,
+    reactions,
+    media,
+  });
   return ref === undefined ? { line } : { line, ref };
 };

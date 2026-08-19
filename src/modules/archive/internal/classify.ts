@@ -1,5 +1,16 @@
 import type { ArchiveEvent, ArchiveLine, ArchiveMessage } from "~/modules/transcript/types.ts";
 
+/**
+ * Drop the keys whose value is undefined, so an absent optional stays an absent
+ * key. `transcript`'s encoder declares these with `optionalKey` and refuses an
+ * explicit `undefined`, so a line built carelessly would not encode. The twin of
+ * this lives in `channel/internal/line.ts`; imports.md forbids sharing it.
+ */
+const compact = <T extends object>(value: T): T =>
+  // SAFETY: every key removed holds `undefined`, and under `strict` without
+  // `exactOptionalPropertyTypes` only an optional key can hold `undefined`.
+  Object.fromEntries(Object.entries(value).filter(([, held]) => held !== undefined)) as T;
+
 export type ArchiveBase = Pick<
   ArchiveMessage,
   "from" | "kind" | "wall" | "at" | "zone" | "who" | "text"
@@ -73,7 +84,7 @@ export const classify = (base: ArchiveBase): Classified => {
         : base.text.slice(0, placeholder.index)
   ).trimEnd();
   return {
-    line: {
+    line: compact({
       from: "archive",
       kind: "message",
       wall: base.wall,
@@ -81,14 +92,17 @@ export const classify = (base: ArchiveBase): Classified => {
       zone: base.zone,
       who: base.who,
       text,
-      ...(edited ? { edited: true as const } : {}),
-      ...(deleted ? { deleted: true as const } : {}),
-      ...(marker !== null
-        ? { media: { state: "NoHandle" as const, why: "not-in-archive" as const } }
-        : placeholder === null
-          ? {}
-          : { media: { state: "NoHandle" as const, why: "placeholder" as const } }),
-    },
-    ...(marker === null ? {} : { marker: marker[1]!.trim() }),
+      edited: edited ? (true as const) : undefined,
+      deleted: deleted ? (true as const) : undefined,
+      media:
+        marker !== null
+          ? { state: "NoHandle" as const, why: "not-in-archive" as const }
+          : placeholder === null
+            ? undefined
+            : { state: "NoHandle" as const, why: "placeholder" as const },
+    }),
+    // `Classified` is read by `archive/service.ts` as `classified.marker !== undefined`
+    // and never encoded, so the key may simply be present and hold nothing.
+    marker: marker === null ? undefined : marker[1]!.trim(),
   };
 };
