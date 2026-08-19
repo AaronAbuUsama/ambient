@@ -6,6 +6,7 @@ catalog:
   vite-plus: 0.2.8
 minimumReleaseAgeExclude:
   - whatsappd@0.4.0-alpha.3
+  - "@oxlint/plugins@1.79.0"
 overrides:
   vite: "catalog:"
 peerDependencyRules:

@@ -23,15 +23,44 @@ export default defineConfig({
   // diverges it for no gain, and it must not be edited at all. `.claude/skills/` is the
   // symlinked projection of `.agents/skills/`, so both names are listed — exclude one and
   // the tools find the same files by the other. We format and lint what we author.
-  fmt: { ignorePatterns: ["**/*.md", ".agents/skills/vendor/**"] },
+  fmt: {
+    ignorePatterns: ["**/*.md", ".agents/skills/vendor/**", "tools/oxlint/anti-slop/**"],
+  },
   lint: {
-    // Type-checking an untouched vendored asset would also require its own devDependency
-    // (`@oxlint/plugins`), which we do not have and should not add for code we never run.
-    ignorePatterns: [".agents/skills/vendor/**", ".claude/skills/**"],
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
+    // The vendored skills are upstream source we never run. `tools/oxlint/anti-slop/` IS run —
+    // it is the plugin itself — but linting a plugin with itself is circular, so it is ignored
+    // as a target while being loaded as a rule source.
+    ignorePatterns: [".agents/skills/vendor/**", ".claude/skills/**", "tools/oxlint/anti-slop/**"],
+    jsPlugins: [
+      { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
+      { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+    ],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.
-    rules: { "vite-plus/prefer-vite-plus-imports": "error", "typescript/no-explicit-any": "error" },
+    //
+    // anti-slop is installed from its vendored skill and every rule it ships is on. The
+    // rules this repo already states in prose — no `any`, external data enters as `unknown`
+    // and is narrowed at the boundary — are what several of these enforce at the AST rather
+    // than by a regex over a line.
+    rules: {
+      "vite-plus/prefer-vite-plus-imports": "error",
+      "typescript/no-explicit-any": "error",
+      "anti-slop/no-chained-type-assertions": "error",
+      "anti-slop/no-conditional-empty-object-spread": "error",
+      "anti-slop/no-known-value-widening": "error",
+      "anti-slop/no-module-mocking": "error",
+      "anti-slop/no-object-parameters": "error",
+      "anti-slop/no-reflect-apply": "error",
+      "anti-slop/no-reflect-get": "error",
+      "anti-slop/no-runtime-typeof": "error",
+      "anti-slop/no-shape-in-symbol-names": "error",
+      "anti-slop/no-unknown-parameters": "error",
+      "anti-slop/no-unknown-returns": "error",
+      "anti-slop/no-unknown-type-aliases": "error",
+      "anti-slop/no-unsafe-dictionary-type": "error",
+      "anti-slop/no-widen-then-assert": "error",
+      "anti-slop/require-safety-comment-for-type-assertion": "error",
+    },
     options: { typeAware: true, typeCheck: true },
   },
 });
