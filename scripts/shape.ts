@@ -128,6 +128,42 @@ for (const name of modules) {
   }
 }
 
+// ── every module owns a row in the seam map ───────────────────────────
+
+/**
+ * The row in `seams.md` is what makes a directory a module — `new-module`
+ * refuses to scaffold one without it. Nothing enforced that: for the whole of
+ * INGEST's steps 1-4, `ingest` was a module in `design.md`, in the call graph
+ * and in five tickets, owned no row, and this check printed `clean` on every
+ * one of those days. Ticket `00` in both IMPORT and INGEST existed only to
+ * write those rows by hand — it is this missing check with a number on it.
+ */
+const declared = new Set(
+  [...read("docs/design/seams.md").matchAll(/^\|\s*`([a-z-]+)`\s*\|/gm)].map(([, n]) => n),
+);
+
+/** Module → the place that claims it is one, for the offence to point at. */
+const claimed = new Map<string, string>(modules.map((name) => [name, `src/modules/${name}`]));
+
+for (const rel of files.filter((f) => /^docs\/planning\/[^/]+\/design\.md$/.test(f))) {
+  let inDelta = false;
+  for (const line of read(rel).split("\n")) {
+    if (line.startsWith("## ")) inDelta = line.startsWith("## Seam delta");
+    if (!inDelta) continue;
+    const named = /^\|\s*`([a-z-]+)`\s*\|/.exec(line)?.[1];
+    if (named !== undefined && !claimed.has(named)) claimed.set(named, rel);
+  }
+}
+
+for (const [name, where] of [...claimed].sort(([a], [b]) => (a < b ? -1 : 1))) {
+  if (!declared.has(name)) {
+    say(
+      where,
+      `\`${name}\` owns no row in docs/design/seams.md — the row is what makes it a module`,
+    );
+  }
+}
+
 // ── every cross-link in a document resolves ───────────────────────────
 
 /** Fenced blocks and inline code are illustration, not links to follow. */

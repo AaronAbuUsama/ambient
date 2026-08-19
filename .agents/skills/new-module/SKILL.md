@@ -8,11 +8,14 @@ description: Scaffold a new module in the ambient repo with all six slots — RE
 The six slots are a rule ([`docs/rules/modules.md`](../../../docs/rules/modules.md))
 checked by `vp run shape`. Scaffold them together so the module is never briefly wrong.
 
-**Before scaffolding:** the module must already own something in
-[`docs/design/seams.md`](../../../docs/design/seams.md) — one row, what it owns, which
-way its dependencies flow. A module with no row is not a module yet. And do not scaffold
-ahead of behaviour: create it when the first real work lands in it, not to reserve the
-name.
+**Before scaffolding:** the module must already own a row in
+[`docs/design/seams.md`](../../../docs/design/seams.md). **`vp run shape` checks this** —
+it names any module in a design's § Seam delta, or any directory under `src/modules/`, that
+owns no row, and exits non-zero. Run it rather than re-deciding here what the row must
+contain; the check is the precondition, and this sentence is only where to find it.
+
+And do not scaffold ahead of behaviour: create it when the first real work lands in it, not
+to reserve the name.
 
 ## The five files
 

@@ -67,7 +67,10 @@ list precisely so they cannot.
 ## The check
 
 `vp run shape` — asserts all six slots exist for every module under `src/modules/`, and
-names the missing ones.
+names the missing ones. It also asserts that every module **owns a row in
+[`seams.md`](../design/seams.md)** — every directory under `src/modules/` and every module
+named in a `docs/planning/<slice>/design.md` § Seam delta. The row is what makes a directory
+a module; for the whole of INGEST's steps 1-4 `ingest` had none and this check said `clean`.
 
 That `main.ts` is the only file reading the environment, and that a module's work is a
 named top-level function rather than a nested closure, are **not currently checked**.

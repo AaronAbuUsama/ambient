@@ -1,6 +1,6 @@
 # 07 — the seam-row check runs
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 The fix already exists, was proven, and was reverted under a standing instruction that has
 since been lifted. **This ticket revives it rather than re-deriving it.**
