@@ -32,7 +32,7 @@ const opened = (root: string): Home => {
 };
 
 /** An empty directory that has never been touched by `init`. */
-const clean = (): { root: string; home: Home } => {
+const clean = () => {
   const root = `${tmp()}/home`;
   return { root, home: opened(root) };
 };

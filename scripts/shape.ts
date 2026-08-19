@@ -20,7 +20,7 @@ const LIMIT = 250;
  * The declared exceptions, each with the reason it is not split. A file earns a
  * row here by being one thing that would be *less* legible in two files.
  */
-const LONGER: Readonly<Record<string, string>> = {
+const LONGER = {
   "src/modules/home/home.test.ts":
     "SKELETON's gate plus the `home` interface resolutions later areas add. " +
     "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
