@@ -31,5 +31,14 @@ makes cross-module imports visible in a grep.
 
 ## The check
 
-`vp run shape` — names the file and line of any `~/modules/<other>/internal` import from
-outside the owning module, and of any `../..` in an import path.
+`vp check` — two oxlint rules in [`scripts/lint/imports.ts`](../../scripts/lint/imports.ts),
+each naming the file and line:
+
+- `contract/no-foreign-internal` — a `~/modules/<other>/internal` import from outside the
+  owning module.
+- `contract/no-relative-escape` — `../..` in an import path.
+
+Both read the import *specifier* — static import, dynamic `import()`, re-export, and
+`import("…")` in type position. A doc comment linking to `../../../docs/adr/…` and a
+`${import.meta.dirname}/../..` in a template literal are a link and a path, not imports,
+and neither fires.

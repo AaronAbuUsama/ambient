@@ -34,6 +34,11 @@ export default defineConfig({
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
       { name: "anti-slop", specifier: "./tools/index.ts" },
+      // Our own contract — docs/rules/, at the AST rather than over a line. It sits under
+      // `scripts/` rather than beside anti-slop in `tools/` precisely because `tools/` is
+      // ignored above: anti-slop is upstream source we never edit, and these are ours, so
+      // they are formatted, linted and type-checked like everything else we author.
+      { name: "contract", specifier: "./scripts/lint/index.ts" },
     ],
     // `no-explicit-any` is off by default, and "no `any`" is a rule we state —
     // docs/rules/types.md. A rule with no check is a hope.
@@ -60,6 +65,10 @@ export default defineConfig({
       "anti-slop/no-unsafe-dictionary-type": "error",
       "anti-slop/no-widen-then-assert": "error",
       "anti-slop/require-safety-comment-for-type-assertion": "error",
+      "contract/file-length": "error",
+      "contract/no-foreign-internal": "error",
+      "contract/no-relative-escape": "error",
+      "contract/no-throw": "error",
     },
     options: { typeAware: true, typeCheck: true },
   },

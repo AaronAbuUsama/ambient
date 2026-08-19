@@ -41,8 +41,14 @@ optional-field state machines, so illegal states are hard to represent. See
 
 ## The check
 
-- `vp run shape` — no `throw` under `src/` outside test files, by file and line.
+- `vp check` — `contract/no-throw`, an oxlint rule in
+  [`scripts/lint/errors.ts`](../../scripts/lint/errors.ts). It reports a `throw`
+  *statement*, by file and line, in every file but a `*.test.ts` or a `testing.ts`. The
+  word in a comment or a string is prose and does not fire — the line-level regex it
+  replaced could not tell the two apart, and failed the repository on 2026-08-19 over a
+  comment reading "the honest fallback rather than a throw".
 - `vp test` — gate assertion 18 asserts the same rule from inside the suite, because it
-  is one of the invariants SKELETON's spec §4 is written in.
+  is one of the invariants SKELETON's spec §4 is written in. It is still a regex over the
+  file's text, so it reads the bare verb only.
 - `vp check` — `noFallthroughCasesInSwitch` plus the `never` arm makes a union
   non-exhaustive at compile time.

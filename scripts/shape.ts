@@ -2,33 +2,24 @@
 /**
  * The repo-shape check — `vp run shape`.
  *
- * AGENTS.md's legibility rules, made runnable. A rule that cannot be run is a
- * hope, so every rule stated there is asserted here, and every failure names the
- * file and the line so it can be opened rather than hunted for.
+ * The rules under `docs/rules/` that no linter can see: the six slots and a stale
+ * exception row, which are questions about the filesystem, and the seam map and
+ * cross-links, which are questions about many documents at once. Everything that
+ * is a question about one source file is an oxlint rule under
+ * [`lint/`](./lint/index.ts) and runs under `vp check` — a line-level regex is
+ * the wrong instrument for a rule about syntax.
+ *
+ * A rule that cannot be run is a hope, so every failure names the file and the
+ * line so it can be opened rather than hunted for.
  *
  * Exit 0 is a clean repository; exit 1 prints one line per offence.
  */
 
 import * as fs from "node:fs";
 
+import { LONGER } from "./lint/legibility.ts";
+
 const REPO = `${import.meta.dirname}/..`;
-
-/** No source file is longer than this. */
-const LIMIT = 250;
-
-/**
- * The declared exceptions, each with the reason it is not split. A file earns a
- * row here by being one thing that would be *less* legible in two files.
- */
-const LONGER = {
-  "src/modules/home/home.test.ts":
-    "SKELETON's gate plus the `home` interface resolutions later areas add. " +
-    "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
-  "src/modules/transcript/transcript.test.ts":
-    "Gate rows 11-13 and the roundtrip gate are one gate on one file format — row 11 asserts " +
-    "the inode the roundtrip rows extend. Splitting it would put half the Transcript gate in a " +
-    "file nobody knows to open, and a seventh file at a module root is not one of the six slots.",
-};
 
 /**
  * Directories a repository check has no business walking.
@@ -74,40 +65,14 @@ const read = (rel: string): string => fs.readFileSync(`${REPO}/${rel}`, "utf8");
 const files = walk("");
 const sources = files.filter((f) => f.startsWith("src/") && f.endsWith(".ts"));
 
-// ── source files ──────────────────────────────────────────────────────
+// ── no length exception outlives the file it excuses ──────────────────
 
-for (const rel of sources) {
-  const text = read(rel);
-  const lines = text.split("\n");
-  const count = lines.length - (text.endsWith("\n") ? 1 : 0);
-  const owner = /^src\/modules\/([^/]+)\//.exec(rel)?.[1];
-  /**
-   * `testing.ts` counts as test code. It is a module's own scaffolding — the slot
-   * `whatsappd/testing` occupies one layer down — imported by tests and by nothing
-   * else, and a fixture that cannot fail loudly hides the failure inside the test
-   * that depends on it.
-   */
-  const isTest = rel.endsWith(".test.ts") || rel.endsWith("/testing.ts");
-
-  if (count > LIMIT && !(rel in LONGER)) {
-    say(`${rel}:${LIMIT + 1}`, `${count} lines, over the ${LIMIT}-line limit`);
-  }
-
-  lines.forEach((line, i) => {
-    const at = `${rel}:${i + 1}`;
-    const other = /["']~\/modules\/([^/"']+)\/internal/.exec(line)?.[1];
-    if (other !== undefined && other !== owner) {
-      say(at, `imports \`${other}\`'s internal/ — internal is what only that module knows`);
-    }
-    if (/from ["']\.\.\/\.\.|import\(["']\.\.\/\.\./.test(line)) {
-      say(at, "relative import out of the module — name it `~/modules/<name>/…` instead");
-    }
-    if (!isTest && /\bthrow\b/.test(line)) {
-      say(at, "a throw outside a test — a failure is a declared value, not an exception");
-    }
-  });
-}
-
+/**
+ * `contract/file-length` is told about one file at a time, so it can honour a row
+ * but never notice that the file it names is gone. A row nobody can reach is an
+ * excuse standing over nothing, which is how an exception list decays into a
+ * blanket. Only a walk of the tree can say so.
+ */
 for (const rel of Object.keys(LONGER)) {
   if (!sources.includes(rel)) say(rel, "declared as a length exception, but no such source file");
 }
