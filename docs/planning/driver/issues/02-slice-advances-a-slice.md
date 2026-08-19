@@ -1,6 +1,6 @@
 # 02 — `/slice <SLICE>` advances a slice
 
-**Status:** ready-for-agent · **Blocks:** 03, 04, 05, 06 · **Blocked by:** 01
+**Status:** done · **Blocks:** 03, 04, 05, 06 · **Blocked by:** 01
 
 The tracer bullet. One narrow complete path: read state → report → ask → dispatch one step.
 

@@ -227,6 +227,19 @@ step 2 was added to guarantee.
   Nobody has observed whether `disable-model-invocation` blocks a *skill* dispatching a flagged
   skill or only the model starting it. Flagging all seven acts on that unknown; the driver's own
   flag is free and obviously right.
+
+  **Observed 2026-08-19, ticket 02's first act — it blocks both.** A skill carrying the flag
+  cannot be dispatched by an agent at all: the Skill tool refuses with *"cannot be used with
+  Skill tool due to disable-model-invocation … reserved for explicit user invocation."*
+  *Instrument: two skills created differing only in the flag — `b4-probe` flagged,
+  `b4-control` not. After the registry rescan the control loaded and the probe was refused.
+  A first attempt on `close-slice` loaded the skill and was discarded as a stale registry:
+  the flag was added mid-session to a skill already registered without it.*
+
+  **This is why G3 said observe first.** Had the attached action under *Answered during step
+  1* been carried out — *"the skills only a human should start need the flag set"* — across
+  the six step skills, the driver could not have dispatched any of them. The flag goes on the
+  driver, and on nothing the driver has to call.
 - **G8 → the driver reports staleness; it writes no lock.**
   From `mtime` and `git status`, two commands and no state of its own — which keeps the property
   that makes the driver cheap. A lock file would make the driver the one thing that writes

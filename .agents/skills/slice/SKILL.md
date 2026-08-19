@@ -1,0 +1,171 @@
+---
+name: slice
+description: Advance one slice of work in the ambient repo by exactly one step — read which step it is on from the files themselves, report the six-step table, ask, then dispatch that step's skill by repository path. Use when the user types "/slice DRIVER", asks where a slice is, what is next on it, or how to start one that does not exist yet.
+disable-model-invocation: true
+---
+
+# Drive a slice
+
+**The one thing the principal types.** It reads where a slice is, reports it, asks, and
+dispatches one step. It is the caller for the six steps of
+[`slices.md`](../../../docs/rules/slices.md), and it adds nothing to any of them.
+
+Two invocations, and they are the whole surface:
+
+| Typed | Means |
+|---|---|
+| `/slice <SLICE>` | advance this slice by one step |
+| `/slice chart <NAME>` | start a slice that has no directory yet |
+
+**This skill writes nothing durable.** It reads, reports, asks, dispatches. No lock file,
+no state of its own, no cache. If it wrote something, the next run would have to trust it.
+
+---
+
+## 1 · Read the state
+
+Seven signals. **All of them are `ls` and `grep`.** Run them before saying anything.
+
+| # | Signal | Command | Answers |
+|---|---|---|---|
+| 1 | the slice exists | `ls docs/planning/<slice>/` | chart, or advance |
+| 2 | step 1 done | `ls docs/planning/<slice>/scope.md` | — |
+| 3 | step 2 done | `ls docs/planning/<slice>/design.md` then `grep -c '^## Branch points' docs/planning/<slice>/design.md` | its gate |
+| 4 | step 3 done | `grep -A 8 '^## Open' docs/planning/<slice>/scope.md` and the same for `'^## Fog'` — **both empty** | its gate |
+| 5 | step 4 done | `ls docs/planning/<slice>/spec.md` and `ls docs/planning/<slice>/issues/` | its gate |
+| 6 | step 5 done | `grep -L '^\*\*Status:\*\* done' docs/planning/<slice>/issues/*.md` — **prints nothing** | its gate |
+| 7 | step 6 done | `grep '^| \*\*<SLICE>\*\*' docs/design/roadmap.md` reads `● closed` | its gate |
+
+**Each signal is that step's own gate, read rather than re-invented.** If a gate in
+[`slices.md`](../../../docs/rules/slices.md) changes, this skill changes with it. The driver
+has no opinion of its own about when a step is finished.
+
+### Read. Do not parse.
+
+`grep -A` prints lines for you to **look at**. Decide by reading them, the way a person
+reads a file. **Never turn a document into a data structure** — no field extraction, no
+section objects, no `scripts/slice.ts`. That was built twice as a markdown parser and
+deleted twice, at `68d2180` — *"a skill reads markdown, it does not need a parser"* — and at
+`00d9b09`. Building it a third time is the failure this line exists to prevent.
+
+### Staleness, before anything else
+
+```bash
+command ls -lt docs/planning/<slice>/      # newest first — read the timestamps
+git status --short docs/planning/<slice>/  # uncommitted edits, if any
+```
+
+`command ls`, not `ls`: this machine aliases `ls` to `lsd`, whose columns differ. Do not
+reach for `find -newermt` — `find` here is `bfs`, which rejects relative timestamps.
+
+If the newest file was touched in the last half hour, or `git status` prints anything,
+**say so in the report** — which files, and how recently. Then
+carry on and let the principal decide. Two sessions on one slice is **reported, not
+prevented**: a lock file would make this the one thing that writes durably, and would add a
+stale-lock failure of its own.
+
+---
+
+## 2 · Report before you act
+
+Always. Before the ask, before any dispatch, and even when the answer is obvious.
+
+```
+DRIVER · step 2 of 6
+
+  1 Map        done      scope.md — 3 questions open, all dispatchable now
+  2 Design     ← next    design.md does not exist
+  3 Frontier   —
+  4 Plan       —
+  5 Build      —
+  6 Close      —
+
+Two agents are running in this repository. Neither holds anything DRIVER needs.
+
+Next: design-slice. It writes the caller first, then reads the interfaces off it.
+Run it? [y / n / what changed since last time]
+```
+
+One line per step, the evidence that decided it in the right-hand column. The staleness
+line goes above the ask, or is omitted when both commands printed nothing.
+
+---
+
+## 3 · Ask
+
+**Stop here by default.** The principal decides whether the step runs.
+
+- `y` → dispatch.
+- `n` → stop. Nothing was written, so there is nothing to undo.
+- anything else → answer it and ask again.
+
+A dispatch with no `y` in front of it is this skill failing. The exception is a declared
+`auto` mode, which the principal turns on out loud, per run.
+
+---
+
+## 4 · Dispatch one step
+
+**By repository path, never by a bare name.** A bare name resolves to whatever the harness
+or a plugin has under it — for one of these it resolves to a harness built-in with a
+different job.
+
+| Step | Dispatch |
+|---|---|
+| 1 · Map | `.agents/skills/map-slice/SKILL.md` |
+| 2 · Design | `.agents/skills/design-slice/SKILL.md` |
+| 3 · Frontier | by kind — see below |
+| 4 · Plan | `.agents/skills/plan-slice/SKILL.md` |
+| 5 · Build | per ticket: `.agents/skills/new-module/SKILL.md`, then `.agents/skills/vendor/tdd/SKILL.md`, then `.agents/skills/vendor/code-review/SKILL.md` |
+| 6 · Close | `.agents/skills/close-slice/SKILL.md` |
+
+**One step per run.** Advance by one, report, and stop. The principal types it again.
+
+---
+
+## Failure branches
+
+Each is a value the reader sees, not an exception.
+
+**The slice has no directory, but it is on the roadmap** — offer to chart it, and
+**do not create anything**:
+
+```
+KNOWLEDGE has no directory under docs/planning/. It is `○ next` on the roadmap.
+Start it?  →  /slice chart KNOWLEDGE
+```
+
+**The name is not on the roadmap** — list the names and stop. Read them from
+`docs/design/roadmap.md`'s status board:
+
+```
+No slice named DRVIER. On the roadmap: SKELETON · IMPORT · METHOD · INGEST ·
+KNOWLEDGE · HARNESS · LOOPS · CAPABILITIES · MOUTH · MEDIA · EVALS.
+```
+
+A slice may have a directory without a roadmap row — DRIVER is work inside METHOD. **Signal
+1 decides**: if the directory is there, advance it.
+
+**The step's artefact exists but fails that step's gate** — name the clause that failed and
+offer `redo`:
+
+```
+DRIVER · step 2, and design.md exists but has no ## Branch points.
+Step 2's gate is the branch points. Finish it, or say `redo` to start the step again.
+```
+
+**A half-written artefact is the normal case, not an error.** A dispatched skill that fails
+halfway leaves a real file behind. Report it as it is, and offer `redo`.
+
+---
+
+## What this skill never does
+
+| Never | Because |
+|---|---|
+| dispatch before a `y` | the principal decides; this reports and asks |
+| name a skill by its bare name | it resolves to a plugin or a harness built-in |
+| parse a document into a data structure | built twice, deleted twice — `68d2180`, `00d9b09` |
+| write a lock file | staleness is reported from `mtime` and `git status` |
+| change a step skill | if one needed a flag for the driver, the driver is in the wrong place |
+| run more than one step | advance by one, report, stop |
