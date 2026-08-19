@@ -123,6 +123,28 @@ different job.
 
 ---
 
+## 5 · Emit the step report
+
+**After every dispatch, without exception.** Its shape is
+[`docs/design/step-report.md`](../../../docs/design/step-report.md) — follow that file; do
+not improvise a format here, and do not restate the template in this skill.
+
+**This skill is the only emitter.** No step skill writes one. Six emitters of one format is
+how it was improvised every time, and improvising it is what produced the deficits the
+template answers.
+
+Three things the template requires that are easiest to drop, so check them by name before
+handing back:
+
+- **What closed, not only what is open.** An answered question is reported with the answer.
+- **Every answer arrives with its question**, written as a sentence ending in a question mark.
+- **No bare id in a heading or a lead sentence.** Expand it the first time it appears.
+
+A decision made *during* the step — a shape the ticket did not settle, a correction to the
+design — goes under *What this step decided*. That is its one home.
+
+---
+
 ## Failure branches
 
 Each is a value the reader sees, not an exception.

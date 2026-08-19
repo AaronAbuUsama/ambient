@@ -1,6 +1,6 @@
 # 03 — the step report has one home and one emitter
 
-**Status:** ready-for-agent · **Blocks:** 10 · **Blocked by:** 02
+**Status:** done · **Blocks:** 10 · **Blocked by:** 02
 
 Four of the nineteen open deficits — 7, 8, 9 and 22 — are this one artefact, and all four
 came from the principal reading a report he could not follow.
