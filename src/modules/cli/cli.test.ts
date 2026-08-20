@@ -215,6 +215,12 @@ const ambient = (root: string, ...args: readonly string[]) => {
   return { code: run.status, out: run.stdout };
 };
 
+/**
+ * Seven cold starts against a default 5000ms that was never enough. One
+ * `node --import <alias hook> src/main.ts` costs ~580ms against 79ms for bare `node -e ""`,
+ * so the seven cost ~4.1s idle — 81% of the budget — and 5.8-14.9s at load 15-23 on ten
+ * cores. The outcome tracks load, not the commit; a hang still fails this, six times over.
+ */
 it("the CLI exits 0 on a healthy home and 1 on a broken one, printing what is wrong", () => {
   const root = tmp();
   expect(ambient(root, "doctor")).toMatchObject({ code: 1 });
@@ -230,7 +236,7 @@ it("the CLI exits 0 on a healthy home and 1 on a broken one, printing what is wr
   });
 
   expect(ambient(root, "bogus")).toMatchObject({ code: 2, out: "" });
-});
+}, 30_000);
 
 /** KNOWLEDGE's gate rows 3 and 4 — the tracer bullet, `cli → home → disk`. */
 it("init writes the knowledge base itself, and doctor names a deleted schema.yaml", () => {
