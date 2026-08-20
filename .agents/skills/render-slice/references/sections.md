@@ -4,8 +4,9 @@
 three ways. A section is missing exactly when the step that fills it has not run, so the page's
 own completeness is the progress bar. Nothing computes which step a slice is on — you look.
 
-Build only the sections that have content. A slice at step 1 has three; a closed slice has all
-twelve.
+Build only the sections that have content. A slice at step 1 fills sections 1, 2 and 11 —
+mapping produces a destination, a frontier and measured numbers, and nothing else. A closed
+slice fills all twelve.
 
 ## Group PLAN
 

@@ -1,6 +1,6 @@
 # 14 — one file says what step 1 fills, and it is right
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 17, which DRIVER did not answer.*
 
@@ -27,3 +27,15 @@ entirely, because the instruction to regenerate the page moved to the driver. Wh
 
 - [language.md](../../../rules/language.md) — one statement, one home.
 - **Shares a file with ticket 15.**
+
+## Comments
+
+**2026-08-20 — the count was right and the identity was never written down.** `sections.md`
+now names the numbers: **1, 2 and 11**. Those are the three DRIVER filled on 2026-08-19, and
+they are what step 1 can fill — `scope.md` gives section 1 its destination and out of scope,
+section 2 its Open and Fog, and section 11 the numbers mapping measured with their
+instruments. Sections 4 and 8 are group DESIGN and cannot exist before step 2.
+
+`map-slice`'s *Finish* no longer states an answer to contradict — ticket 04 deleted that item
+when the instruction to regenerate the page moved to the driver — so this claim now has one
+home.
