@@ -130,10 +130,16 @@ agreed to, dispatch a subagent using the vendored
 [`research`](../vendor/research/SKILL.md) skill. They are AFK and parallel —
 nobody is waiting on them, and they are the exception to one-decision-per-session.
 
+**An answer that lands while you are still here is recorded here.** Move its line from
+**Open** to **Decided**, pointing at whatever holds the detail. Do not hold it for step 3 and
+do not write it down twice — [`slices.md`](../../../docs/rules/slices.md) § 3 is the rule, and
+it is the reason *"mapping resolves nothing"* below means the frontier, not the answers.
+
 ## Finish
 
 1. `vp run shape` — every cross-link in `scope.md` resolves.
 2. Report the frontier: how many questions are `now`, and what the rest wait on.
 
-**Stop there.** Mapping is one session's work and it resolves nothing. The next step is
+**Stop there.** Mapping is one session's work and it resolves no question the frontier owns
+— an answer that arrived on its own is already in **Decided**, by § 5. The next step is
 [`design-slice`](../design-slice/SKILL.md), **not** grilling.
