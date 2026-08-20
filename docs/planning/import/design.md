@@ -3,7 +3,7 @@
 **Written after the fact.** [`slices.md`](../../rules/slices.md) now puts Design at step 2, before
 the frontier is worked; IMPORT ran under the old five-step rule and designed its interface five
 hours *after* the code. This file is what step 2 would have produced, reconstructed from the code
-that exists — and it exists so [`import.html`](./import.html) can be regenerated from markdown
+that exists — and it exists so `import.html` can be regenerated from markdown
 rather than from one session's memory.
 
 Its worked-example twin is [`walkthroughs/import.md`](../../walkthroughs/import.md), which traces

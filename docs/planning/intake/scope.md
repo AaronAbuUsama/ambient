@@ -649,7 +649,7 @@ oldest reached 2025-08-17 — exactly 364 days
 terminated on WhatsApp's own "nothing older", correlated to the exact request
 ```
 
-**The loop that works**, per [ADR-0010](../../../../whatsappd/docs/adr) in whatsappd:
+**The loop that works**, per [ADR-0010](https://github.com/AaronAbuUsama/whatsappd/blob/master/docs/adr/0010-stored-paging-and-whatsapp-backfill-are-separate.md) in whatsappd:
 
 ```
 1  walk the STORED MIRROR to its oldest message for this chat   <- the step everyone skips
