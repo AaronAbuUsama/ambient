@@ -6,9 +6,9 @@ below is a sketch, and step 5 will rewrite it.
 
 Its job was to make the frontier askable. Three questions were left for the principal at the
 map, and two of them — `G3` and `G4` — could not be put to him without something to react to.
-They anchored into **Branch points** at the foot of this file, were grilled as one round on
-2026-08-20, and are **answered**. What each was asked with, and what killed the shapes that
-lost, is recorded there rather than in a transcript.
+They anchored into branch points at the foot of this file, were grilled as one round on
+2026-08-20, and are **answered**. Step 4 collapsed them: the chosen shapes are in the body
+above and every loser is under **Alternatives**, with what killed it.
 
 ---
 
@@ -335,111 +335,79 @@ provenance nothing needs. **`B4`** if that reasoning is wrong.
 
 ---
 
-## Branch points
+## Alternatives — the shapes that lost, and what killed each
 
-Every place the shape depends on something not yet decided. Each is a heading here, and each
-becomes one `grilling` line in [`scope.md`](./scope.md) pointing back at it.
+Every branch point this design opened is collapsed here. The chosen shape is in the body
+above; what follows is what it beat, kept because
+[`decisions.md`](../../rules/decisions.md) is explicit that a design which reads as though it
+were right first time teaches the next reader nothing.
 
-### B1 · What is the operation module called? — **answered in this session**
+### B1 · The operation module's name — `observe`
 
-Three candidates, and [`language.md`](../../rules/language.md) rule 1 settles it: *"use the
-word that is already there."*
+| Lost | Killed by |
+|---|---|
+| `distil` | No prior art in this repository. [`language.md`](../../rules/language.md) rule 1: use the word that is already there |
+| `stub` | [`knowledge-flow.md`](../../design/knowledge-flow.md)'s own verb for the step, but it collides with the document **status**, which is the thing `next` queues on |
 
-```
-distil    — "extract the essence of". No prior art in this repository at all.
-stub      — knowledge-flow.md's verb for the step. Collides with the document status,
-            which is the thing `next` queues on.
-observe   — ALREADY THE WORD. product.md:236 and thesis.md:129, identically:
-            "Sources -> observations -> knowledge."
-```
+`observe` was already in [product.md](../../design/product.md) and
+[thesis.md](../../design/thesis.md), identically: *"Sources → observations → knowledge."*
+**Decided in the design session**, because `vp run shape` refuses a design naming a module
+with no [`seams.md`](../../design/seams.md) row and a row cannot be written for an undecided
+name.
 
-**`observe`.** The noun is in the sentence that describes this half of the product, so the
-module invents nothing and the lexicon gains one entry rather than a synonym. Answered here
-rather than carried, because `vp run shape` refuses a design that names a module with no
-[`seams.md`](../../design/seams.md) row — and a row cannot be written for an undecided name.
-**Not the principal's**, per this step's own rule that shape questions are not his.
+### B2 · Where the derived index lives — **`home.index`, a Place beside `blobs`**
 
-### B2 · Where does the derived index live?
+Decided at step 4, and by an argument that only existed after the principal chose the home's
+own git for version history.
 
-`home` grants exactly one Place here, `knowledge`. So the disposable read model either lands
-**inside** the knowledge base, where the OpenKnowledge viewer will show it as a document, or
-it needs a second Place.
+| Lost | Killed by |
+|---|---|
+| `knowledge/.index.json` — inside the base, hidden by `.okignore` | **It would churn the git history of the knowledge base.** The index is rebuilt by every pass and is disposable by construction; committing it on each rebuild puts machine noise in the log of a tree whose whole value is being hand-readable. `.okignore` hides it from OpenKnowledge, not from `git` |
 
-```
-A  knowledge/.index.json     inside. `.okignore` already exists and can hide it.
-B  home.derived: Place       a second Place beside `blobs`; nothing foreign ever sees it.
-```
-
-A costs one line in `.okignore`; B costs a second grant in `home` and an answer to *"what
-else goes there"*. **Not the principal's** — it is shape, and it falls out of whether the
-index is ever hand-read. Recorded here so step 4 cannot skip it.
-
-### B3 · How much does the mechanical pass allow itself to know? — **answered 2026-08-20**
-
-This is `scope.md`'s `G3`, and it is now askable. The Archive gives a display label and
-nothing else. But `T1` found two facts a script **can** have, which the map assumed it could
-not:
-
-```
-A  Label only.        Person(name: <label>, status: unreviewed, source: history)
-                      Honest and thin. 14 labels -> 14 Persons, ~10 humans.
-
-B  Label + what grep proves.
-                      Adds `is_principal` — "You deleted this message." appears on exactly
-                      ONE label x25 against six others x36, zero overlap. VERIFIED.
-                      schema.yaml has NO FIELD FOR THIS. It needs one, or the fact is lost.
-
-C  B, plus proposed merges as a queue rather than a write.
-                      Two label pairs differ only by a leading "~ ". Proposing is mechanical;
-                      merging is not — knowledge-flow.md: "do not merge identities, propose
-                      with evidence." There is nowhere to PUT a proposal today.
+```ts
+readonly blobs: Place       // exists
+readonly db: Place          // exists
+readonly index: Place       // ← this, and one line in the home's .gitignore
 ```
 
-**Answered: none of the three.** The principal took a fourth shape the grill surfaced —
-**the Principal is `config.yaml`, not the ontology.**
+The home's `.gitignore` already excludes `blobs/` and `state.db` — measured — so the pattern
+and its precedent are both in place.
 
-```
-sources.<name>.self_label: "<label>"     # maps an install to a label in one Source
-```
+### B3 · How much the mechanical pass may know — **none of the drafted three**
 
-`grep` **confirms** that mapping rather than discovering a fact about the world.
-[product.md](../../design/product.md) settled who the Principal is before any Archive
-existed, so recording it as knowledge would make a per-install detail look like a fact and
-have `doctor` validate it forever. `Person` gains no field, so **A** is what the pass writes
-— and it is no longer "thin", because the fact it seemed to be discarding was never the
-ontology's to hold. `C`'s merge queue waits until something reads it.
+| Lost | Killed by |
+|---|---|
+| Label only, fact discarded | Discards something proven. `grep` establishes which label is the exporter: *"You deleted this message."* on exactly **1** label ×25 against *"This message was deleted."* on **6** ×36, zero overlap |
+| `Person.is_principal` | Makes a **per-install** detail look like a fact about the world, and has `doctor` validate it forever |
+| …plus a `merge_candidate` queue | Builds a queue nothing reads yet. Two `~ `-prefixed pairs exist; proposing is mechanical, promoting is not, and there is no promote path |
 
-### B4 · Does a knowledge claim have to cite its message? — **answered 2026-08-20**
+**The principal took a fourth shape the grill surfaced:** `sources.<name>.self_label` in
+`config.yaml`. `grep` **confirms** a mapping from an install to a label in one Source; it does
+not discover a fact. `Person` gains no field, and what the mechanical pass writes is the
+label-only shape — no longer "thin", because the fact it appeared to discard was never the
+ontology's to hold.
 
-`scope.md`'s `G4`, and the design makes the cost concrete. `Commitment.source_message` is
-**required** and no Archive line has an identifier.
+### B4 · What a claim cites — **the Window**
 
-```
-A  Drop it to optional.        Cheapest. A Commitment from history cites nothing.
-B  Synthesize a key.           `${at}-${slug(label)}` — MEASURED TO COLLIDE on 37 pairs.
-C  Grow the Transcript line.   ADR 006's codec is canonical and re-encodes byte-identically,
-                               so adding a field rewrites 13,134 lines on disk.
-D  Cite the WINDOW, not the message.
-                               A digest reads a window; the citation is that window.
-                               Costs a `Window` noun the lexicon does not have.
-```
+| Lost | Killed by |
+|---|---|
+| `source_message: text?` — make it optional | Silent. A Commitment that cites nothing cannot be checked, and *"where did this come from"* is the question the field exists to answer |
+| A synthesized `${at}-${slug(label)}` key | **Measured dead: 37 colliding pairs.** It does not merely fail, it cites the *wrong* message |
+| Grow `ArchiveMessage` an `id` | [ADR 006](../../adr/006-schema-is-the-parse-boundary.md)'s encoder is canonical, so this rewrites all 13,134 byte-exact records — before any caller needs it. Right eventually; premature now, and **additive** when Live material makes it matter |
 
-**Answered: D.** `Commitment.source_message` becomes `source_window`, carrying
-`"<chat>@<from>..<to>"`. It is the only shape whose precision matches what the producing pass
-reads: *optional* is silent, a synthesized key is wrong, and growing the line rewrites 13,134
-bytes-exact records before any caller needs it. Tightening to a message identifier when Live
-material arrives is **additive**, so nothing is foreclosed. **Window** is now a
-[CONTEXT.md](../../../CONTEXT.md) entry, which is what D always cost.
+`Commitment.source_message` becomes `source_window`, carrying `"<chat>@<from>..<to>"`.
+**Window** is now a [CONTEXT.md](../../../CONTEXT.md) entry, which is what this option always
+cost.
 
-### B5 · Does `Media.kind` grow a `sticker` arm? — **answered 2026-08-20: yes**
+### B5 · `Media.kind` grows a `sticker` arm — **yes**
 
-Not the principal's, and recorded because it changes a cost. `Media.kind` is
-`enum(image|voice|audio|video|document)`, so **381 stickers are currently destined for a
-vision model**. They are 512×512 WebP and mechanically identifiable — 207 blobs, verified by
-header parse. This is `B3`'s question in miniature: a fact a script can have, with no field
-to hold it.
+No alternative survived contact with the count. **381 of 703 holes are captionless 512×512
+WebP** — verified twice, by header parse across all 980 blobs: 223 WebP of which **207** are
+512×512, plus exactly **95** Ogg voice notes. Without the arm they are queued for a vision
+model; with it the queue drops **703 → 322** and starts meaning what it says.
 
----
+Unlike `B3`, the fact belongs *in* the ontology: a sticker is a property of the Media, not of
+the install.
 
 ## What follows
 
@@ -451,8 +419,9 @@ spike and measured at 250 code lines.
 **Waiting on the principal:** nothing. `G1`, `G3` and `G4` were grilled as one round on
 2026-08-20 and are rows 31–33 of [`scope.md`](./scope.md)'s **Decided**.
 
-**Waiting on a decision I make at step 4:** `B2` alone — where the derived index lives.
-`B1` was answered in this session because `vp run shape` blocks on it.
+**Waiting on a decision:** nothing. `B2` was decided at step 4 — the index is a `Place` on
+`home` beside `blobs`, because the principal's choice of the home's own git for history made
+an index inside the base a source of commit noise.
 
 **Three schema changes now have an owner and none has a ticket yet** — that is
 [`plan-slice`](../../../.agents/skills/plan-slice/SKILL.md)'s job:
