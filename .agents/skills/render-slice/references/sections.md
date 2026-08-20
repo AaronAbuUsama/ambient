@@ -12,7 +12,7 @@ measured numbers, and nothing else. A closed slice fills all twelve.
 | # | Section | Source | What goes in it |
 |---|---|---|---|
 | 1 | **The slice** | `scope.md` § Destination, § Out of scope · `roadmap.md` | The destination in two lines, the frame (*what it may get wrong / must never get wrong*), a **Where it stands** table, and Out of scope as a list. Never a status dashboard — this is the introduction. |
-| 2 | **Frontier** | `scope.md` § Open, § Fog | The question **DAG** (recipe C). Fog as a list underneath. On a closed slice, draw it as it was and say so. |
+| 2 | **Frontier** | `scope.md` § Open, § Fog | The question **DAG** (recipe C), then every open question **in full** in the table beside it — the diagram carries kinds and counts, so the wording lives here or nowhere. Fog as a list underneath. On a closed slice, draw it as it was and say so. |
 | 3 | **Tickets** | `issues/*.md` | The blocking **DAG** (recipe D), each ticket with the one fact that sizes it. Status moves here through step 5. |
 
 ## Group DESIGN — the rule's own eight parts
