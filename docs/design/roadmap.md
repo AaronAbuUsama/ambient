@@ -117,10 +117,14 @@ Answer before the slice that needs it — not before.
 
 | Question | Blocks | Note |
 |---|---|---|
-| What did the MCP spec change? | CAPABILITIES | Statelessness; better with many agents on many servers. **Read the spec — do not design from memory.** |
 | How does Pi take per-session MCP config? | HARNESS, CAPABILITIES | email-pa sets `enableMCP: false` after a stray server polluted a client's directory |
-| Does OK `search` hold at thousands of docs? | MOUTH | Index-as-judgement is fine either way; ranking is the question |
 | Do the 375 failed media downloads come back under pacing? | **trusting** KNOWLEDGE | INGEST `S2b`, deferred off its critical path. The 22-vs-353 split was a regex over signed URLs; there is no media rate limiting anywhere. One run: drain the same set twice, paced and unpaced, reading the typed error. Recipe in [../planning/ingest/findings/06-media-failure-classification.md](../planning/ingest/findings/06-media-failure-classification.md) |
+
+**Two closed 2026-08-20 by KNOWLEDGE.** *MCP spec* — **answered**, current revision is
+`2026-07-28` and `initialize` is deleted; it post-dates the assistant's training, so *"read
+the spec"* earned itself ([findings/05](../planning/knowledge/findings/05-mcp-spec-and-the-tool-boundary.md)).
+*OK `search` at scale* — **retired**, [ADR 007](../adr/007-knowledge-is-files-not-a-client.md)
+means we never call it; measured first at max 100, no wildcard.
 
 ## Decision index
 
@@ -145,6 +149,7 @@ Where each thing was settled, so nothing gets re-litigated from memory.
 | The Transcript line, and the two shapes it beat — **plus amendment 1, where `LiveReaction` stopped being a line** | [../adr/004-transcript-line-is-a-union-on-provenance.md](../adr/004-transcript-line-is-a-union-on-provenance.md) |
 | Why `channel` binds to a durable runtime, and what a one-shot sync costs | [../adr/005-channel-binds-to-the-durable-runtime.md](../adr/005-channel-binds-to-the-durable-runtime.md) |
 | Why external data is decoded by a Schema, and where `effect` enters | [../adr/006-schema-is-the-parse-boundary.md](../adr/006-schema-is-the-parse-boundary.md) |
+| Why `knowledge` writes files, and OpenKnowledge is a format rather than a client | [../adr/007-knowledge-is-files-not-a-client.md](../adr/007-knowledge-is-files-not-a-client.md) |
 | Pairing, the Mirror read, the two refusals, and the sixteen gate rows | [../planning/ingest/spec.md](../planning/ingest/spec.md) |
 | Why the method needed writing down, with the evidence | [../planning/method/deficits.md](../history/method-deficits.md) |
 | What closing a slice requires | [definition-of-done.md](./definition-of-done.md) |
