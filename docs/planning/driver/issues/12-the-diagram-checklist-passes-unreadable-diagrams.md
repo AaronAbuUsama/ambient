@@ -1,6 +1,6 @@
 # 12 — the diagram checklist stops passing unreadable diagrams
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 15, which DRIVER did not answer.*
 
@@ -34,3 +34,23 @@ Measuring the DOM is not looking."*
 - **Shares a file with tickets 13 and 18.** All three edit
   `.agents/skills/render-slice/references/diagrams.md`; this one touches the checklist,
   not recipe C.
+
+## Comments
+
+**2026-08-20 — done.** Two rules, each stated next to the case it fires on, and each with a
+checklist row so it runs.
+
+**One corridor per connector.** The old row asked about *attach points*, and four connectors
+sharing `x=356` did not share one. The new row asks about the run: no two connectors occupy the
+same `x` over the same `y`, corridors 24px apart, the longest run nearest its target so shorter
+runs nest inside it. It is stated as *same `x` over the same `y`* rather than *one `x` each*
+because recipe A's two elbows already share `x=624` legally — their runs are 72px apart and
+cannot touch — and a rule its own file breaks on the day it is written is not a rule.
+
+**Text against its slot.** Nothing fired because there was no legend slot to measure against:
+the geometry block gave `swatchY` and never `swatchX`. It now gives both — `40, 280, 520, 760`,
+four slots 200 wide — and the budgets are read off a measured advance. **`Geist Mono` 8px is
+4.8px a character**, measured with `canvas.measureText` against the embedded font on the
+rendered page, 2026-08-20: 22 characters returned 105.6px. So a 224px field line is 46
+characters and a 180px legend label is 37. Sans is proportional and is stated as uncountable
+rather than given a wrong constant.
