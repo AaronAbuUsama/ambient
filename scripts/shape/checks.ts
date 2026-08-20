@@ -130,6 +130,23 @@ const prose = (text: string): string =>
     .replaceAll(/`[^`\n]*`/g, "");
 
 /**
+ * The literal filename behind a resolved URL path. `URL` percent-encodes what it
+ * resolves and a filesystem does not, so `héllo.md` arrives as `h%C3%A9llo.md`
+ * and would be looked up under that name and reported broken. Decoding is per run
+ * of escapes, so a lone `%` — a character in a filename, not an escape — survives;
+ * and a run that decodes to nothing valid is left exactly as written, because a
+ * name this cannot read is a link to report, never a crash of the whole run.
+ */
+const literal = (pathname: string): string =>
+  pathname.replaceAll(/(?:%[0-9A-Fa-f]{2})+/g, (run) => {
+    try {
+      return decodeURIComponent(run);
+    } catch {
+      return run;
+    }
+  });
+
+/**
  * Every cross-link in a document resolves. `exists` is asked about a path from
  * the repository root, which is what a link resolves to once the document's own
  * directory is applied — so the offence names a file someone can open.
@@ -152,7 +169,7 @@ export const brokenLinks = (
         // illegal, which is the checker being wrong rather than the document.
         const path = (link.split("#")[0] ?? "").replace(/:\d+(-\d+)?$/, "");
         const target = new URL(path, doc);
-        if (target.pathname !== doc.pathname && !exists(target.pathname.slice(1))) {
+        if (target.pathname !== doc.pathname && !exists(literal(target.pathname).slice(1))) {
           found.push({ at: `${rel}:${i + 1}`, said: `links to \`${link}\`, which does not exist` });
         }
       }

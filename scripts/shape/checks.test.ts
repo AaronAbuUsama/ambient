@@ -156,6 +156,36 @@ it("a URL, a mailto, a bare fragment and a self-link are not files to find", () 
   expect(brokenLinks("docs/design/roadmap.md", doc, holding())).toEqual([]);
 });
 
+it("an encoded or non-ASCII name is looked up by the name on disk, not the escape", () => {
+  // `URL` percent-encodes what it resolves; a filesystem does not. Passing the
+  // encoded form across the seam reported every such link as broken.
+  const doc = "[a](./a%20b.md) and [b](./héllo.md) and [c](./h%C3%A9llo.md)\n";
+
+  expect(brokenLinks("docs/design/roadmap.md", doc, holding("docs/design/a b.md"))).toEqual([
+    { at: "docs/design/roadmap.md:1", said: "links to `./héllo.md`, which does not exist" },
+    { at: "docs/design/roadmap.md:1", said: "links to `./h%C3%A9llo.md`, which does not exist" },
+  ]);
+
+  expect(
+    brokenLinks(
+      "docs/design/roadmap.md",
+      doc,
+      holding("docs/design/a b.md", "docs/design/héllo.md"),
+    ),
+  ).toEqual([]);
+});
+
+it("a name this cannot decode is a link to report, never a crash of the whole run", () => {
+  // `decodeURIComponent` throws on both of these — a lone `%` is not an escape,
+  // and `%C3` is half a character. Decoding the whole path at once would take
+  // `vp run shape` down with a URIError instead of printing an offence.
+  const doc = "[a](./50%off.md) and [b](./%C3.md)\n";
+
+  expect(brokenLinks("docs/design/roadmap.md", doc, holding("docs/design/50%off.md"))).toEqual([
+    { at: "docs/design/roadmap.md:1", said: "links to `./%C3.md`, which does not exist" },
+  ]);
+});
+
 it("a link inside a fence or inline code is illustration, and the lines still count", () => {
   const doc = ["```md", "[a](./gone.md)", "```", "`[b](./gone.md)`", "[c](./gone.md)"].join("\n");
 
