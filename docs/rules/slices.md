@@ -128,6 +128,12 @@ questions has broken this.** Facts are the agent's job; decisions are the princi
 must outlive the session or run AFK in parallel — a long research pass, a spike to return
 to. That is the exception, not the shape.
 
+**An answer is recorded when it lands, whatever step is running.** Questions do not wait for
+step 3 to be asked or answered — INGEST's three `research` answers all arrived while its map
+was still being written, and DRIVER's did the same. The answer goes to `scope.md` under
+**Decided**, one line pointing at whatever holds the detail, the moment it arrives. Step 3 is
+where the frontier is *worked*, not where an answer is first permitted to exist.
+
 **One decision per session, except `research`,** which parallelises because nobody is
 waiting on it.
 

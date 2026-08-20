@@ -1,6 +1,6 @@
 # 16 — an answer is recorded when it lands, whatever step is running
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 19, which DRIVER did not answer.*
 
@@ -24,3 +24,15 @@ nothing forbids it either.
 
 - [slices.md](../../../rules/slices.md) § 3 — this amends it.
 - [decisions.md](../../../rules/decisions.md) — an amendment, never a rewrite.
+
+## Comments
+
+**2026-08-20 — [`slices.md`](../../../rules/slices.md) § 3 amended: the answer lands in
+`scope.md` under Decided the moment it arrives.** One paragraph, next to *an open question is
+a line, not a file*, because both say where a question and its answer live. It names the
+second home it forecloses — Decided, one line, pointing at whatever holds the detail — so an
+answer that arrives at step 1 is not also waiting to be re-recorded at step 3. The step 3
+table row already said *answers, appended to Decided* and is unchanged; what was missing was
+that the appending is not gated on the step. Evidence stays as measured: INGEST's three
+`research` answers arrived during its map, DRIVER's scope records its own under *answered
+during step 1*.
