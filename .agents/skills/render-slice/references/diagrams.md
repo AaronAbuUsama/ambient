@@ -18,10 +18,40 @@ canvasHeight = lowestBoxBottom + 112
 legendRuleY  = canvasHeight - 68
 legendTextY  = legendRuleY + 20
 swatchY      = legendRuleY + 8      (12 × 12, rx 2)
+swatchX      = 40, 280, 520, 760    (four slots, 200 wide; label at swatchX + 20)
 ```
 
 **Check it before you emit.** `lowestBoxBottom` is `max(y + height)` over every node box, not
 over the last box you happened to write. Clearance below 32px is a fail.
+
+## One corridor per connector
+
+Four connectors once shared the vertical at `x=356`, two of them overlapping in `y`. They
+rendered as **one continuous line** and which question fed which gate row was untraceable — and
+the checklist passed, because it asked only whether they shared an *attach point*. They did not.
+They shared the whole run between the attach points.
+
+**No two connectors occupy the same `x` over the same `y`.** Corridors sit **24px apart**, and
+**the longest run takes the corridor nearest its target**, so shorter runs nest inside it and
+nothing crosses. Recipe C's ladder is `316 · 340 · 364 · 388`. Recipe A's two elbows do share
+`x=624` and are legal for the one reason that matters: their runs are 72px apart in `y` and
+cannot touch.
+
+## Text is measured against its slot
+
+Two legend labels once overran their slot and collided with the next swatch, and every numeric
+check passed — because nothing compared a string's width to the space it had. Measuring a string
+against its neighbours is not measuring it against its slot.
+
+`Geist Mono` 8px advances **4.8px a character**, measured off the embedded font:
+
+| Slot | Width | Budget |
+|---|---|---|
+| a 240 box's field line, `x+8` to `x+w-8` | 224px | **46 characters** |
+| a legend label, `swatchX+20` to the end of its slot | 180px | **37 characters** |
+
+**`Geist` sans is proportional and cannot be counted** — measure it, or keep it to a name. It is
+used for node names and nothing that has to fit beside something else.
 
 ## Palette — literal hex, never `var()`
 
@@ -150,8 +180,8 @@ The gate leaves level for the terminal — `M632,<gate y + 52> H736`.
 | `task` | `rgba(79,93,117,.10)` | `soft` | `TASK` — either, HITL or AFK |
 | the gate | `rgba(235,108,54,.06)` | `accent` | the one accent |
 
-**A question does not fit in a node.** A 240-wide box at 8px mono is 46 characters, and
-compressing a question into one produced `T1  linked-device slots free` and `G2  § The caller` —
+**A question does not fit in a node.** The field line's budget is one short label, and
+compressing a question into it produced `T1  linked-device slots free` and `G2  § The caller` —
 labels for something the reader was expected to already know. So the box carries **the kind and
 the count**: the tag in the header band, `n open` right-aligned beside it, and one field line
 carrying the mode — the words after the tag in the table above. **The questions themselves are
@@ -184,6 +214,10 @@ Edge is `blocks`, pointing from blocker to blocked. Fan a shared right edge at `
 - [ ] No diagonal connector — every off-axis link is a rounded elbow, `r=8`
 - [ ] Every arrow label has an opaque `#f5f5f5` mask with a 6–10px gap above the stroke
 - [ ] No two connectors share an attach point; shared edges fanned ≥12px
+- [ ] No two connectors run in the same corridor over the same `y`, and the longest run is
+      nearest its target
+- [ ] Every string measured against its slot — 46 characters in a box field line, 37 in a
+      legend label
 - [ ] Accent on ≤2 elements
 - [ ] Legend is a bottom strip and names every treatment used, and nothing else
 - [ ] Node count within budget: 6 modules, 5 lifelines, 9 DAG nodes
