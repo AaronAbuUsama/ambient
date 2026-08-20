@@ -6,6 +6,13 @@ A **Slice** is one named unit of roadmap work — SKELETON, IMPORT, INGEST. It i
 module and does not map one-to-one onto modules: SKELETON was one Slice and produced two
 modules. Slices have names, not numbers.
 
+**Planning is per slice. The roadmap is the half that is not.** What the slices *are* —
+their names, their order, and what breaks if you go backwards — is not derivable one slice
+at a time, so it is planned once, up front, and lives in
+[roadmap.md](../design/roadmap.md). Everything *inside* a slice is planned just-in-time,
+when the slice becomes active, in `docs/planning/<slice>/scope.md`. The roadmap is not an
+exception to this rule; it is the planning this rule does not cover.
+
 Every Slice goes through the same six steps, in order, and each step has one gate. **Do not
 start a step until its gate passes.**
 
