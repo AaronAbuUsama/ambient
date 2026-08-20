@@ -1,6 +1,6 @@
 # 19 — a deficit that was built and reverted can say so
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 24, which DRIVER did not answer.*
 
@@ -30,3 +30,28 @@ attempt starts from the reason the first came out.
 - [decisions.md](../../../rules/decisions.md) — *"A silently corrected ADR reads as if the
   design were right first time."* This is that rule applied to the record of what is wrong.
 - [issues.md](../../../rules/issues.md) — the `Status:` vocabulary is stated there.
+
+## Comments
+
+**2026-08-20 — done.** [`issues.md`](../../../rules/issues.md) § The rule carries `retracted`
+in the `Status:` vocabulary, with the one line that makes it a state rather than a label:
+built, reverted, and the reason recorded as a `## Comments` entry, without which the ticket is
+open again rather than retracted. `wontfix` is named beside it as the ticket that was never
+built, because those are the two that get confused.
+
+**The argument lives in § Why, not in the bullet**, and it is the evidence rather than the
+principle: 318 lines built and reverted six minutes apart under `git revert`'s default message,
+which left the register asserting the entry point had never been attempted. The § Why paragraph
+points at deficits 24 and 25 in
+[method-deficits.md](../../../history/method-deficits.md) rather than retelling them.
+
+**Nothing checks it, and § The check now says so** — the `Status:` vocabulary is unchecked, and
+a retracted ticket's reason is read in the `## Comments` entry that is the evidence.
+[legibility.md](../../../rules/legibility.md) rule 2 is why the sentence is there rather than
+implied.
+
+**`declined` was not added.** The register's amendment asks for two words —
+`retracted` for work tried and pulled, `declined` for a deficit the principal does not accept —
+and this ticket's *Done when* names only the first. `wontfix` already holds the second case for
+a ticket; whether the register's `declined` needs a word of its own is not this ticket's to
+decide.
