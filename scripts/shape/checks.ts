@@ -1,5 +1,5 @@
 /**
- * The five repo-shape checks, as functions of their inputs.
+ * The six repo-shape checks, as functions of their inputs.
  *
  * Each takes what it needs — a file list, a reader, or the text itself — and
  * returns the offences it found. None of them reads a disk, prints, or exits:
@@ -174,5 +174,131 @@ export const brokenLinks = (
         }
       }
     });
+  return found;
+};
+
+/** Every run of digits in a table cell. A canvas states a four-number viewBox; the rest, one. */
+const digits = (cell: string): readonly number[] => [...cell.matchAll(/\d+/g)].map(Number);
+
+/**
+ * The four diagram recipes obey the geometry they declare —
+ * [artefacts.md](../../docs/rules/artefacts.md).
+ *
+ * `diagrams.md` is solved geometry, and the first item of its own checklist is the
+ * pair of rules that bind: the legend rule fixes the canvas, and the lowest ink
+ * clears the legend by the floor. Nothing ran that checklist, so the file shipped
+ * with a canvas formula true of no recipe and a legend rule 8px off its own canvas —
+ * a check nobody runs hides the rules that are broken as readily as the layouts.
+ *
+ * Both constants are read out of that checklist item rather than copied here, because
+ * a second copy of a number is how the first two went wrong. The match is anchored to
+ * the item's own line, because a second copy already exists: recipe B's history quotes
+ * `legendRuleY == canvasHeight - 68` verbatim 120 lines above the checklist, and an
+ * unanchored search takes that one — frozen prose outvoting the rule it is the history of.
+ *
+ * `lowestInk` is the one figure a parser cannot find, being a judgement rather than a
+ * coordinate — recipe B's is a lifeline foot and not its deepest message, recipe C's at
+ * one kind is the gate and not the box — so each recipe declares it in a
+ * `lowest ink | legend rule | canvas` row and this reads the row. The judgement stays in
+ * the file; only the arithmetic is here.
+ */
+export const brokenGeometry = (rel: string, text: string): readonly Offence[] => {
+  const stated =
+    /^- \[ \] `legendRuleY == canvasHeight - (\d+)`, and `lowestInk \+ (\d+) <= legendRuleY`/m.exec(
+      text,
+    );
+  if (stated === null) {
+    return [
+      {
+        at: rel,
+        said: "no `- [ ]` checklist item states legendRuleY == canvasHeight - N and lowestInk + N <= legendRuleY, backticked, on one line — that item is where this check reads both constants",
+      },
+    ];
+  }
+  const strip = Number(stated[1]);
+  const floor = Number(stated[2]);
+  const found: Offence[] = [];
+
+  /**
+   * Recipe letter → geometry rows declared. One that declares none is itself an offence,
+   * so the four are seeded rather than learned from the headings found: a heading deleted
+   * or renamed would otherwise take its recipe out of the check entirely, and stripping
+   * all four made this walk report clean. The roster is a structural fact that changes
+   * about never, and when it does a loud failure here is the point — the same bargain as
+   * `LONGER` in [`lint/legibility.ts`](../lint/legibility.ts). A fifth letter is still
+   * tracked below, so the seed is a floor and not a ceiling.
+   */
+  const declared = new Map<string, number>([
+    ["A", 0],
+    ["B", 0],
+    ["C", 0],
+    ["D", 0],
+  ]);
+  let recipe = "";
+  let columns: { readonly ink: number; readonly rule: number; readonly canvas: number } | null =
+    null;
+
+  for (const [i, line] of text.split("\n").entries()) {
+    // Cleared by any `##`, not only a recipe's: left standing, a renamed heading hands the
+    // next recipe's rows to the one above it and reports D's broken canvas as C's.
+    if (line.startsWith("## ")) recipe = /^## Recipe ([A-Z])\b/.exec(line)?.[1] ?? "";
+    if (!line.startsWith("|")) {
+      columns = null;
+      continue;
+    }
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((c) => c.trim().toLowerCase());
+    const named = (header: string): number => cells.indexOf(header);
+    const [ink, rule, canvas] = [named("lowest ink"), named("legend rule"), named("canvas")];
+    if (ink !== -1 && rule !== -1 && canvas !== -1) {
+      columns = { ink, rule, canvas };
+      continue;
+    }
+    if (columns === null || /^:?-+:?$/.test(cells[0] ?? "")) continue;
+
+    const at = `${rel}:${String(i + 1)}`;
+    const lowest = digits(cells[columns.ink] ?? "")[0];
+    const legend = digits(cells[columns.rule] ?? "")[0];
+    const box = digits(cells[columns.canvas] ?? "");
+    const height = box.length === 4 ? box[3] : undefined;
+    if (lowest === undefined || legend === undefined || height === undefined) {
+      found.push({
+        at,
+        said: `recipe ${recipe}: a geometry row missing its lowest ink, legend rule or viewBox`,
+      });
+      continue;
+    }
+    if (recipe === "") {
+      found.push({
+        at,
+        said: "a geometry row under no `## Recipe` heading — it is declared for no recipe",
+      });
+      continue;
+    }
+    declared.set(recipe, (declared.get(recipe) ?? 0) + 1);
+    if (legend !== height - strip) {
+      found.push({
+        at,
+        said: `recipe ${recipe}: a canvas ${String(height)} tall under a legend rule at ${String(legend)} — the rule fixes the canvas, so \`canvasHeight\` is ${String(legend + strip)}`,
+      });
+    }
+    if (lowest + floor > legend) {
+      found.push({
+        at,
+        said: `recipe ${recipe}: lowest ink ${String(lowest)} clears the legend rule ${String(legend)} by ${String(legend - lowest)}, under the floor of ${String(floor)}`,
+      });
+    }
+  }
+
+  for (const [name, rows] of declared) {
+    if (rows === 0) {
+      found.push({
+        at: rel,
+        said: `recipe ${name} declares no \`lowest ink | legend rule | canvas\` row — a check that passes by looking at nothing is what let two wrong numbers sit in that file`,
+      });
+    }
+  }
   return found;
 };
