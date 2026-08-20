@@ -116,7 +116,7 @@ different job.
 | 2 · Design | `.agents/skills/design-slice/SKILL.md` |
 | 3 · Frontier | by kind — see below |
 | 4 · Plan | `.agents/skills/plan-slice/SKILL.md` |
-| 5 · Build | per ticket: `.agents/skills/new-module/SKILL.md`, then `.agents/skills/vendor/tdd/SKILL.md`, then `.agents/skills/vendor/code-review/SKILL.md` |
+| 5 · Build | per ticket: `.agents/skills/new-module/SKILL.md`, then `.agents/skills/vendor/tdd/SKILL.md`, then `.agents/skills/code-review/SKILL.md` |
 | 6 · Close | `.agents/skills/close-slice/SKILL.md` |
 
 **One step per run.** Advance by one, report, and stop. The principal types it again.

@@ -160,9 +160,11 @@ The spec's §4, made executable. `close-slice` runs
     id in a heading, every question written as a question, what closed as well as what is
     open.
 12. `vp run shape` resolves every dispatch path in the driver, as document cross-links.
-13. `/tdd`, `/code-review`, `/grilling`, `/research`, `/prototype`, `/codebase-design` and
+13. `/tdd`, `/grilling`, `/research`, `/prototype`, `/codebase-design` and
     `/domain-modeling` each resolve to the copy under `.agents/skills/vendor/`, not to a
-    plugin or a harness built-in.
+    plugin or a harness built-in. `/code-review` was in this list when it was written and is
+    not any more: row 18 gives that name to ours, and the vendored copy stays reachable by
+    path as `tdd`'s dependency.
 14. `scripts/shape.ts` names any module in a `design.md` § Seam delta that owns no row in
     `seams.md`, and exits non-zero. It passes on the tree as it stands.
 15. `no-throw`, the `../..` import ban, the cross-module `internal/` ban and the 250-line

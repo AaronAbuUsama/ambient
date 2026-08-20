@@ -136,10 +136,11 @@ read the ticket → /new-module if it adds one → /tdd → /code-review → com
 vp check && vp test && vp run shape && pnpm dlx fallow dupes
 ```
 
-[`tdd`](../../.agents/skills/vendor/tdd/SKILL.md) and
-[`code-review`](../../.agents/skills/vendor/code-review/SKILL.md) are the copies this
-repository vendored. `/code-review` is also the name of a harness built-in with a different
-job, so the path is how you say which one you mean.
+[`tdd`](../../.agents/skills/vendor/tdd/SKILL.md) is the copy this repository vendored;
+[`code-review`](../../.agents/skills/code-review/SKILL.md) is ours, because the vendored one
+grades against a `CODING_STANDARDS.md` and an issue tracker that do not exist here.
+`/code-review` is also the name of a harness built-in with a different job, so the path is
+how you say which one you mean.
 
 `new-module` **refuses a module with no [`seams.md`](../design/seams.md) row.** That is why the
 seam delta is step 2's job and why IMPORT needed a ticket 00 it should not have needed.
