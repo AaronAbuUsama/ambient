@@ -59,9 +59,46 @@ hope.** The enforcement for this one is that the brief names the skill.
 
 ## The check
 
+`vp run shape` — `brokenGeometry` in
+[`scripts/shape/checks.ts`](../../scripts/shape/checks.ts) asserts that the four diagram recipes
+in [`diagrams.md`](../../.agents/skills/render-slice/references/diagrams.md) obey the geometry
+they declare. Each carries a `lowest ink | legend rule | canvas` row, and the check asserts the
+two rules that keep a legend clear of the ink: `legendRuleY == canvasHeight - 68` and
+`lowestInk + 32 <= legendRuleY`. Both constants are read out of that file's own checklist rather
+than copied into the script, and a recipe that declares **no** row is itself an offence — a check
+that passes by looking at nothing is what let a canvas formula true of no recipe, and a legend
+rule 8px off its own canvas, sit in that file from the day it was written. `vp test` —
+[`scripts/shape/checks.test.ts`](../../scripts/shape/checks.test.ts) asks it the cases this
+repository does not contain, including a recipe clearing its legend by exactly the floor and a
+heading renamed out of the roster.
+
+That is the *recipes'* arithmetic, not the page's design. The lowest ink is a judgement the recipe
+states rather than a coordinate anything can find — recipe B's is a lifeline foot and not its
+deepest message — and a diagram whose three numbers agree can still overrun a slot, collide, or
+read as a browser default.
+
 **Not currently checked** — no script inspects generated HTML for design quality, and it is
 not obvious one usefully could.
 
 Enforced instead at the point of instruction: any brief that asks for a generated artefact
 must name the skill to design it with. If you are writing that brief and have not named a
 skill, the brief is incomplete.
+
+## Amendments
+
+**2026-08-20 — the recipes' declared geometry is checked; the generated page still is not.**
+`vp run shape` gained a walk over
+[`diagrams.md`](../../.agents/skills/render-slice/references/diagrams.md) after two numeric
+contradictions shipped inside that file — a `canvasHeight = lowestBoxBottom + 112` constant true
+of no recipe, and recipe B's canvas at 720 where its own legend rule at 644 requires 712 — both
+because nothing ran the file's checklist. The check is a function of its text with its own
+rows in `checks.test.ts`, per [legibility.md](legibility.md) — *"and the checkers are checked"*,
+which landed on master the same day and which the first cut of this one predated.
+
+The *"Not currently checked"* paragraph stands **as written**. It is a statement about generated
+HTML, and no script inspects generated HTML; what is now checked is the arithmetic of the recipes
+a page is drawn from, which is a different claim. It is recorded as two paragraphs above it, and
+this entry, rather than as an edit to it: collapsing the two would read as if this rule had always
+been enforced by a script, and the reason it is not — that design quality is not obviously
+checkable, so the enforcement is the brief — is the part worth keeping. The paragraph moved below
+the new one only to match every other rule here, which states what runs before what does not.
