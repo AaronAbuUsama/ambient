@@ -213,8 +213,8 @@ Every dispatch names a skill **by repository path**, never by a bare name:
 .agents/skills/new-module/SKILL.md
 .agents/skills/close-slice/SKILL.md
 .agents/skills/render-slice/SKILL.md
+.agents/skills/code-review/SKILL.md
 .agents/skills/vendor/tdd/SKILL.md
-.agents/skills/vendor/code-review/SKILL.md
 .agents/skills/vendor/research/SKILL.md
 .agents/skills/vendor/grilling/SKILL.md
 .agents/skills/vendor/prototype/SKILL.md
@@ -225,6 +225,14 @@ Every dispatch names a skill **by repository path**, never by a bare name:
 `/grilling`, and `/new-module → /tdd → /code-review` — and 44 of the 124 entries in
 `~/.claude/skills/` are dangling symlinks, so `/tdd` resolves to a plugin and `/code-review`
 to a harness built-in. Instrument: `test -e` over every symlink in that directory.*
+
+**Amended 2026-08-20, closing the slice.** `code-review` moved out of `vendor/` and into
+`.agents/skills/code-review/`. Ticket 09 built ours: the vendored copy grades Standards against
+a `CODING_STANDARDS.md` and Spec against an issue tracker, and neither exists here, so both of
+its axes pointed at nothing. Ours reads [`docs/rules/`](../../rules/), the slice's `spec.md`,
+and — a third axis the vendored copy has no equivalent of — `design.md` and `seams.md` for
+Shape. The dispatch rule is unchanged and is the reason this line had to move rather than rot:
+**by repository path, never by a bare name.**
 
 ### 3 · What a step skill owes the driver
 

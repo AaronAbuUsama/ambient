@@ -29,5 +29,9 @@ dist-ssr
 # Spike scratch (personal data, never commit)
 .spike-private/
 
+# Written by the harness per machine. Ignored globally on the author's box, which is why
+# `vp check` failed here and nowhere else — the formatter reads this file, not ~/.config/git/ignore.
+.claude/settings.local.json
+
 # A slice renders to one page — derived from its markdown, regenerated, never edited
 docs/planning/*/*.html
