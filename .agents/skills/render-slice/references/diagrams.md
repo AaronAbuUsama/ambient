@@ -59,10 +59,19 @@ against its neighbours is not measuring it against its slot.
 
 `Geist Mono` 8px advances **4.8px a character**, measured off the embedded font:
 
-| Slot | Width | Budget |
+A field line runs `x+8` to `x+w-8`, so its budget is `floor((w - 16) / 4.8)` and **it is per
+box, not per file** — recipe A alone has three widths:
+
+| Box | Slot | Budget |
 |---|---|---|
-| a 240 box's field line, `x+8` to `x+w-8` | 224px | **46 characters** |
+| recipe A's caller and foundation, `w 224` | 208px | **43 characters** |
+| recipe C's box, `w 240` | 224px | **46 characters** |
+| recipe A's focal, `w 256` | 240px | **50 characters** |
+| recipe A's callees, `w 304` | 288px | **60 characters** |
 | a legend label, `swatchX+20` to the end of its slot | 180px | **37 characters** |
+
+**46 is not the number.** It is one box's number, and the box that produced the rule; carrying
+it to a 224-wide slot passes a string three characters over the edge.
 
 **`Geist` sans is proportional and cannot be counted** — measure it, or keep it to a name. It is
 used for node names and nothing that has to fit beside something else.
@@ -232,8 +241,8 @@ Edge is `blocks`, pointing from blocker to blocked. Fan a shared right edge at `
 - [ ] No two connectors share an attach point; shared edges fanned ≥12px
 - [ ] No two connectors run in the same corridor over the same `y`, and the longest run is
       nearest its target
-- [ ] Every string measured against its slot — 46 characters in a box field line, 37 in a
-      legend label
+- [ ] Every string measured against **its own** slot — `floor((w - 16) / 4.8)` in a box `w`
+      wide, 37 in a legend label. 46 is the 240 box only
 - [ ] Accent on ≤2 elements
 - [ ] Legend is a bottom strip and names every treatment used, and nothing else
 - [ ] Node count within budget: 6 modules, 5 lifelines, 9 DAG nodes
