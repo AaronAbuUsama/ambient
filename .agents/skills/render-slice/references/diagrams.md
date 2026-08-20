@@ -153,15 +153,17 @@ The box is recipe A's two-section box at **240×64**, `x 40`: divider `y+32`, ta
 count says. What varies is how many boxes the column holds, and that is solved below — every
 count the recipe can produce, none of it freehand.
 
-| Kinds | box y | gate y | terminal y | lowest box | legend rule | canvas |
+| Kinds | box y | gate y | terminal y | lowest edge | legend rule | canvas |
 |---|---|---|---|---|---|---|
-| 1 | 52 | 32 | 48 | 136 | 172 | `0 0 1000 240` |
+| 1 | 52 | 32 | 48 | 136 † | 172 | `0 0 1000 240` |
 | 2 | 32, 128 | 60 | 76 | 192 | 228 | `0 0 1000 296` |
 | 3 | 32, 128, 224 | 108 | 124 | 288 | 324 | `0 0 1000 392` |
 | **4** | 32, 128, 224, 320 | 156 | 172 | 384 | 420 | `0 0 1000 488` |
 
 Boxes step **96** — 64 and a 32 gutter — and the column is centred on the gate, which is why
-the gate and the terminal move with the count. Gate `428, <gate y>, 204×104` (accent),
+the gate and the terminal move with the count. **†** at one kind the gate is the lowest thing
+on the canvas, not the column: a 104-tall gate against a single 64-tall box, so the legend
+clears `32 + 104` and not `52 + 64`. Every other row clears the bottom box. Gate `428, <gate y>, 204×104` (accent),
 terminal `736, <terminal y>, 224×72`.
 
 Each box leaves its right edge at `y+32` and takes **its own corridor** into its own attach
