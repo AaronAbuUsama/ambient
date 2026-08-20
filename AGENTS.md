@@ -72,6 +72,20 @@ with no `skeleton` module. Do not create a module named after a slice.
 Contradicting one of these, or an ADR, is allowed — silently is not. How a correction is
 recorded is [decisions.md](docs/rules/decisions.md).
 
+### Amended 2026-08-20 — [ADR 007](docs/adr/007-knowledge-is-files-not-a-client.md)
+
+Two of the five keep their conclusion and lose their stated reason. Both are recorded here
+rather than edited above.
+
+- **`cwd` is the chat's own folder** — still true, but *not* "because OpenKnowledge is
+  addressed over MCP, not by path". It is addressed by path now. There is still no conflict,
+  for a different reason: `knowledge` reaches the base through a `Place` from `home`, so it
+  never depends on the working directory at all.
+- **The ontology tool is a validator, a queue and an indexer, never a CRUD layer** — still
+  true of the four `ambient ontology` verbs, which stay read-only. But *not* "because
+  OpenKnowledge already is one". Writes are `knowledge`'s own, and the reason the verbs stay
+  read-only is that writing belongs to the passes, not to a CLI.
+
 ## Project skills
 
 Repo-owned, in [`.agents/skills/`](.agents/skills/) and symlinked into

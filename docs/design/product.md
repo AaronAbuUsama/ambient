@@ -275,7 +275,8 @@ chats/<slug>/
   transcript.jsonl
   media/
 
-agents/<name>/              background agents — MCP, skill, scope
+agents/<name>/              background agents — MCP, scope, and skills.
+                            one SKILL.md today; skills/ is the intent — see Settled
 ```
 
 A speaker's initial context is small and known: `identity.md`, its mandate, its own
@@ -365,6 +366,12 @@ What that requires:
 - **One knowledge base**, an OpenKnowledge project. No partitions.
 - **The speaker does not write shared knowledge directly** — a quality decision, not a
   concurrency one. Consolidation is a cadenced loop.
+- **The tool is what makes frontmatter valid.** An agent that writes knowledge does it
+  through a verb that validates against `schema.yaml` and **refuses**, rather than writing
+  something malformed. This is what the OpenKnowledge MCP was being kept for, and it
+  survives dropping it. Stated as a refusal for a measured reason: OpenKnowledge's own
+  `write` silently dropped `aliases: []` and `numbers: []`, producing a `Person` missing two
+  required fields — it let an agent mess up the frontmatter.
 - **The ontology carries over; a separate graph store does not.** Entities are
   OpenKnowledge documents with typed frontmatter; the ported tool is a validator, queue and
   indexer, never a CRUD layer. See [knowledge-flow.md](knowledge-flow.md).
@@ -378,8 +385,16 @@ What that requires:
 - **The speaker never runs a long job.** It hands off to a background agent.
 - **Background agents are configurable at runtime** by the Root or by the user: an MCP, a
   skill, a scope. Same paradigm as everything else — a folder and a config file.
-- **Skills compound like knowledge does.** An agent authors a Draft; `install` is the
-  review gate. OpenKnowledge owns this mechanism.
+- **Skills compound like knowledge does.** A pass is operated by hand until it is good,
+  then written down as a skill. A **Chat's** skills live in its own folder, because every
+  Chat has a different purpose; an **Agent's** live in its own folder for the same reason.
+  **Amended 2026-08-20 ([ADR 007](../adr/007-knowledge-is-files-not-a-client.md)): the
+  Draft and the review gate do not exist.** OpenKnowledge has no draft state — *"its own
+  folder IS the skill"* — and `install` places an existing skill elsewhere rather than
+  promoting it; a skill written with plain `cat` is adopted as fully managed, so writing by
+  path bypasses no gate. **[open]** An Agent holds exactly one `SKILL.md` today and
+  `Agent.skill` is a single string; many-skills-per-Agent is a `home` change, not a
+  convention. See [`knowledge/scope.md`](../planning/knowledge/scope.md).
 - **Silence is first-class. Canon.**
 - Extensibility is for the user, not only for the agent. Most users will not be engineers.
 - Configuration is files in a git repo.
@@ -387,8 +402,14 @@ What that requires:
   forwarded screenshot deduped across every chat. **Interpretations are knowledge** — a
   Media doc in the knowledge base keyed by the same hash, searchable and citable. Chat
   folders hold references only.
-- **Use OpenKnowledge's MCP directly.** An OK-compatible server of our own is a later
-  problem. The discipline that costs nothing now: **depend on OK's tool surface, never on
+- ~~**Use OpenKnowledge's MCP directly.**~~ **Amended 2026-08-20
+  ([ADR 007](../adr/007-knowledge-is-files-not-a-client.md)): withdrawn.** `knowledge`
+  reads and writes the markdown itself; nothing in Ambient spawns `ok`. OpenKnowledge stays
+  a **format we conform to and a viewer** — measured to need no `.ok/` at all, and to
+  reconcile a plain-`fs` write in about six seconds. The discipline below is superseded by a
+  stricter one: **depend on the format, never on the tool surface.** An OK-compatible server
+  of our own is still a later problem, and is now a smaller one. The original discipline,
+  kept for the record: **depend on OK's tool surface, never on
   its internals** — no reading `.ok/` state, no assuming file layout, no touching skill
   projections. Then swapping the implementation is a config change.
 - **`cwd` is the chat's own folder.** That is what scopes its skills and its writes, with

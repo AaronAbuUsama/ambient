@@ -41,3 +41,32 @@ nothing"*, asserts the scaffold is exactly `.ok/` and `.okignore`, and that
 visible in `openHome(root)`'s signature.
 
 That no future module shells out to `ok` is **not currently checked**.
+
+## Amendments
+
+### 1 · 2026-08-20 — the runtime clause is withdrawn
+
+**"At runtime the knowledge base is addressed over MCP, never by path" is withdrawn by
+[ADR 007](../adr/007-knowledge-is-files-not-a-client.md).**
+
+That clause and *"no code in this repository spawns `ok`"* were written as alternatives and
+are not. **Addressing the knowledge base over MCP is what spawns `ok`** — measured, not
+argued: an agent's first MCP call carrying `cwd: ~/.ambient/knowledge` caused `ok start`,
+which wrote a `.git/ok/` store and eleven files under `.ok/local/` into the principal's real
+home. The rule's own reason for avoiding `ok init` — that it creates a nested `.git` — was
+reproduced by the path the rule prescribes.
+
+*Instrument: `/Users/abuusama/.ok/logs/cli.2026-08-20.log:6`. Cleaned up; `knowledge/` is
+`[.ok, .okignore]` again and `doctor` exits 0.*
+
+**Everything else in this rule stands, and is stronger for it.** We still match the format.
+We still never call the CLI. `home` still writes the scaffold from its own templates and
+takes no ports. What replaces the withdrawn clause is simpler: `knowledge` reads and writes
+the files, reaching them through a `Place` from `home` like every other module.
+
+The final section's discipline — *"depend on OK's tool surface, never on its internals"* —
+is superseded by a stricter one: **depend on the format, never on the tool surface.**
+`ambient skill add` still does not exist, but no longer for the reason given there: a skill
+written by plain `cat` is adopted as fully managed, so writing by path bypasses no gate,
+because there is no gate. See
+[`findings/02`](../planning/knowledge/findings/02-ok-skills-draft-and-install.md).

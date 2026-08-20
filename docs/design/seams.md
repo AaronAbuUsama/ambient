@@ -27,7 +27,8 @@ Revisable. Expected to change on contact.
 | `channel` | A Live account Reader and a bound destination. The credential, the pairing, the account lease, the one-shot full sync, and reading the durable log from a `seq`. **Hides `whatsappd` entirely** — nothing else names `libsqlBackend`, `createWhatsAppRuntime` or a `MessageRecord`. Produces values; **writes no Ambient state**. | read a Live account → Message values; send, pre-bound to one Chat | no |
 | `ingest` | **The Continuous Ingestion operation itself** — read from the Cursor, store Blobs, append the Transcript, advance the Cursor. Owns the order of those writes and what a crash between them leaves. | `runIngest(deps) → IngestReport`, one call | no |
 | `media` | Interpreting a blob: speech-to-text, vision, extraction. Keyed by hash, cached. | `process(ref) → Interpretation` | later |
-| `knowledge` | The OpenKnowledge project and the ontology. **Hides the OK MCP client.** Frontmatter validation, the work queue, the derived index. | read · search · write · validate · next · index | no |
+| `knowledge` | The knowledge base on disk: the layout, the frontmatter codec, validation, the work queue and the derived index. **Hides the layout and the codec** — nothing else knows a document is a file. **Validates on write and refuses**, so no caller can route around the ontology. **Amended by [ADR 007](../adr/007-knowledge-is-files-not-a-client.md)** — it used to say *"hides the OK MCP client"*. | `all · write · writeIndex` · `lint · next · index` | no |
+| `observe` | **The mechanical pass itself** — Transcript Lines to Observations, minus what the knowledge base already holds. Owns the order of the writes and what a crash between them leaves. **No model, no clock**: anything a script can be wrong about, it does not do. | `from · unseen`, then one `knowledge.write` | no |
 | `harness` | Constructing and running **one** agent session: cwd, model policy, MCP list, skills, receipt. **Hides Pi entirely.** | `run(spec) → Receipt` | no |
 | `work` | Durable work: triggers, due times, leases, claims, retry, jobs. **Decides when and what runs.** | designed, **provisional** — [ADR 002](../adr/002-work-interface.md). notify · drain · parked; loops are declarations. `claim · complete · fail · nextDue` was rejected — see the ADR | **yes** |
 | `capabilities` | Resolving a chat's config into a concrete MCP server list and the background agents it may reach. The reflector that exposes agents as MCP tools. | `resolve(chat) → SessionCapabilities` | no |
@@ -37,7 +38,7 @@ Revisable. Expected to change on contact.
 ## Dependency direction
 
 ```
-cli ─────────────> home, import, channel, ingest
+cli ─────────────> home, import, channel, ingest, knowledge, observe
 
 composition root ─> everything (the ONLY place wiring happens)
 
@@ -50,6 +51,8 @@ archive ─────────> transcript ─> blobs
 failure <────────  every module; it depends on nothing
 channel ─────────> home (a Place), transcript (types only)
 media ───────────> blobs, knowledge
+observe ─────────> transcript (read), knowledge
+knowledge ───────> home (a Place), failure — and nothing else, deliberately
 speaker ─────────> harness, channel (send, pre-bound)
 evals ───────────> harness (replay)
 ```

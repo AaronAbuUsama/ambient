@@ -55,6 +55,13 @@ A trigger and the work it causes. Loops stack and do not block each other. From 
 Chat no Loop is visible.
 _Avoid_: cron, scheduler, pipeline.
 
+**Observation**:
+What a mechanical pass extracts from a Source before any judgement is applied — a type, a
+name, and only the frontmatter a script cannot be wrong about. Becomes a document at
+`status: unreviewed`; a reasoning pass fills it in.
+See [docs/design/product.md](docs/design/product.md), *"Sources → observations → knowledge"*.
+_Avoid_: candidate, extraction, fact, stub (a **stub** is the document, not the observation).
+
 **Knowledge base**:
 The one OpenKnowledge project shared by every Chat and every Source. Knowledge is never
 local to a Chat.
