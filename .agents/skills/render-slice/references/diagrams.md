@@ -100,23 +100,46 @@ Messages start at `y=144` and step **32px**; a return sits 36px below its call. 
 ## Recipe C — Question DAG
 
 Type: **architecture** grammar. **One box per kind** on the left, the gate in the middle, the
-step it opens on the right. Canvas `0 0 1000 560`. Lowest box **448**, legend rule **492**.
+step it opens on the right. Four kinds exist, so the column is one to four boxes — the node
+budget cannot be blown here.
 
-| Questions | y positions (x 40, 240×48) |
-|---|---|
-| 3 | 96, 224, 352 |
-| 4 | 72, 184, 296, 408 |
-| **5** | 48, 136, 224, 312, 400 |
-| 6 | 40, 120, 200, 280, 360, 440 → canvas 600, legend 532 |
+The box is recipe A's two-section box at **240×64**, `x 40`: divider `y+32`, tag box
+`48, y+8, 52×12 rx 2`, the count right-aligned at `272`, the field line's baseline `y+52`.
+**It has one height**, because its content is a header band and one field line whatever the
+count says. What varies is how many boxes the column holds, and that is solved below — every
+count the recipe can produce, none of it freehand.
 
-Gate box `428, 196, 204×104` (accent). Terminal box `736, 212, 224×72`.
+| Kinds | box y | gate y | terminal y | lowest box | legend rule | canvas |
+|---|---|---|---|---|---|---|
+| 1 | 52 | 32 | 48 | 136 | 172 | `0 0 1000 240` |
+| 2 | 32, 128 | 60 | 76 | 192 | 228 | `0 0 1000 296` |
+| 3 | 32, 128, 224 | 108 | 124 | 288 | 324 | `0 0 1000 392` |
+| **4** | 32, 128, 224, 320 | 156 | 172 | 384 | 420 | `0 0 1000 488` |
 
-Edges leave each box's right edge at its vertical centre and elbow into the gate's left edge:
+Boxes step **96** — 64 and a 32 gutter — and the column is centred on the gate, which is why
+the gate and the terminal move with the count. Gate `428, <gate y>, 204×104` (accent),
+terminal `736, <terminal y>, 224×72`.
+
+Each box leaves its right edge at `y+32` and takes **its own corridor** into its own attach
+point on the gate's left edge:
 
 ```
-M280,<qy+24> H420 Q428,<qy+24> 428,<gate_y ± 8> V196      (approach from above)
-M280,<qy+24> H428                                          (level — plain line)
+1   M280,84  H428                                                  (level — plain line)
+
+2   M280,64  H356 Q364,64  364,72  V84   Q364,92  372,92  H428
+    M280,160 H332 Q340,160 340,152 V140  Q340,132 348,132 H428
+
+3   M280,64  H356 Q364,64  364,72  V124  Q364,132 372,132 H428
+    M280,160 H428                                                  (level)
+    M280,256 H332 Q340,256 340,248 V196  Q340,188 348,188 H428
+
+4   M280,64  H380 Q388,64  388,72  V164  Q388,172 396,172 H428
+    M280,160 H356 Q364,160 364,168 V188  Q364,196 372,196 H428
+    M280,256 H308 Q316,256 316,248 V228  Q316,220 324,220 H428
+    M280,352 H332 Q340,352 340,344 V252  Q340,244 348,244 H428
 ```
+
+The gate leaves level for the terminal — `M632,<gate y + 52> H736`.
 
 **Kind decides the fill**, and this is the whole point of the diagram:
 
