@@ -45,3 +45,20 @@ against.
   told about one file at a time and so can honour a row without noticing that the file it
   names is gone; only a walk of the tree can say so.
 - Rule 3 is **not currently checked**.
+
+**And the checkers are checked.** Rule 2 applies to itself: a check nobody can run a
+case against is a rule that has only ever been tried on whatever the repository
+happened to contain. `vp test` — [`scripts/shape/checks.test.ts`](../../scripts/shape/checks.test.ts)
+covers all five checks `vp run shape` runs, each as a function of its inputs, including
+the boundaries no real file has reached: a roadmap exactly on its cap, one line over,
+with and without its terminating newline, and one declaring no cap at all. That last set
+is why the file exists — the cap check counted the empty string after the terminating
+newline, was one over on every Prettier-formatted file, and would have rejected a
+conforming roadmap at exactly the number it is allowed to be. Review caught it.
+
+The four oxlint rules under [`scripts/lint/`](../../scripts/lint/index.ts) are **not unit
+tested**: `@oxlint/plugins` ships no rule tester, so an in-process test would have to
+fake the `context` and the traversal, and a fixture-driven one would need deliberately
+non-conforming files that `vp check` must then be told to ignore. They are instead run
+over every file this repository authors on every `vp check`, which the shape checks —
+which run over one tree, once, in one shape — are not.
