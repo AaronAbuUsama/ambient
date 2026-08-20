@@ -35,10 +35,12 @@ text — a **Blocked by:** line. The full rule is [`issues.md`](../../../docs/ru
 A `**Status:**` line near the top of every ticket, one of:
 
 ```
-needs-triage · needs-info · ready-for-agent · ready-for-human · done · wontfix
+needs-triage · needs-info · ready-for-agent · ready-for-human · done · wontfix · retracted
 ```
 
-`ready-for-agent` is the one `plan-slice` writes. `done` is terminal.
+`ready-for-agent` is the one `plan-slice` writes. `done`, `wontfix` and `retracted` are the
+terminal three, and what each of them means is
+[`issues.md`](../../../docs/rules/issues.md).
 
 ## Domain language and decisions
 

@@ -33,7 +33,7 @@ Seven signals. **All of them are `ls` and `grep`.** Run them before saying anyth
 | 3 | step 2 done | `ls docs/planning/<slice>/design.md` then `grep -c '^## Branch points' docs/planning/<slice>/design.md` | its gate |
 | 4 | step 3 done | `grep -A 8 '^## Open' docs/planning/<slice>/scope.md` and the same for `'^## Fog'` — **both empty** | its gate |
 | 5 | step 4 done | `ls docs/planning/<slice>/spec.md` and `ls docs/planning/<slice>/issues/` | its gate |
-| 6 | step 5 done | `grep -L '^\*\*Status:\*\* done' docs/planning/<slice>/issues/*.md` — **prints nothing** | its gate |
+| 6 | step 5 done | `grep -LE '^\*\*Status:\*\* (done\|wontfix\|retracted)' docs/planning/<slice>/issues/*.md` — **prints nothing** | its gate |
 | 7 | step 6 done | `grep '^| \*\*<SLICE>\*\*' docs/design/roadmap.md` reads `● closed` | its gate |
 
 **Each signal is that step's own gate, read rather than re-invented.** If a gate in

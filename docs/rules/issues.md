@@ -18,6 +18,10 @@ other command that files a ticket somewhere this repository cannot read.
 - **`retracted` is built, reverted, and the reason recorded** — the reason as a `## Comments`
   entry saying why the work came out. Without that entry the ticket is not retracted, it is
   open again. `wontfix` is the ticket that was never built.
+- **Three of the six are terminal: `done`, `wontfix`, `retracted`.** A ticket in any of them
+  is finished with, and step 5 of [slices.md](./slices.md) is over when every ticket in the
+  slice reads one of the three. Anything that tests only for `done` holds a slice open on a
+  ticket nobody is going to build.
 - Conversation appends to the bottom under a `## Comments` heading.
 
 "Publish to the issue tracker" means write that file. "Fetch the ticket" means read it.
