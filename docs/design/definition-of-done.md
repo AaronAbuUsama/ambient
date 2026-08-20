@@ -17,8 +17,8 @@ runs this list and reports it row by row.
 | 6 | Cross-links resolve | Covered by row 4; `vp run shape` names any `](…)` in a document that points at a file which does not exist. |
 | 7 | `docs/design/roadmap.md` status board | The slice's row reads `● closed`, and **You are here** names the next slice. |
 | 8 | `docs/design/roadmap.md` ledger | A dated entry, newest first, two lines: what shipped and what was learned. The slice's **Active** detail is deleted in the same commit — the ledger line is what survives. |
-| 9 | ADR **Amendments** | Every statement in an ADR that did not survive contact is corrected in that ADR's `## Amendments` section, with the reason. Never a silent rewrite of the body. |
-| 10 | The **call graph**, read not run | `docs/planning/<slice>/design.md` matches the code: the trace from `main.ts` owns each step where the design said it would, every public symbol has a production caller, and no module became the composition root by accident. A divergence is resolved out loud — move the code, or amend `design.md` — never left standing in both. |
+| 9 | ADR **Amendments** | Every statement in an ADR that did not survive contact is corrected in that ADR's `## Amendments` section, with the reason. Never a silent rewrite of the body. This row is the sweep, not the saying — see below. |
+| 10 | The **call graph**, read not run | `docs/planning/<slice>/design.md` matches the code: the trace from `main.ts` owns each step where the design said it would, every public symbol has a production caller, and no module became the composition root by accident. A divergence is resolved out loud — move the code, or amend `design.md` — never left standing in both. Three questions, and two of them were already asked per ticket — see below. |
 
 ## The duplication baseline
 
@@ -47,6 +47,14 @@ wrong on contact with the implementation; a fifth followed. They are in that doc
 Amendments section, and the decision they support is still legible because the record of
 being wrong is next to it.
 
+**Row 9 is two acts, and only the second is this list's.** Saying that the implementation
+contradicts an ADR happens in the change that contradicts it —
+[decisions.md](../rules/decisions.md) requires it there, at the moment it is still obvious
+why. This row is the sweep afterwards: that every one of them reached an `## Amendments`
+section and none of them reached a body. A slice can pass this row and still have been
+written the wrong way round, which is why the rule and not the row is where the discipline
+lives.
+
 **Row 10 exists because IMPORT passed rows 1–9 while its topology was wrong.** Its CLI
 handler reached 176 lines against 8, 8, 12 and 14 for its siblings — making `cli` the
 composition owner its own spec said it was not — and `transcript` shipped `from: "live"`
@@ -55,6 +63,15 @@ passed, every check was green, and no row looked at the shape of the program. It
 not run**, like rows 7–9, because the designed graph is prose today. Making it runnable is named as a candidate at the foot of
 [slices.md](../rules/slices.md), once two slices have produced the artefact in a stable
 shape.
+
+**And row 10 is three questions, not one.** *Does the graph match?* needs the finished
+program, and belongs here. *Does every public symbol have a production caller?* and *did a
+handler become the composition root by accident?* are decidable from a diff — the second
+**only** from one: by close time `import`'s handler is simply 176 lines and looks like a
+file, while in the diff that grew it from 14 the growth is the finding. Both are the Shape
+axis of [code-review](../../.agents/skills/code-review/SKILL.md), asked per ticket at step 5.
+This row is where they are answered last rather than first, and a slice that reaches it with
+either one unasked has already paid for the answer.
 
 **The graph it reads is `design.md`, not the spec.** That moved when Design became step 2 of
 [slices.md](../rules/slices.md): the design is now written before the frontier is worked
