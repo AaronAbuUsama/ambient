@@ -28,12 +28,17 @@ numeric check in this file passed.
 ## The rule that prevents the collision
 
 ```
-canvasHeight = lowestBoxBottom + 112
 legendRuleY  = canvasHeight - 68
 legendTextY  = legendRuleY + 20
 swatchY      = legendRuleY + 8      (12 × 12, rx 2)
 swatchX      = 40, 280, 520, 760    (four slots, 200 wide; label at swatchX + 20)
 ```
+
+**The canvas is not derived — every recipe below ships its own, solved.** A line here used to
+derive it, `canvasHeight = lowestBoxBottom + 112`, and it was true of exactly one layout: the
+recipe C that has since been re-solved. A, C and D sit at lowest + 104 and B at lowest + 124,
+so the constant was wrong for every recipe in the file. It survived because it bound nothing
+— the two rules that bind are the one above and the clearance below, and neither mentions it.
 
 **Check it before you emit.** `lowestBoxBottom` is `max(y + height)` over every node box, not
 over the last box you happened to write. Clearance below 32px is a fail.
