@@ -99,8 +99,8 @@ Messages start at `y=144` and step **32px**; a return sits 36px below its call. 
 
 ## Recipe C — Question DAG
 
-Type: **architecture** grammar. Questions on the left, the gate in the middle, the step it opens
-on the right. Canvas `0 0 1000 560`. Lowest box **448**, legend rule **492**.
+Type: **architecture** grammar. **One box per kind** on the left, the gate in the middle, the
+step it opens on the right. Canvas `0 0 1000 560`. Lowest box **448**, legend rule **492**.
 
 | Questions | y positions (x 40, 240×48) |
 |---|---|
@@ -111,7 +111,7 @@ on the right. Canvas `0 0 1000 560`. Lowest box **448**, legend rule **492**.
 
 Gate box `428, 196, 204×104` (accent). Terminal box `736, 212, 224×72`.
 
-Edges leave each question's right edge at its vertical centre and elbow into the gate's left edge:
+Edges leave each box's right edge at its vertical centre and elbow into the gate's left edge:
 
 ```
 M280,<qy+24> H420 Q428,<qy+24> 428,<gate_y ± 8> V196      (approach from above)
@@ -124,12 +124,18 @@ M280,<qy+24> H428                                          (level — plain line
 |---|---|---|---|
 | `grilling` | `#fff` | `ink` | `GRILLING` — HITL, only the principal |
 | `research` · `spike` | `rgba(45,49,66,.05)` | `muted` | `RESEARCH` / `SPIKE` — AFK, dispatchable now |
-| `task` | `rgba(79,93,117,.10)` | `soft` | `TASK` |
+| `task` | `rgba(79,93,117,.10)` | `soft` | `TASK` — either, HITL or AFK |
 | the gate | `rgba(235,108,54,.06)` | `accent` | the one accent |
 
-Legend must name HITL, AFK and the gate. **Above 6 questions, group the homogeneous ones into a
-single box listing them as field lines** — the node budget is 9 and a flat list of eleven is not a
-diagram.
+**A question does not fit in a node.** A 240-wide box at 8px mono is 46 characters, and
+compressing a question into one produced `T1  linked-device slots free` and `G2  § The caller` —
+labels for something the reader was expected to already know. So the box carries **the kind and
+the count**: the tag in the header band, `n open` right-aligned beside it, and one field line
+carrying the mode — the words after the tag in the table above. **The questions themselves are
+the table beside the diagram, in full.** What the diagram shows is the shape — who answers, and
+what the step waits on — and no string in it needs a second document to read.
+
+Legend must name HITL, AFK and the gate.
 
 ---
 
