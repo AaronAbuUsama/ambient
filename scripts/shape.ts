@@ -138,7 +138,8 @@ if (cap === null) {
   say(ROADMAP, "declares no `**Hard cap: N lines.**` — the cap is the line this check reads");
 } else {
   const limit = Number(cap[1]);
-  const length = read(ROADMAP).split("\n").length;
+  /** The terminating newline is not a line. Drop it and this agrees with `wc -l`. */
+  const length = read(ROADMAP).replace(/\n$/, "").split("\n").length;
   if (length > limit) {
     say(
       `${ROADMAP}:${length}`,
