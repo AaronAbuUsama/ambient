@@ -229,8 +229,15 @@
       .scroll {
         overflow-x: auto;
       }
-      .scroll svg.d {
-        min-width: 1040px;
+      /* Overlay scrollbars stay invisible until you drag one, so anything wider than the
+         column read as content that ends. Naming the bar draws it whenever — and only
+         when — there is more to the right. */
+      .scroll::-webkit-scrollbar {
+        height: 6px;
+      }
+      .scroll::-webkit-scrollbar-thumb {
+        background: var(--rule2);
+        border-radius: 3px;
       }
 
       table {

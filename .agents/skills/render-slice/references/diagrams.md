@@ -11,6 +11,20 @@ skin, branding gate already answered in
 `references/type-*.md` before drawing** — this file gives you the geometry, that one gives you
 the grammar.
 
+## The canvas and the column it is drawn into
+
+The column is **944px at a 1280 viewport** — 1280 less the 248px rail and 44px of padding
+either side — and 1072px at 1440. That is narrower than every canvas here, so `svg.d` is
+`width: 100%` and **the shell forces no minimum**: the canvas is drawn to fit the column, and
+every clearance in this file scales with it. A unit is 0.94px at the narrowest viewport the
+page is read at, which is why **8px is the floor for type** — below it there is nothing left to
+give.
+
+The shell used to force `min-width: 1040px`, recipe B's canvas. The other three were stretched
+to it and then cut at the column's edge, and recipe A right-aligns each module's name at
+`x + w - 8` — exactly where the cut fell, so three modules read `cl`, `blobs` and `tran`. Every
+numeric check in this file passed.
+
 ## The rule that prevents the collision
 
 ```
