@@ -34,11 +34,14 @@ swatchY      = legendRuleY + 8      (12 × 12, rx 2)
 swatchX      = 40, 280, 520, 760    (four slots, 200 wide; label at swatchX + 20)
 ```
 
-**The canvas is not derived — every recipe below ships its own, solved.** A line here used to
-derive it, `canvasHeight = lowestBoxBottom + 112`, and it was true of exactly one layout: the
-recipe C that has since been re-solved. A, C and D sit at lowest + 104 and B at lowest + 100,
-so the constant was wrong for every recipe in the file. It survived because it bound nothing
-— the two rules that bind are the one above and the clearance below, and neither mentions it.
+**The canvas is derived from the legend rule, never from a fixed offset below the lowest box** —
+`canvasHeight = legendRuleY + 68`, the line above read the other way. It is derived **once**,
+when a recipe row is solved; every recipe below already carries the answer, so take its canvas
+rather than re-deriving one. A line here used to derive it from the wrong end,
+`canvasHeight = lowestBoxBottom + 112`, and it was true of exactly one layout: the recipe C
+that has since been re-solved. A, C and D sit at lowest + 104 and B at lowest + 100, so the
+constant was wrong for every recipe in the file. It survived because it bound nothing — the two
+rules that bind are the one above and the clearance below, and neither mentions it.
 
 **Check it before you emit.** `lowestInk` is `max(y + height)` over everything drawn above the
 legend, not over the last box you happened to write — node boxes, and equally a lifeline foot,
