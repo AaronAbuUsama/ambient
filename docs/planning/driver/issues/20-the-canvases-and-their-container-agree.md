@@ -1,6 +1,6 @@
 # 20 — the diagram canvases and the container agree on one width
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 27, **sharpened by DRIVER**: the register's stated instrument is
 wrong, and the corrected one is below.*
@@ -33,3 +33,30 @@ budget, the fan spacing. What found it was the skill's own step 3: *open the pag
 - [artefacts.md](../../../rules/artefacts.md) — one HTML artefact per slice.
 - **Shares files with tickets 12, 13 and 18** — the recipes; this one also owns
   `assets/shell.html`.
+
+## Comments
+
+**2026-08-20 — done. The shell stops forcing a width; no recipe coordinate moved.** Of the two
+fixes, only this one can work: at a **1280** viewport the column is **944px** — 1280 less the
+248px rail and 44px of padding either side — which is narrower than *both* canvases. Moving A,
+C and D to 1040 would hide 96px instead of 56 and cut the same right-hand column harder, while
+re-solving three recipes. `svg.d` is already `width: 100%`, the geometry is in viewBox units,
+and so deleting `min-width: 1040px` costs nothing and makes the canvas fit whatever column it
+is given. Recipe B stays at 1040. What a unit is now worth, and that 8px is therefore the floor
+for type, is stated in
+[`diagrams.md`](../../../../.agents/skills/render-slice/references/diagrams.md).
+
+**Measured at 1280, before and after**, on a page spliced from the shell with the four recipe C
+canvases in it:
+
+| | column | canvas drawn at | hidden |
+|---|---|---|---|
+| before | 944 | 1040 | 96px — the terminal box read `4 · Plan t` |
+| after | 944 | 944 | none |
+
+**The cut is signalled where a cut is still possible.** `.scroll` holds more than diagrams, and
+macOS overlay scrollbars are invisible until dragged, so a 1600px block inside it read as a
+block that ends. `.scroll::-webkit-scrollbar` gives it a 6px bar that takes layout space —
+`offsetHeight` 46 against `clientHeight` 40 — so it is painted whenever, and only when, there is
+more to the right. `scrollbar-color` was tried first and left the bar an overlay in the browser
+this page is read in; it is not in the file for that reason.
