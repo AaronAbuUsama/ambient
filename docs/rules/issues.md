@@ -12,7 +12,10 @@ Specs and issues live under `docs/planning/`. **There is no git remote.** Never 
   no code and unblocks the rest — IMPORT's was the `seams.md` rows, without which
   `new-module` refuses to scaffold.
 - State is a `Status:` line near the top of the ticket — `needs-triage`, `needs-info`,
-  `ready-for-agent`, `ready-for-human`, `done`, `wontfix`.
+  `ready-for-agent`, `ready-for-human`, `done`, `wontfix`, `retracted`.
+- **`retracted` is built, reverted, and the reason recorded** — the reason as a `## Comments`
+  entry saying why the work came out. Without that entry the ticket is not retracted, it is
+  open again. `wontfix` is the ticket that was never built.
 - Conversation appends to the bottom under a `## Comments` heading.
 
 "Publish to the issue tracker" means write that file. "Fetch the ticket" means read it.
@@ -32,6 +35,14 @@ which is the drift this repo has already paid for once.
 tickets in one document conflict on every line; two files do not conflict at all. It is
 also what makes `Status:` greppable across a feature.
 
+**A clean revert takes the record back along with the work.** 318 lines were built and
+reverted six minutes apart under `git revert`'s default message, and the register they came
+out of then asserted the thing had never been attempted — true only by accident, and two
+answers alive in two places. That is deficits 24 and 25 in
+[method-deficits.md](../history/method-deficits.md). `retracted` is where the reason goes
+instead, and it is worth the word: an attempt made once is worth strictly more than one never
+made, because the next attempt starts from why the first came out.
+
 ## The check
 
 `git remote -v` prints nothing — the state the rule depends on.
@@ -39,4 +50,6 @@ also what makes `Status:` greppable across a feature.
 `vp run shape` verifies that any document linking to a spec or ticket links to a file
 that exists.
 
-That no agent types `gh` is **not currently checked**.
+That no agent types `gh` is **not currently checked**, and neither is the `Status:`
+vocabulary — that a `retracted` ticket carries its reason is read, in the `## Comments`
+entry that is the evidence.
