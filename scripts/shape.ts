@@ -129,6 +129,24 @@ for (const [name, where] of [...claimed].sort(([a], [b]) => (a < b ? -1 : 1))) {
   }
 }
 
+// ── the roadmap stays inside the cap it declares ──────────────────────
+
+/** Read off the file's own first lines, so the number has one home and it is the roadmap's. */
+const ROADMAP = "docs/design/roadmap.md";
+const cap = /\*\*Hard cap: (\d+) lines\.\*\*/.exec(read(ROADMAP));
+if (cap === null) {
+  say(ROADMAP, "declares no `**Hard cap: N lines.**` — the cap is the line this check reads");
+} else {
+  const limit = Number(cap[1]);
+  const length = read(ROADMAP).split("\n").length;
+  if (length > limit) {
+    say(
+      `${ROADMAP}:${length}`,
+      `${length} lines against its own cap of ${limit} — move the oldest ledger entries to docs/history/ledger.md`,
+    );
+  }
+}
+
 // ── every cross-link in a document resolves ───────────────────────────
 
 /** Fenced blocks and inline code are illustration, not links to follow. */
