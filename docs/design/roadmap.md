@@ -119,6 +119,7 @@ Answer before the slice that needs it — not before.
 |---|---|---|
 | How does Pi take per-session MCP config? | HARNESS, CAPABILITIES | email-pa sets `enableMCP: false` after a stray server polluted a client's directory |
 | Do the 375 failed media downloads come back under pacing? | **trusting** KNOWLEDGE | INGEST `S2b`, deferred off its critical path. The 22-vs-353 split was a regex over signed URLs; there is no media rate limiting anywhere. One run: drain the same set twice, paced and unpaced, reading the typed error. Recipe in [../planning/ingest/findings/06-media-failure-classification.md](../planning/ingest/findings/06-media-failure-classification.md) |
+| Does an ontology shaped against one chat survive the second Source? | **trusting** KNOWLEDGE | KNOWLEDGE fog, retired 2026-08-20. Shaped against 14 labels in one engineering group; email-pa's had 206 Documents across many counterparties. **Trigger:** the first time a second Source lands, re-run `T1`'s stratified sampling against it and compare the type distribution. Method in [../planning/knowledge/findings/06-what-the-corpus-holds.md](../planning/knowledge/findings/06-what-the-corpus-holds.md) |
 
 **Two closed 2026-08-20 by KNOWLEDGE.** *MCP spec* — **answered**, current revision is
 `2026-07-28` and `initialize` is deleted; it post-dates the assistant's training, so *"read

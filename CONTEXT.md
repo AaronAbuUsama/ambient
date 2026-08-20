@@ -55,6 +55,12 @@ A trigger and the work it causes. Loops stack and do not block each other. From 
 Chat no Loop is visible.
 _Avoid_: cron, scheduler, pipeline.
 
+**Window**:
+The span of Transcript a pass reads in one run, named by its Chat and its bounds. It is what
+a reasoning pass consumes and what its claims cite.
+See [docs/design/knowledge-flow.md](docs/design/knowledge-flow.md).
+_Avoid_: batch, chunk, page, range, slice (a **Slice** is roadmap work).
+
 **Observation**:
 What a mechanical pass extracts from a Source before any judgement is applied — a type, a
 name, and only the frontmatter a script cannot be wrong about. Becomes a document at

@@ -209,6 +209,14 @@ evidence, every claim labelled `[read]` / `[measured]` / `[inference]`, is in
 | 29 | **The 5.4% hole figure was mostly punctuation.** **381 of 703** holes are 512×512 WebP stickers, all captionless — strip them and it is **2.5%**. Hand-reading 78 media references across 600 messages, **0 of ~33 threads became unrecoverable**. The dark case is precise: **10 stretches in 18 months of two or more consecutive voice notes — 22 messages, 0.17%.** *Verified: 223 WebP blobs, **207** at 512×512 by VP8 header parse; `file` reports no WebP dimensions on this machine, so it was the wrong instrument.* | [`findings/06`](findings/06-what-the-corpus-holds.md) |
 | 30 | **The closed field vocabulary has four limits the material exposes** — no `enum[]`, no time-of-day, no numeric form, no `ref` target constraint. | [`findings/06`](findings/06-what-the-corpus-holds.md) |
 
+### Answered by the principal — 2026-08-20, grilled on all three at once
+
+| # | Answer | Was |
+|---|---|---|
+| 31 | **KNOWLEDGE closes before MEDIA, and `Media.kind` grows a `sticker` arm.** The queue drops from 703 to 322 and starts meaning what it says. The roadmap's *"trusting"* caveat is untouched — closed and trusted stay different words. **What decided it:** 381 of 703 holes are captionless 512×512 stickers, so the real figure is **2.5%**, and 0 of ~33 hand-read threads became unrecoverable. Pulling speech-to-text forward for the 95 voice notes was the runner-up and was declined as scope. | `G1` |
+| 32 | **The Principal is `config.yaml`, not the ontology.** `sources.<name>.self_label` maps an install to a label in one Source. `grep` **confirms** that mapping; it does not discover a fact about the world. `Person` gains no field. **Why not the ontology:** [product.md](../../design/product.md) settled who the Principal is before any Archive existed, so recording it as knowledge would make a per-install detail look like a fact and have `doctor` validate it forever. | `G3` |
+| 33 | **A claim cites the Window it came from, not a message.** `Commitment.source_message` becomes `source_window` — `"<chat>@<from>..<to>"`. **Why:** it is the only option whose precision matches what the producing pass reads, and it is honest where *optional* is silent and a synthesized key is wrong. A synthesized `${at}-${label}` was **measured to collide on 37 pairs**; growing `ArchiveMessage` an `id` would rewrite all 13,134 lines, because [ADR 006](../../adr/006-schema-is-the-parse-boundary.md)'s encoder is canonical. Tightening to a message identifier when Live material arrives is **additive**, so nothing is foreclosed. **Window** is now in [CONTEXT.md](../../../CONTEXT.md). | `G4` |
+
 ### Three defects, and two shapes the spike found
 
 **Two defects on the MCP write path**, both now moot and both recorded because they are why
@@ -257,66 +265,37 @@ passes *need* aggregate reads is now a design matter, not a scoping one.
 
 ## Open
 
-Each line carries an **id**, a **kind**, and what it waits on. `now` means dispatchable this
-minute.
+**Empty.** Eight questions were opened. Six were closed by research, one dissolved when its
+premise was measured, and one was answered by reading 14.63% of the corpus. The last three —
+`G1`, `G3` and `G4` — were put to the principal as one grilled round on 2026-08-20 and are
+rows 31, 32 and 33 of **Decided** above.
 
-```
-G1  grilling  now                        — Does KNOWLEDGE close before MEDIA?
-G3  grilling  design.md § B3             — How much may the mechanical pass know?
-G4  grilling  design.md § B4             — Does a knowledge claim have to cite its message?
-```
+Two branch points remain in [`design.md`](./design.md) and neither is the principal's:
+**`B2`** — where the derived index lives — and the folder-naming and `(type, name)` identity
+shapes, both of which `plan-slice` settles by writing them into `spec.md`.
 
-**All three now anchor into something.** `G3` and `G4` were `after design` at the map and
-each is now a heading in [`design.md`](./design.md) carrying its candidate shapes as code —
-which is the whole reason step 2 runs before the frontier.
-[`design-slice`](../../../.agents/skills/design-slice/SKILL.md): *"a `grilling` question that
-cannot name a block of `design.md` is not finished."*
-
-**Three remain, and all three are the principal's.** Eight were opened: six closed by
-research, one dissolved by measurement, one — `T1` — answered by reading 14.63% of the
-corpus.
-
-**`G1` · grilling · now.** Does KNOWLEDGE close before MEDIA? The roadmap says MEDIA *"must
-precede trusting the knowledge base"* but may land any time after IMPORT. **`T1` changed the
-numbers this rests on**: the hole figure is **2.5%** once stickers are excluded, no thread in
-the sampled 600 messages became unrecoverable, and the genuinely dark case is 22 messages —
-**0.17%**. What is damaged is the *entity*, not the thread. Either this Slice stubs them at `status: unprocessed` and closes with a base it
-does not yet trust, or the destination is wrong and MEDIA comes first. This decides what
-*done* means.
-
-**`G3` · grilling · [`design.md` § B3](./design.md).** How much does the mechanical pass
-allow itself to know? Three shapes are written out there as code. The map framed this as
-*"is a label-only Person acceptable"*; `T1` reframed it, because a script **can** prove which
-participant is the Principal and `schema.yaml` has no field for the fact. The live question
-is whether an Archive-built Person may carry something the ontology cannot hold — and if so,
-whether the schema grows now.
-
-**`G4` · grilling · [`design.md` § B4](./design.md).** Does a knowledge claim have to cite
-the exact message it came from? Four shapes there, and one is **measured dead**: a
-synthesized `${at}-${label}` key collides on 37 pairs. The real question the design surfaced
-is whether the unit of provenance is a *message* at all, or the **window** a pass read —
-which is what `digest` actually consumes.
+The step-3 gate is met.
 
 ## Fog
 
-Real, in scope, and not yet sharp enough to phrase as a question. The test is whether it can
-be *stated* precisely now, never whether it can be answered.
+**Empty**, and each patch is accounted for rather than deleted.
 
-**One group chat is not a year of email.** The finding the whole design rests on came from
-206 Documents and 18 Organizations across many counterparties. This is a single engineering
-group, one organisation's orbit, 14 labels. Whether an ontology shaped against a sample of
-one survives the second Source is not a question yet — and the principal has now named four
-Sources, two of them GitHub, so the second Source is closer than this map assumed.
+**One group chat is not a year of email — retired to the roadmap, not resolved.** It cannot
+be answered inside this Slice: it needs a second Source, and the Slice deliberately reaches
+one Archive. Its trigger is named — the first time a second Source lands, re-run `T1`'s
+sampling against it and compare the type distribution. Recorded in
+[roadmap.md](../../design/roadmap.md)'s research queue, the same way INGEST retired `S2b`.
 
-**What the derived index is for.** Its cost objection is gone — `index` is 36 code lines and
-`query` 29. What remains is the question underneath: [knowledge-flow.md](../../design/knowledge-flow.md)
-justifies it as answering *"every open commitment due before Friday, grouped by owner"*, but
-`next` is already the queue, and nobody has yet run a pass that wanted an aggregate.
+**What the derived index is for — promoted to a branch point.** It is no longer fog because
+it can be stated precisely: does the disposable read model live inside the knowledge base
+where the OpenKnowledge viewer shows it, or behind a second `Place`? That is
+[`design.md` § B2](./design.md), and it is a shape decision for `plan-slice`.
 
-**What a "pass" is, as a unit of work.** `digest`, `synthesis` and `consolidate` are named
-with cadences and a sentence each. What one run reads, what it may write, and how it knows
-it is finished are undescribed — and the typed receipt that would answer it belongs to
-HARNESS, which is out of scope. May dissolve entirely once one pass has been run by hand.
+**What a "pass" is — half dissolved, half out of scope.** Row 33 answered the half that
+belongs here: a pass reads a **Window** and its claims cite that Window, and the noun is now
+in [CONTEXT.md](../../../CONTEXT.md). The remaining half — what a run may write and how it
+knows it is finished — is answered by the typed Receipt, which belongs to HARNESS and is
+already listed under **Out of scope**.
 
 ## Out of scope
 

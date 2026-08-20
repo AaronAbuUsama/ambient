@@ -4,9 +4,11 @@ Step 2 of [`slices.md`](../../rules/slices.md), written 2026-08-20 against
 [`scope.md`](./scope.md). **No production code was written in this session.** The caller
 below is a sketch, and step 5 will rewrite it.
 
-Its job is to make the frontier askable. Three questions were left for the principal at the
-map, and two of them — `G3` and `G4` — could not be put to him without something to react
-to. They now anchor into **Branch points** at the foot of this file.
+Its job was to make the frontier askable. Three questions were left for the principal at the
+map, and two of them — `G3` and `G4` — could not be put to him without something to react to.
+They anchored into **Branch points** at the foot of this file, were grilled as one round on
+2026-08-20, and are **answered**. What each was asked with, and what killed the shapes that
+lost, is recorded there rather than in a transcript.
 
 ---
 
@@ -46,10 +48,12 @@ Putting it in `knowledge` would make `knowledge` the third thing that both reads
 and writes elsewhere, and it is the module every later pass writes through. That is the
 deletion test failing.
 
-**B, with a caveat recorded rather than hidden:** the new module's name is a branch point
-(`B1`), because *"a Slice is not a module"* and `observe` is a word this repository has never
-used. [`language.md`](../../rules/language.md) rule 2 says the change that invents a noun
-adds the entry.
+**B, and the module is named `observe`** — decided in this session as `B1`, because
+`vp run shape` refuses a design naming a module with no [`seams.md`](../../design/seams.md)
+row. The word is not invented: [product.md](../../design/product.md) and
+[thesis.md](../../design/thesis.md) both already read *"Sources → observations →
+knowledge"*. [`language.md`](../../rules/language.md) rule 2 is satisfied by the
+**Observation** entry this change added to [`CONTEXT.md`](../../../CONTEXT.md).
 
 **Everything else is sketched once.** `lint`, `next` and `index` are pure functions over a
 list of documents with one caller each; two shapes for them would be theatre.
@@ -115,9 +119,9 @@ const existing = await base.all()
 if ("problems" in existing) return existing
 
 // ── mechanical: only what a script cannot be wrong about ──────────────────
-const found = observe.from(lines)             // Observation[] — PURE. no model, no clock.
+const found = observe.from(lines)                  // Observation[] — PURE. no model, no clock.
                                                    // An Observation is (type, name, frontmatter).
-const fresh = observe.unseen(found, existing)       // Observation[] — pure. Identity is
+const fresh = observe.unseen(found, existing)      // Observation[] — pure. Identity is
                                                    // (type, name), NEVER a path: writing by
                                                    // filename silently duplicates.
 
@@ -135,7 +139,7 @@ wrong about, a script must not do."*
 
 `scope.md` row 27 found the line running **backwards** in two places — which participant is
 the Principal is answerable by `grep`, and sticker-versus-screenshot by a header parse. Both
-are therefore `observe.from`' job, and both are `B3`.
+are therefore `observe.from`'s job, and both are `B3`.
 
 ---
 
@@ -155,8 +159,8 @@ src/main.ts                        resolves $AMBIENT_HOME, prints, exits. The on
             ├─ home.chat(slug)          the Chat, or refuse and name `chat add`
             ├─ chat.transcript()        a Place. `cli` never builds a path.
             ├─ transcript.read          Lines. `transcript` already owns the codec.
-            ├─ observe.from        Lines → Observations. Pure.
-            ├─ observe.unseen            minus what the Base already holds. Pure.
+            ├─ observe.from             Lines → Observations. Pure.
+            ├─ observe.unseen           minus what the Base already holds. Pure.
             └─ base.write               validate, refuse, or write. THE one Write path.
 ```
 
@@ -370,7 +374,7 @@ A costs one line in `.okignore`; B costs a second grant in `home` and an answer 
 else goes there"*. **Not the principal's** — it is shape, and it falls out of whether the
 index is ever hand-read. Recorded here so step 4 cannot skip it.
 
-### B3 · How much does the mechanical pass allow itself to know? — `G3`
+### B3 · How much does the mechanical pass allow itself to know? — **answered 2026-08-20**
 
 This is `scope.md`'s `G3`, and it is now askable. The Archive gives a display label and
 nothing else. But `T1` found two facts a script **can** have, which the map assumed it could
@@ -391,10 +395,21 @@ C  B, plus proposed merges as a queue rather than a write.
                       with evidence." There is nowhere to PUT a proposal today.
 ```
 
-**The question for the principal:** is a Person built from an Archive allowed to carry a fact
-the ontology has no field for — and if so, does `schema.yaml` grow, or does the fact wait?
+**Answered: none of the three.** The principal took a fourth shape the grill surfaced —
+**the Principal is `config.yaml`, not the ontology.**
 
-### B4 · Does a knowledge claim have to cite its message? — `G4`
+```
+sources.<name>.self_label: "<label>"     # maps an install to a label in one Source
+```
+
+`grep` **confirms** that mapping rather than discovering a fact about the world.
+[product.md](../../design/product.md) settled who the Principal is before any Archive
+existed, so recording it as knowledge would make a per-install detail look like a fact and
+have `doctor` validate it forever. `Person` gains no field, so **A** is what the pass writes
+— and it is no longer "thin", because the fact it seemed to be discarding was never the
+ontology's to hold. `C`'s merge queue waits until something reads it.
+
+### B4 · Does a knowledge claim have to cite its message? — **answered 2026-08-20**
 
 `scope.md`'s `G4`, and the design makes the cost concrete. `Commitment.source_message` is
 **required** and no Archive line has an identifier.
@@ -409,11 +424,14 @@ D  Cite the WINDOW, not the message.
                                Costs a `Window` noun the lexicon does not have.
 ```
 
-B is measured dead. **The real question is whether a citation names a message at all**, or
-whether the unit of provenance is the window a pass read — which is what
-[`knowledge-flow.md`](../../design/knowledge-flow.md)'s `digest` actually consumes.
+**Answered: D.** `Commitment.source_message` becomes `source_window`, carrying
+`"<chat>@<from>..<to>"`. It is the only shape whose precision matches what the producing pass
+reads: *optional* is silent, a synthesized key is wrong, and growing the line rewrites 13,134
+bytes-exact records before any caller needs it. Tightening to a message identifier when Live
+material arrives is **additive**, so nothing is foreclosed. **Window** is now a
+[CONTEXT.md](../../../CONTEXT.md) entry, which is what D always cost.
 
-### B5 · Does `Media.kind` grow a `sticker` arm?
+### B5 · Does `Media.kind` grow a `sticker` arm? — **answered 2026-08-20: yes**
 
 Not the principal's, and recorded because it changes a cost. `Media.kind` is
 `enum(image|voice|audio|video|document)`, so **381 stickers are currently destined for a
@@ -430,7 +448,15 @@ functions — `lint`, `next`, `index` and the read layer — which
 [`04-straight-tools-cost.md`](findings/04-straight-tools-cost.md) already built once as a
 spike and measured at 250 code lines.
 
-**Waiting on the principal:** `B3`/`G3` and `B4`/`G4`, because both change `schema.yaml`, and
-`G1` — whether this Slice closes before MEDIA — which `B5` sharpens but does not answer.
+**Waiting on the principal:** nothing. `G1`, `G3` and `G4` were grilled as one round on
+2026-08-20 and are rows 31–33 of [`scope.md`](./scope.md)'s **Decided**.
 
-**Waiting on nothing but a decision I should make at step 4:** `B1` and `B2`.
+**Waiting on a decision I make at step 4:** `B2` alone — where the derived index lives.
+`B1` was answered in this session because `vp run shape` blocks on it.
+
+**Three schema changes now have an owner and none has a ticket yet** — that is
+[`plan-slice`](../../../.agents/skills/plan-slice/SKILL.md)'s job:
+`Media.kind` gains `sticker`; `Commitment.source_message` becomes `source_window`; and
+`config.yaml`'s Source gains `self_label`. The first two are `schema.yaml`, which
+[`skeleton/spec.md`](../skeleton/spec.md) §3.4 ships and `doctor` validates; the third is
+`home/internal/config.ts`.
