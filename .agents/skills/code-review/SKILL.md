@@ -10,8 +10,9 @@ What closes a build ticket at step 5 of [`slices.md`](../../../docs/rules/slices
 
 **Ours rather than [the vendored copy](../vendor/code-review/SKILL.md)**, which looks for
 standards in `CODING_STANDARDS.md` or `CONTRIBUTING.md` and for the spec in issue references
-fetched through a tracker. Neither file exists here, `git remote -v` prints nothing, and
-neither of its two axes reads a design.
+fetched through a tracker. Neither file exists here, the remote is a GitHub repository and
+not a tracker — [`issues.md`](../../../docs/rules/issues.md) — and neither of its two axes
+reads a design.
 
 | Axis | Reads, beside the diff | Asks |
 |---|---|---|
