@@ -33,8 +33,15 @@ Seven signals. **All of them are `ls` and `grep`.** Run them before saying anyth
 | 3 | step 2 done | `ls docs/planning/<slice>/design.md` then `grep -c '^## Branch points' docs/planning/<slice>/design.md` | its gate |
 | 4 | step 3 done | `grep -A 8 '^## Open' docs/planning/<slice>/scope.md` and the same for `'^## Fog'` — **both empty** | its gate |
 | 5 | step 4 done | `ls docs/planning/<slice>/spec.md` and `ls docs/planning/<slice>/issues/` | its gate |
-| 6 | step 5 done | `grep -LE '^\*\*Status:\*\* (done\|wontfix\|retracted)' docs/planning/<slice>/issues/*.md` — **prints nothing** | its gate |
+| 6 | step 5 done | `grep -L -e '^\*\*Status:\*\* done' -e '^\*\*Status:\*\* wontfix' -e '^\*\*Status:\*\* retracted' docs/planning/<slice>/issues/*.md` — **prints nothing** | its gate |
 | 7 | step 6 done | `grep '^| \*\*<SLICE>\*\*' docs/design/roadmap.md` reads `● closed` | its gate |
+
+**Signal 6 repeats itself rather than alternating, because it lives in a table.** Three
+`-e` patterns and not one `-E '(done|wontfix|retracted)'`: a `|` inside a table cell ends the
+cell, and escaping it as `\|` is worse than useless — ERE reads `\|` as a literal pipe, so the
+escaped form matches nothing and reports every ticket as unfinished. An agent reads this file
+raw, not rendered. A command that only works after a markdown renderer has touched it is not
+a command.
 
 **Each signal is that step's own gate, read rather than re-invented.** If a gate in
 [`slices.md`](../../../docs/rules/slices.md) changes, this skill changes with it. The driver
