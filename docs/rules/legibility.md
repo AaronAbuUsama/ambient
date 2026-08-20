@@ -49,9 +49,10 @@ against.
 **And the checkers are checked.** Rule 2 applies to itself: a check nobody can run a
 case against is a rule that has only ever been tried on whatever the repository
 happened to contain. `vp test` — [`scripts/shape/checks.test.ts`](../../scripts/shape/checks.test.ts)
-covers all five checks `vp run shape` runs, each as a function of its inputs, including
+covers all six checks `vp run shape` runs, each as a function of its inputs, including
 the boundaries no real file has reached: a roadmap exactly on its cap, one line over,
-with and without its terminating newline, and one declaring no cap at all. That last set
+with and without its terminating newline, one declaring no cap at all, and a diagram
+recipe clearing its legend rule by exactly the floor and by one less. That last set
 is why the file exists — the cap check counted the empty string after the terminating
 newline, was one over on every Prettier-formatted file, and would have rejected a
 conforming roadmap at exactly the number it is allowed to be. Review caught it.

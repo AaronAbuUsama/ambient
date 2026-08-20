@@ -49,6 +49,12 @@ a fragment frame, a gate taller than its column. **Not only the boxes**: recipe 
 is five dashed lifeline feet and it has no low box at all, so a rule that says *box* passes it
 without looking. Clearance below 32px is a fail.
 
+**Every recipe below declares the three numbers as a row** — `lowest ink | legend rule | canvas`.
+The lowest ink is stated rather than derived because it is a judgement and not a coordinate
+anything can find: recipe B's is a lifeline foot and not its deepest message, recipe C's at one
+kind is the gate and not the box. `vp run shape` reads those rows and runs the first checklist
+item at the foot of this file against them, taking its two constants out of that item's own line.
+
 ## One corridor per connector
 
 Four connectors once shared the vertical at `x=356`, two of them overlapping in `y`. They
@@ -103,7 +109,11 @@ Type: **ER** (`type-er.md`). Entity = module; fields = its public interface. Two
 header band with a stereotype tag and the name right-aligned, a divider, then `+ signature`
 lines and one muted footnote.
 
-Canvas `0 0 1000 480` for up to 6 modules. Lowest box bottom **376**, legend rule **412**.
+Up to 6 modules. The lowest ink is the lowest box bottom, callee 3's:
+
+| lowest ink | legend rule | canvas |
+|---|---|---|
+| 376 | 412 | `0 0 1000 480` |
 
 | Slot | x | y | w | h | Use for |
 |---|---|---|---|---|---|
@@ -135,9 +145,12 @@ blown; split into an overview and a detail.
 
 ## Recipe B — Call graph
 
-Type: **sequence** (`type-sequence.md`). Canvas `0 0 1040 712` for 5 lifelines. Deepest message
-**596**, but the lowest ink is the **lifeline foot at 612** — that is what the legend clears, and
-it clears it by the floor 32. Legend rule **644**.
+Type: **sequence** (`type-sequence.md`). Five lifelines. Deepest message **596**, but the lowest
+ink is the **lifeline foot** — that is what the legend clears, and it clears it by the floor 32.
+
+| lowest ink | legend rule | canvas |
+|---|---|---|
+| 612 | 644 | `0 0 1040 712` |
 
 The canvas was `720`, and every other number here was already right. 720 reserved a 76px legend
 strip where every other recipe reserves 68, so `legendRuleY == canvasHeight - 68` failed by 8 on
@@ -184,7 +197,7 @@ The box is recipe A's two-section box at **240×64**, `x 40`: divider `y+32`, ta
 count says. What varies is how many boxes the column holds, and that is solved below — every
 count the recipe can produce, none of it freehand.
 
-| Kinds | box y | gate y | terminal y | lowest edge | legend rule | canvas |
+| Kinds | box y | gate y | terminal y | lowest ink | legend rule | canvas |
 |---|---|---|---|---|---|---|
 | 1 | 52 | 32 | 48 | 136 † | 172 | `0 0 1000 240` |
 | 2 | 32, 128 | 60 | 76 | 192 | 228 | `0 0 1000 296` |
@@ -241,8 +254,12 @@ Legend must name HITL, AFK and the gate.
 
 ## Recipe D — Ticket DAG
 
-Type: **architecture** grammar, left to right by blocking order. Canvas `0 0 1000 400` for six
-tickets. Lowest box **296**, legend rule **332**.
+Type: **architecture** grammar, left to right by blocking order. Six tickets. The lowest ink is
+the lowest box bottom:
+
+| lowest ink | legend rule | canvas |
+|---|---|---|
+| 296 | 332 | `0 0 1000 400` |
 
 Box `176×48`. Columns at x `40, 272, 504, 736`. Rows at y `20, 96, 172, 248`.
 
@@ -271,8 +288,12 @@ Edge is `blocks`, pointing from blocker to blocked. Fan a shared right edge at `
 - [ ] Legend is a bottom strip and names every treatment used, and nothing else
 - [ ] Node count within budget: 6 modules, 5 lifelines, 9 DAG nodes
 
+**The first row runs.** `vp run shape` reads its two constants off that line and the three numbers
+off each recipe's row, and fails on a recipe that contradicts either — or that declares no row at
+all, because a check that passes by looking at nothing is how the two numbers this file itself had
+wrong from the day it was written, a canvas formula true of no recipe and a legend rule 8px off its
+own canvas, sat here unread. **Every other row is still read by eye.**
+
 **Then open the page and look at it.** Measuring the DOM is not looking. Every collision shipped
-so far passed its own numeric check — and the two numbers this file itself had wrong from the day
-it was written, a canvas formula true of no recipe and a legend rule 8px off its own canvas,
-shipped because nothing ran the checks at all. A check nobody runs fails in both directions: it
-clears the layouts that are broken, and it hides the rules that are.
+so far passed its own numeric check. A check nobody runs fails in both directions: it clears the
+layouts that are broken, and it hides the rules that are.

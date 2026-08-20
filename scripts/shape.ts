@@ -24,6 +24,7 @@ import * as fs from "node:fs";
 
 import { LONGER } from "./lint/legibility.ts";
 import {
+  brokenGeometry,
   brokenLinks,
   missingSeamRows,
   missingSlots,
@@ -70,6 +71,7 @@ const exists = (rel: string): boolean => fs.existsSync(`${REPO}/${rel}`);
 
 const SEAMS = "docs/design/seams.md";
 const ROADMAP = "docs/design/roadmap.md";
+const DIAGRAMS = ".agents/skills/render-slice/references/diagrams.md";
 
 const files = walk("");
 const sources = files.filter((f) => f.startsWith("src/") && f.endsWith(".ts"));
@@ -88,6 +90,7 @@ const offences = [
   ...missingSlots(modules, exists),
   ...missingSeamRows(modules, read(SEAMS), designs),
   ...overCap(ROADMAP, read(ROADMAP)),
+  ...brokenGeometry(DIAGRAMS, read(DIAGRAMS)),
   ...files.filter((f) => f.endsWith(".md")).flatMap((rel) => brokenLinks(rel, read(rel), exists)),
 ];
 

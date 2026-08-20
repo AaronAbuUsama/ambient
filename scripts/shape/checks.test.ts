@@ -1,5 +1,5 @@
 /**
- * The five checks `vp run shape` runs, asked the questions a repository never
+ * The six checks `vp run shape` runs, asked the questions a repository never
  * happens to pose.
  *
  * The cap check is why this file exists. It counted `split("\n").length` on text
@@ -12,7 +12,15 @@
 
 import { expect, it } from "vite-plus/test";
 
-import { brokenLinks, missingSeamRows, missingSlots, overCap, staleExceptions } from "./checks.ts";
+import type { Offence } from "./checks.ts";
+import {
+  brokenGeometry,
+  brokenLinks,
+  missingSeamRows,
+  missingSlots,
+  overCap,
+  staleExceptions,
+} from "./checks.ts";
 
 /** Exactly `count` lines by `wc -l`, the first of which declares the cap. */
 const roadmap = (count: number, cap: number, terminated = true): string =>
@@ -192,4 +200,134 @@ it("a link inside a fence or inline code is illustration, and the lines still co
   expect(brokenLinks("docs/design/roadmap.md", doc, holding())).toEqual([
     { at: "docs/design/roadmap.md:5", said: "links to `./gone.md`, which does not exist" },
   ]);
+});
+
+// ── the diagram recipes ───────────────────────────────────────────────
+
+/** One recipe: its letter, and the `ink | rule | canvas height` rows it declares. */
+type Declared = readonly [string, readonly (readonly [number, number, number])[]];
+
+/** The checklist item both constants are read out of, exactly as `diagrams.md` writes it. */
+const CHECKLIST =
+  "- [ ] `legendRuleY == canvasHeight - 68`, and `lowestInk + 32 <= legendRuleY` — **ink, not";
+
+/** A minimal `diagrams.md` — a preamble, the recipes with their rows, the checklist at the foot. */
+const diagrams = (recipes: readonly Declared[], preamble = ""): string =>
+  [
+    "# The four diagram recipes",
+    preamble,
+    ...recipes.flatMap(([letter, rows]) => [
+      `## Recipe ${letter} — a recipe`,
+      "| lowest ink | legend rule | canvas |",
+      "|---|---|---|",
+      ...rows.map(
+        ([ink, rule, height]) =>
+          `| ${String(ink)} | ${String(rule)} | \`0 0 1000 ${String(height)}\` |`,
+      ),
+      "",
+    ]),
+    "## Before you emit any diagram",
+    CHECKLIST,
+  ].join("\n");
+
+/** The seven rows the four recipes declare today, verbatim. */
+const SOLVED: readonly Declared[] = [
+  ["A", [[376, 412, 480]]],
+  ["B", [[612, 644, 712]]],
+  [
+    "C",
+    [
+      [136, 172, 240],
+      [192, 228, 296],
+      [288, 324, 392],
+      [384, 420, 488],
+    ],
+  ],
+  ["D", [[296, 332, 400]]],
+];
+
+it("the seven rows the four recipes declare today are clean", () => {
+  expect(brokenGeometry("d.md", diagrams(SOLVED))).toEqual([]);
+});
+
+it("a canvas that is not the legend rule plus the strip names the canvas the rule implies", () => {
+  // Recipe B shipped at 720 against its own rule at 644. `diagrams.md` argues that moving
+  // the rule down to 652 is the wrong half — it deepens the emptiest bottom on the page —
+  // so the offence states the canvas, not the rule.
+  const [offence, ...rest] = brokenGeometry(
+    "d.md",
+    diagrams([...SOLVED.slice(0, 1), ["B", [[612, 644, 720]]], ...SOLVED.slice(2)]),
+  );
+
+  expect(rest).toEqual([]);
+  expect(offence?.said).toBe(
+    "recipe B: a canvas 720 tall under a legend rule at 644 — the rule fixes the canvas, so `canvasHeight` is 712",
+  );
+});
+
+it("the clearance floor is exact — 32 clears, 31 does not", () => {
+  const at = (ink: number): readonly Offence[] =>
+    brokenGeometry("d.md", diagrams([["A", [[ink, 412, 480]]], ...SOLVED.slice(1)]));
+
+  expect(at(380)).toEqual([]);
+  expect(at(381)[0]?.said).toBe(
+    "recipe A: lowest ink 381 clears the legend rule 412 by 31, under the floor of 32",
+  );
+});
+
+it("the constants come from the checklist item, not from prose that quotes it", () => {
+  // Recipe B's history quotes `legendRuleY == canvasHeight - 68` verbatim 120 lines above
+  // the checklist, and `decisions.md` means that paragraph is never rewritten. An
+  // unanchored search took the prose, so frozen history outvoted the rule it is about.
+  const history = "720 reserved a 76px strip, so `legendRuleY == canvasHeight - 999` failed by 8.";
+
+  expect(brokenGeometry("d.md", diagrams(SOLVED, history))).toEqual([]);
+});
+
+it("a recipe that declares no row is itself an offence", () => {
+  const [offence, ...rest] = brokenGeometry("d.md", diagrams([...SOLVED.slice(0, 3), ["D", []]]));
+
+  expect(rest).toEqual([]);
+  expect(offence?.at).toBe("d.md");
+  expect(offence?.said).toBe(
+    "recipe D declares no `lowest ink | legend rule | canvas` row — a check that passes by looking at nothing is what let two wrong numbers sit in that file",
+  );
+});
+
+it("a renamed heading orphans its rows rather than handing them to the recipe above", () => {
+  // Left standing, `recipe` still held "C" and reported D's canvas as recipe C's — a
+  // correct offence pointing a reader at the wrong recipe. Stripping all four headings
+  // made the whole check report clean.
+  const said = brokenGeometry(
+    "d.md",
+    diagrams(SOLVED).replace("## Recipe D — a recipe", "## Ticket DAG"),
+  ).map((o) => o.said);
+
+  expect(said).toEqual([
+    "a geometry row under no `## Recipe` heading — it is declared for no recipe",
+    "recipe D declares no `lowest ink | legend rule | canvas` row — a check that passes by looking at nothing is what let two wrong numbers sit in that file",
+  ]);
+});
+
+it("a canvas cell that is not a four-number viewBox is an offence", () => {
+  const [offence] = brokenGeometry(
+    "d.md",
+    diagrams(SOLVED).replace("`0 0 1000 400`", "`1000 400`"),
+  );
+
+  expect(offence?.said).toBe(
+    "recipe D: a geometry row missing its lowest ink, legend rule or viewBox",
+  );
+});
+
+it("no checklist item to read the constants from is the offence, and nothing else runs", () => {
+  const [offence, ...rest] = brokenGeometry(
+    "d.md",
+    diagrams(SOLVED).replace(CHECKLIST, "- [ ] ink"),
+  );
+
+  expect(rest).toEqual([]);
+  expect(offence?.said).toBe(
+    "no `- [ ]` checklist item states legendRuleY == canvasHeight - N and lowestInk + N <= legendRuleY, backticked, on one line — that item is where this check reads both constants",
+  );
 });
