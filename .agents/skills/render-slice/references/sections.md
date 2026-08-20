@@ -1,12 +1,11 @@
 # The twelve sections
 
 **The sections are [`slices.md`](../../../../docs/rules/slices.md)'s six steps projected**, grouped
-three ways. A section is missing exactly when the step that fills it has not run, so the page's
+three ways. A section is empty exactly when the step that fills it has not run, so the page's
 own completeness is the progress bar. Nothing computes which step a slice is on — you look.
 
-Build only the sections that have content. A slice at step 1 fills sections 1, 2 and 11 —
-mapping produces a destination, a frontier and measured numbers, and nothing else. A closed
-slice fills all twelve.
+A slice at step 1 fills sections 1, 2 and 11 — mapping produces a destination, a frontier and
+measured numbers, and nothing else. A closed slice fills all twelve.
 
 ## Group PLAN
 
