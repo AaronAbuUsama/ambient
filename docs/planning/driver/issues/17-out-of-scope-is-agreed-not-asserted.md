@@ -1,6 +1,6 @@
 # 17 — out of scope is confirmed by the principal, not asserted by the map
 
-**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** nothing
+**Status:** done · **Blocks:** nothing · **Blocked by:** nothing
 
 *Converted from deficit 20, which DRIVER did not answer.*
 
@@ -27,3 +27,18 @@ still describes out-of-scope as the map's to write.
 
 - [slices.md](../../../rules/slices.md) § 1.
 - Ticket 05, which built the gate this rule text must now name.
+
+## Comments
+
+**2026-08-20 — the step 1 gate row now names out of scope, and § 1 says who agrees it.** Two
+changes in [`slices.md`](../../../rules/slices.md). The gate row reads *the principal agreed
+the destination, what is out of scope, and the shape of the questions* — so a map that rules
+something out without agreement fails the gate rather than a taste test. The *out of scope is
+a scoping act* paragraph now points at the alignment gate above it and says why: deleting
+scope permanently is a decision, and decisions are the principal's.
+
+**The sentence ticket 05 left in the *Measured on DRIVER* paragraph moved rather than being
+deleted.** It said the same thing bolted onto a paragraph about spending subagents; out of
+scope now has one home in § 1, the paragraph that already owns it, plus the gate row that
+enforces it. [`map-slice`](../../../../.agents/skills/map-slice/SKILL.md) § 2 — the gate 05
+built — is unchanged; it already tells the operator out of scope is agreed there.
