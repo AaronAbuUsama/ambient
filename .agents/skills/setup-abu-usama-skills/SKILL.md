@@ -15,9 +15,9 @@ Replaces the vendored `setup-matt-pocock-skills`, which is not carried:
 
 ## Issue tracker — files in this repo
 
-**There is no remote.** `git remote -v` prints nothing. **Never run `gh`, `glab`, or any
-other remote tracker command** — they will fail, or worse, a global default will file the
-issue in somebody else's repository.
+**The remote is not the tracker.** `origin` is a GitHub repository, and `gh pr` against it
+is how review happens. **Never run `gh issue`, `glab issue`, or any other command that files
+a ticket** — a ticket the repository cannot read is a second source of truth.
 
 ```
 docs/planning/<slice>/scope.md            what is true, and what is still open

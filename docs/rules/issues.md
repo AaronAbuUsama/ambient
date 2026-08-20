@@ -2,8 +2,10 @@
 
 ## The rule
 
-Specs and issues live under `docs/planning/`. **There is no git remote.** Never run `gh`,
-`glab`, or any other remote tracker command — there is nothing for them to talk to.
+Specs and issues live under `docs/planning/`. **The remote carries the code and its review,
+never the tickets.** `origin` is a GitHub repository and pull requests against it are where
+review happens; `gh pr` is how you talk to it. Never run `gh issue`, `glab issue`, or any
+other command that files a ticket somewhere this repository cannot read.
 
 - One slice per directory: `docs/planning/<slice>/`, holding `scope.md`, `spec.md` and `issues/`.
 - The spec is `docs/planning/<slice>/spec.md`; how it is reached is [slices.md](./slices.md).
@@ -22,9 +24,12 @@ Specs and issues live under `docs/planning/`. **There is no git remote.** Never 
 
 ## Why
 
-**There is no remote to publish to.** `git remote -v` prints nothing. A skill that
-reaches for `gh issue create` here either fails, or — worse, when a global config
-supplies a default — files the issue in somebody else's repository.
+**The reason changed; the rule did not.** Until 2026-08-20 this rested on there being
+nothing to talk to — `git remote -v` printed nothing, so `gh issue create` either failed or,
+worse, when a global config supplied a default, filed the issue in somebody else's
+repository. There is a remote now, and review moved onto its pull requests. The ban on
+filing tickets there survives on the next paragraph's reason alone, which was always the
+stronger of the two: it never depended on the remote being absent.
 
 **A ticket in the repo travels with the branch that implements it.** It is greppable, it
 diffs, it is reviewed alongside the code, and its history is the same history. A ticket
@@ -45,11 +50,12 @@ made, because the next attempt starts from why the first came out.
 
 ## The check
 
-`git remote -v` prints nothing — the state the rule depends on.
+`git remote -v` prints one line — `origin`, a GitHub repository. The rule no longer depends
+on that being empty, and a check that asserts it is empty is now a check that fails.
 
 `vp run shape` verifies that any document linking to a spec or ticket links to a file
 that exists.
 
-That no agent types `gh` is **not currently checked**, and neither is the `Status:`
+That no agent files a ticket on the remote is **not currently checked**, and neither is the `Status:`
 vocabulary — that a `retracted` ticket carries its reason is read, in the `## Comments`
 entry that is the evidence.

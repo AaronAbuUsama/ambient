@@ -21,7 +21,7 @@ rule.
 | [effect.md](docs/rules/effect.md) | Not using Effect yet; written so it lands at the work layer and nowhere else. |
 | [legibility.md](docs/rules/legibility.md) | 250 lines a file, exceptions declared with a reason — and a rule that cannot be run is not a rule. |
 | [knowledge.md](docs/rules/knowledge.md) | We match OpenKnowledge's format and never call its CLI. |
-| [issues.md](docs/rules/issues.md) | Specs and issues are files under `docs/planning/`. There is no remote; never `gh`, never `glab`. |
+| [issues.md](docs/rules/issues.md) | Specs and issues are files under `docs/planning/`. The remote carries the code and its review, never the tickets. |
 | [decisions.md](docs/rules/decisions.md) | Decisions are ADRs. A correction is an amendment, never a rewrite. |
 | [artefacts.md](docs/rules/artefacts.md) | Anything generated for a human to read is designed with the design skills, never defaulted. |
 
