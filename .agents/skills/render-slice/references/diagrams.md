@@ -1,9 +1,9 @@
 # The four diagram recipes
 
 **Do not invent coordinates.** Every layout below is solved, on the 4px grid, with its legend
-already clear of the lowest box. Pick the row that matches your node count and fill it. Freehand
-placement is what produces collisions — a legend was once drawn straight through a row of nodes
-because its `y` was copied from a shorter canvas.
+already clear of the lowest ink on the canvas. Pick the row that matches your node count and
+fill it. Freehand placement is what produces collisions — a legend was once drawn straight
+through a row of nodes because its `y` was copied from a shorter canvas.
 
 Drawn with the vendored [`diagram-design`](../../vendor/diagram-design/SKILL.md) skill, default
 skin, branding gate already answered in
@@ -36,12 +36,15 @@ swatchX      = 40, 280, 520, 760    (four slots, 200 wide; label at swatchX + 20
 
 **The canvas is not derived — every recipe below ships its own, solved.** A line here used to
 derive it, `canvasHeight = lowestBoxBottom + 112`, and it was true of exactly one layout: the
-recipe C that has since been re-solved. A, C and D sit at lowest + 104 and B at lowest + 124,
+recipe C that has since been re-solved. A, C and D sit at lowest + 104 and B at lowest + 100,
 so the constant was wrong for every recipe in the file. It survived because it bound nothing
 — the two rules that bind are the one above and the clearance below, and neither mentions it.
 
-**Check it before you emit.** `lowestBoxBottom` is `max(y + height)` over every node box, not
-over the last box you happened to write. Clearance below 32px is a fail.
+**Check it before you emit.** `lowestInk` is `max(y + height)` over everything drawn above the
+legend, not over the last box you happened to write — node boxes, and equally a lifeline foot,
+a fragment frame, a gate taller than its column. **Not only the boxes**: recipe B's lowest ink
+is five dashed lifeline feet and it has no low box at all, so a rule that says *box* passes it
+without looking. Clearance below 32px is a fail.
 
 ## One corridor per connector
 
@@ -129,8 +132,19 @@ blown; split into an overview and a detail.
 
 ## Recipe B — Call graph
 
-Type: **sequence** (`type-sequence.md`). Canvas `0 0 1040 720` for 5 lifelines. Lowest element
-**596**, legend rule **644**.
+Type: **sequence** (`type-sequence.md`). Canvas `0 0 1040 712` for 5 lifelines. Deepest message
+**596**, but the lowest ink is the **lifeline foot at 612** — that is what the legend clears, and
+it clears it by the floor 32. Legend rule **644**.
+
+The canvas was `720`, and every other number here was already right. 720 reserved a 76px legend
+strip where every other recipe reserves 68, so `legendRuleY == canvasHeight - 68` failed by 8 on
+the one recipe whose lowest ink is not a box — and the clearance rule, which said *box*, passed
+it against actor boxes that bottom out at 92. The rule at 644 was solved bottom-up from 612 and
+the canvas never followed it down. `712` is `644 + 68`, which is the direction the two rules are
+read in: the content fixes the rule, the rule fixes the canvas. Moving the rule to 652 instead
+satisfies the same arithmetic, and it is the wrong half to move — the page already ends this
+diagram with a stretch of bare dashed lifeline below the last message, and pushing the legend
+further into it deepens the emptiest bottom on the page to keep a round number nothing needs.
 
 | Lifelines | x centres | Actor box |
 |---|---|---|
@@ -239,7 +253,9 @@ Edge is `blocks`, pointing from blocker to blocked. Fan a shared right edge at `
 
 ## Before you emit any diagram
 
-- [ ] `legendRuleY == canvasHeight - 68`, and `lowestBoxBottom + 32 <= legendRuleY`
+- [ ] `legendRuleY == canvasHeight - 68`, and `lowestInk + 32 <= legendRuleY` — **ink, not
+      boxes**: a lifeline foot, a fragment frame and a gate taller than its column all count,
+      and recipe B has no low box at all, so *box* passes it without looking
 - [ ] Every `x`, `y`, `width`, `height` divisible by 4
 - [ ] No diagonal connector — every off-axis link is a rounded elbow, `r=8`
 - [ ] Every arrow label has an opaque `#f5f5f5` mask with a 6–10px gap above the stroke
@@ -253,4 +269,7 @@ Edge is `blocks`, pointing from blocker to blocked. Fan a shared right edge at `
 - [ ] Node count within budget: 6 modules, 5 lifelines, 9 DAG nodes
 
 **Then open the page and look at it.** Measuring the DOM is not looking. Every collision shipped
-so far passed its own numeric check.
+so far passed its own numeric check — and the two numbers this file itself had wrong from the day
+it was written, a canvas formula true of no recipe and a legend rule 8px off its own canvas,
+shipped because nothing ran the checks at all. A check nobody runs fails in both directions: it
+clears the layouts that are broken, and it hides the rules that are.
