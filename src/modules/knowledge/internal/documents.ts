@@ -25,10 +25,16 @@ import type { Place } from "~/modules/home/types.ts";
 import type { Document, Field, Frontmatter, KnowledgeProblem, Violation } from "../types.ts";
 
 /**
- * The two keys every document carries whatever its type, and which no type
- * declares: `type` says which `SchemaType` applies, and `name` is the identity
- * half. `Commitment` declares neither, so both belong to the base's own
- * vocabulary rather than to the ontology — and both are therefore always known.
+ * The two keys every document carries whatever its type. `type` says which
+ * `SchemaType` applies and **no type declares it**. `name` is the identity half,
+ * and three of the six declare it — `Person`, `Organization`, `Chat` — while
+ * `Commitment`, `Issue` and `Media` do not. So `name` cannot be *only* an
+ * ontology field: a Commitment still has one, because identity is `(type, name)`
+ * and never a path.
+ *
+ * Always **known**, which is not the same as always optional: where a type
+ * declares `name`, that declaration is in `declared.fields` and still makes it
+ * required. `lint` enforces it there.
  */
 export const META = ["type", "name"] as const;
 
