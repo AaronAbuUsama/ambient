@@ -112,34 +112,68 @@ const writeOne = async (root: Place, document: Document): Promise<Violation | un
   const slug = slugOf(document.name);
   const dest = `${dir}/${slug}.md`;
   const tmp = `${dir}/.${slug}.tmp-${randomUUID()}`;
+  const escaped = { at: document.at, detail: { _tag: "Escapes" } } as const;
+
   try {
     await fs.mkdir(dir, { recursive: true });
-    // The folder is inside the `Place`, so it is the `Place`'s to be — a
-    // `knowledge/person -> /elsewhere` puts both the temp file and the document outside
-    // the grant. Reading already refuses a link; writing has more to lose by following one.
-    if ((await fs.lstat(dir)).isSymbolicLink())
-      return { at: document.at, detail: { _tag: "Escapes" } };
+
+    // `realpath` and not `lstat`: it resolves every component, so a symlinked
+    // `knowledge/person` and a symlinked ancestor are both caught, where `lstat` sees
+    // only the last one. Checked before the temp file, because a temp file inside a
+    // linked folder is already outside the grant.
+    //
+    // **This is a check, not a proof.** It says where `dir` pointed at that instant; an
+    // attacker with write access to the home can swap it before the two calls below
+    // resolve the path again. Closing that needs `openat` against a held directory
+    // handle, and Node exposes no way to write relative to one. So the durable case — a
+    // linked folder sitting in the base — is refused, the window is narrow, and the
+    // publish is verified again below rather than trusted.
+    const here = await fs.realpath(dir);
+    const base = await fs.realpath(root.path);
+    if (here !== base && !here.startsWith(`${base}/`)) return escaped;
 
     await fs.writeFile(tmp, bytesOf(document), { encoding: "utf8", flag: "wx" });
+
     // `link` and not `rename`: `rename` replaces its destination silently, and the
     // destination is derived from a name the Transcript chose. `link` fails with EEXIST
     // instead, so an existing document — a hand-edited one especially — is never
     // destroyed by a slug that happens to match it. The document still appears complete
     // in one step, which is what Implementation Decision 5 is actually about.
-    await fs.link(tmp, dest);
+    //
+    // Only THIS call turns EEXIST into a collision. `mkdir` throws EEXIST when
+    // `knowledge/person` is a regular file, and the temp write throws it on a UUID
+    // clash; neither says anything about `dest`, and reporting them as a taken slug
+    // names a destination nothing looked at.
+    const published = await fs.link(tmp, dest).then(
+      () => undefined,
+      (cause: unknown) => cause,
+    );
+    if (published !== undefined) {
+      const taken =
+        published instanceof Error && "code" in published && published.code === "EEXIST";
+      return taken
+        ? {
+            at: document.at,
+            detail: {
+              _tag: "Collides",
+              slug: `${folder}/${slug}.md`,
+              with: "a document already on disk",
+            },
+          }
+        : { at: document.at, detail: { _tag: "Unreadable", cause: causeOf(published) } };
+    }
+
+    // The path resolved once more, after the bytes landed. If `dir` was swapped between
+    // the check above and here, this is where it shows — and the link is removed rather
+    // than left somewhere the grant does not reach.
+    const landed = await fs.realpath(dest);
+    if (!landed.startsWith(`${base}/`)) {
+      await fs.rm(dest, { force: true }).catch(() => undefined);
+      return escaped;
+    }
     return undefined;
   } catch (cause: unknown) {
-    const taken = cause instanceof Error && "code" in cause && cause.code === "EEXIST";
-    return taken
-      ? {
-          at: document.at,
-          detail: {
-            _tag: "Collides",
-            slug: `${folder}/${slug}.md`,
-            with: "a document already on disk",
-          },
-        }
-      : { at: document.at, detail: { _tag: "Unreadable", cause: causeOf(cause) } };
+    return { at: document.at, detail: { _tag: "Unreadable", cause: causeOf(cause) } };
   } finally {
     await fs.rm(tmp, { force: true }).catch(() => undefined);
   }

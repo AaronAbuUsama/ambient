@@ -187,3 +187,20 @@ it("does not let a proposal's frontmatter overwrite the identity that chose its 
   );
   expect(fs.existsSync(`${root}/knowledge/organization`)).toBe(false);
 });
+
+/**
+ * `mkdir` throws EEXIST when the folder's name is taken by a regular file, and that
+ * says nothing about the document's destination — reporting it as a taken slug names
+ * a path nothing looked at. Only `link` failing means the slug is held.
+ */
+it("does not call a directory that is a file a slug collision", async () => {
+  const { root, schema, base } = await opened();
+  fs.writeFileSync(`${root}/knowledge/person`, "not a directory\n");
+
+  const report = await base.write(schema, [zeeshan]);
+  expect(report.wrote).toStrictEqual([]);
+  expect(report.refused).toHaveLength(1);
+  const said = describeViolation({ at: report.refused[0].at, detail: report.refused[0].why });
+  expect(said).toContain("Person/Zeeshan: unreadable");
+  expect(said).not.toContain("already taken");
+});
