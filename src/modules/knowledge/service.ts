@@ -3,6 +3,7 @@
 import { readAll } from "./internal/documents.ts";
 import { buildIndex, writeIndexTo } from "./internal/index.ts";
 import { violationsIn } from "./internal/lint.ts";
+import { writeObservations } from "./internal/write.ts";
 import type {
   BuildIndex,
   DescribeDocument,
@@ -18,7 +19,10 @@ import type {
 } from "./types.ts";
 
 /** Builds no path and reads nothing: the `Place` is the whole grant. */
-export const open: Open = (place) => ({ all: () => readAll(place) });
+export const open: Open = (place) => ({
+  all: () => readAll(place),
+  write: (schema, observations) => writeObservations(place, schema, observations),
+});
 
 export const lint: Lint = (schema, docs) =>
   docs.flatMap((document) => violationsIn(schema, document));
@@ -60,6 +64,8 @@ const said = (detail: ViolationDetail): string => {
       return `unknown key "${detail.key}" (known: ${detail.known.join(", ")})`;
     case "BadValue":
       return `${detail.key} must be ${detail.expected}, got "${detail.got}"`;
+    case "NoFolder":
+      return `no declared folder for type "${detail.type}"`;
   }
 };
 

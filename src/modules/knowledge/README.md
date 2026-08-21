@@ -17,6 +17,8 @@ Read [`types.ts`](./types.ts) first. It is the whole interface.
 | validation | `lint` checks one document's frontmatter against the `Schema` value `home.read()` already returns. It does **not** re-parse `schema.yaml` |
 | the work queue | `next` filters `status: unreviewed`, optionally by `type` and capped at `limit`. A frontmatter status and nothing more — a quiet queue costs nothing to ask |
 | the derived index | `index` builds it from documents, pure; `writeIndex` writes it to `home.index`, **outside** the base ([design.md § B2](../../../docs/planning/knowledge/design.md)). Disposable: delete it and `index` reproduces it byte-identically |
+| the folder table | `Person` → `person/`, never `people/`. **Declared, not derived** — a `switch` in `internal/write.ts`, not a transform of the type name |
+| writing | `write` runs the same ontology check as `lint`, refuses anything it fails, and publishes each accepted document with one `link` — never over a file that is already there |
 
 It depends on `home` — for a `Place` and for the parsed ontology — and on
 `failure`, and on nothing else. That is deliberate: it is the module every later
@@ -25,6 +27,7 @@ input came from.
 
 ```
 ambient ontology lint  →  knowledge.open(home.knowledge).all()  →  knowledge.lint(global.schema, docs)
+ambient observe         →  observe.from · observe.unseen        →  knowledge.open(home.knowledge).write(global.schema, fresh)
 ```
 
 ## Invariants
@@ -55,6 +58,18 @@ ambient ontology lint  →  knowledge.open(home.knowledge).all()  →  knowledge
    `Base` — invariant 1 says a `Base`'s own `Place` is the whole grant, and the
    index lives outside it on purpose. Its failure is `IndexProblem`, not
    `ViolationDetail`: an unwritable `index.json` is not a document's problem.
+8. **`write` refuses rather than writing something malformed.** An Observation
+   missing a required field or naming a type absent from `schema.yaml` comes back
+   as a `Refusal` in `WriteReport.refused`, and nothing of it reaches disk — the
+   same check `lint` runs, run before the write instead of after it.
+9. **Every accepted write lands as a single atomic publish, and never over
+   something already there.** Implementation Decision 5: a non-atomic edit
+   registers a phantom document in OpenKnowledge's permanent removal ledger,
+   measured in
+   [`findings/03`](../../../docs/planning/knowledge/findings/03-ok-mcp-tool-inventory.md).
+   `write` fills a temp file beside the destination and `link`s it into place —
+   **not `rename`**, which replaces silently, and the destination is derived from
+   a name a Transcript chose. `EEXIST` is a `Collides` refusal.
 
 ## How to test it
 
@@ -86,8 +101,9 @@ process, and only a process can prove them.
 
 | File | What it knows |
 |---|---|
-| `types.ts` | the interface: `Document`, `Base`, `Violation`, `Index`, and every way it refuses |
-| `service.ts` | binds a `Place` to `all`, `lint`, `next`, `index`, `writeIndex`, and how a `Violation` or an `IndexFailure` reads |
-| `internal/documents.ts` | the walk, the `---` fence, and the frontmatter codec. The only file here that **reads** anything |
+| `types.ts` | the interface: `Document`, `Observation`, `Base`, `Violation`, `Refusal`, `Index`, and every way it refuses |
+| `service.ts` | binds a `Place` to `all`, `write`, `lint`, `next`, `index`, `writeIndex`, and how a `Violation` or an `IndexFailure` reads |
+| `internal/documents.ts` | the walk, the `---` fence, and the frontmatter codec. The only file here that **reads** a document |
 | `internal/lint.ts` | one document's frontmatter against one `SchemaType` |
-| `internal/index.ts` | the derived rows and counts, and the one write here — temp-then-rename to `home.index` |
+| `internal/index.ts` | the derived rows and counts, and the write to `home.index` |
+| `internal/write.ts` | the folder table, the slug, the ontology check before a write, and the publish. The only file here that writes a document |

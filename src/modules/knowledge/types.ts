@@ -87,13 +87,55 @@ export type ViolationDetail =
       readonly key: string;
       readonly expected: string;
       readonly got: string;
-    };
+    }
+  /**
+   * `type` is a real `schema.yaml` type, but `knowledge`'s folder table has no
+   * entry for it — Implementation Decision 4: the mapping is declared, never
+   * derived from the name. Cannot happen for any of the six shipped types; kept
+   * because `schema.yaml` invites new ones and `write` is every later pass's one
+   * path to disk.
+   */
+  | { readonly _tag: "NoFolder"; readonly type: string };
 
 /** A problem and the document it is in. `at` is base-relative — `person/zeeshan.md`. */
 export type Violation = { readonly at: string; readonly detail: ViolationDetail };
 
 /** Why `knowledge` said no. Narrow with `"problems" in result`. */
 export type KnowledgeProblem = Problems<Violation>;
+
+// ── what the mechanical pass proposes ───────────────────────────────────
+
+/**
+ * What a mechanical pass proposes. No prose — a reasoning pass writes that later.
+ *
+ * Lives here and not in `observe`: a `Base` is what validates and turns one into a
+ * `Document`, so the shape belongs with the thing that checks it. `frontmatter`
+ * reuses `Field` rather than `unknown` — a mechanical pass writes only text it
+ * already holds, never a decoded-but-unvalidated value, so `Field` says exactly
+ * what it may contain. It is still *unvalidated*: nothing has checked it against
+ * `schema.yaml` yet, and `base.write` is where ADR 006's ontology boundary sits
+ * for a proposal, exactly as `all()` is where it sits for a read.
+ */
+export type Observation = {
+  readonly type: string;
+  readonly name: string;
+  readonly frontmatter: Frontmatter;
+};
+
+/** What one `write` did. Never a throw — every refusal is a value in `refused`. */
+export type WriteReport = {
+  /** `${type}/${name}` for every Observation actually written, rendered. */
+  readonly wrote: readonly string[];
+  readonly refused: readonly Refusal[];
+};
+
+/**
+ * Why one Observation was not written. `at` is `${type}/${name}` — there is no
+ * path, because nothing reached disk. `why` reuses `ViolationDetail` rather than
+ * a second vocabulary: a missing field or an unknown type reads the same whether
+ * it was found by `lint` or by `write`.
+ */
+export type Refusal = { readonly at: string; readonly why: ViolationDetail };
 
 // ── the base ──────────────────────────────────────────────────────────
 
@@ -111,6 +153,18 @@ export type Base = {
    * OpenKnowledge's own scaffold and holds no documents.
    */
   all(): Promise<readonly Document[] | KnowledgeProblem>;
+
+  /**
+   * Validates every Observation against `schema` and writes what passes.
+   *
+   * **Refuses rather than throws.** A missing required field or a type absent
+   * from `schema.yaml` comes back in `refused`, and nothing of that Observation
+   * reaches disk. **Every accepted write lands as a single `rename`**
+   * (Implementation Decision 5): a non-atomic edit registers a phantom document
+   * in OpenKnowledge's permanent removal ledger, and the viewer is the one thing
+   * ADR 007 keeps.
+   */
+  write(schema: Schema, observations: readonly Observation[]): Promise<WriteReport>;
 };
 
 export type Open = (place: Place) => Base;

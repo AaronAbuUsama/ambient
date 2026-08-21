@@ -12,6 +12,7 @@ import { doctor } from "./internal/commands/doctor.ts";
 import { init } from "./internal/commands/init.ts";
 import { importArchive } from "./internal/commands/import.ts";
 import { ingest } from "./internal/commands/ingest.ts";
+import { observe } from "./internal/commands/observe.ts";
 import { ontology } from "./internal/commands/ontology.ts";
 import { pairSource } from "./internal/commands/pair.ts";
 import { peers } from "./internal/commands/peers.ts";
@@ -33,6 +34,7 @@ const USAGE = `ambient — a durable conversational home
   ambient ontology next        the work queue: status: unreviewed documents
     [--type=<type>] [--limit=<n>]
   ambient ontology index       rebuild the derived index at home.index
+  ambient observe --from <slug> Transcript Lines to knowledge base documents
 
   --home <path>                override $AMBIENT_HOME (default ~/.ambient)
 `;
@@ -47,6 +49,7 @@ const COMMANDS = {
   peers,
   ingest,
   ontology,
+  observe,
 };
 
 /**
