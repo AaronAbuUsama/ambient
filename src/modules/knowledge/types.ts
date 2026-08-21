@@ -63,6 +63,12 @@ export type ViolationDetail =
   | { readonly _tag: "Unreadable"; readonly cause: string }
   /** No `---` fence, so there is no frontmatter to decode and no document here. */
   | { readonly _tag: "NoFrontmatter" }
+  /**
+   * A link, not a file. The `Place` is the grant, and a symlink is how a path
+   * inside it addresses bytes outside it — so it is refused unread, never followed.
+   * `home` calls the same thing `Escapes`.
+   */
+  | { readonly _tag: "Escapes" }
   /** The YAML block will not parse. `line` counts from the top of the **file**. */
   | {
       readonly _tag: "Malformed";

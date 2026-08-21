@@ -140,8 +140,15 @@ const documentOf = (at: string, text: string): Document | KnowledgeProblem => {
     : identified(at, decoded.success, text.slice(fenced[0].length));
 };
 
+/**
+ * `lstat` and not `stat`, and before the read rather than after it. `readFile`
+ * follows a symlink, so `person/link.md -> /etc/passwd` would be ingested as a
+ * document and its body returned — the `Place` names a directory, and following a
+ * link out of it hands back bytes the grant never covered. Refused unread.
+ */
 const readOne = async (root: string, at: string): Promise<Document | KnowledgeProblem> => {
   try {
+    if (!(await fs.lstat(`${root}/${at}`)).isFile()) return one(at, { _tag: "Escapes" });
     return documentOf(at, await fs.readFile(`${root}/${at}`, "utf8"));
   } catch (cause: unknown) {
     return one(at, { _tag: "Unreadable", cause: causeOf(cause) });

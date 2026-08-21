@@ -40,9 +40,12 @@ ambient ontology lint  →  knowledge.open(home.knowledge).all()  →  knowledge
    [`findings/01`](../../../docs/planning/knowledge/findings/01-ok-mcp-read-surface.md).
    Ours has the frontmatter and the schema in the same function, so it has no
    excuse.
-5. **`type` and `name` are the base's vocabulary, not the ontology's.** No type
-   declares them — `Commitment` declares neither — so both are always known keys,
-   and a document missing either is not a document.
+5. **`type` and `name` are the base's vocabulary, not solely the ontology's.** No type
+   declares `type`. Three of the six declare `name` — `Person`, `Organization`, `Chat` —
+   and `Commitment`, `Issue` and `Media` do not, so `name` cannot be only an ontology
+   field: a Commitment still has one, because identity is `(type, name)` and never a path.
+   Both are therefore always **known**, which is not always optional — where a type
+   declares `name`, that declaration is in `declared.fields` and `lint` still requires it.
 6. **Nothing throws.** Every failure is a `ViolationDetail` in
    [`types.ts`](./types.ts), and one `describe` renders every arm.
 
