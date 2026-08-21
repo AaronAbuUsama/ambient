@@ -64,9 +64,10 @@ export type ViolationDetail =
   /** No `---` fence, so there is no frontmatter to decode and no document here. */
   | { readonly _tag: "NoFrontmatter" }
   /**
-   * A link, not a file. The `Place` is the grant, and a symlink is how a path
-   * inside it addresses bytes outside it — so it is refused unread, never followed.
-   * `home` calls the same thing `Escapes`.
+   * Not a regular file. The `Place` is the grant: a symlink is how a path inside it
+   * addresses bytes outside it, and a FIFO is how one stops answering. Both are
+   * refused unread — the link never followed, the pipe never waited on. `home` calls
+   * the first of these `Escapes`, and the name covers both.
    */
   | { readonly _tag: "Escapes" }
   /** The YAML block will not parse. `line` counts from the top of the **file**. */

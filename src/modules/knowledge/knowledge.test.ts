@@ -8,6 +8,7 @@
  */
 
 import * as fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import * as os from "node:os";
 import { afterEach, expect, it } from "vite-plus/test";
 
@@ -181,7 +182,7 @@ it("refuses a document that is a link out of the base, and does not read it", as
   expect("problems" in all).toBe(true);
   if (!("problems" in all)) return;
   expect(all.problems.map(describeViolation)).toStrictEqual([
-    "person/link.md: a link, not a file — the knowledge base is not read through symlinks",
+    "person/link.md: not a regular file — the base is read from files, never through a link or a pipe",
   ]);
   expect(JSON.stringify(all)).not.toContain("SECRET BODY");
   expect(JSON.stringify(all)).not.toContain("Leaked");
@@ -206,3 +207,24 @@ it("reports an empty frontmatter block as having none, fenced blank or not", asy
     "person/empty.md: no frontmatter block",
   ]);
 });
+
+/**
+ * A link is not the only thing a `.md` entry can be. Opening a FIFO read-only blocks
+ * until a writer arrives, so before `O_NONBLOCK` this hung `all()` indefinitely —
+ * measured, not supposed: the same base returned `HUNG-2s` against a 2s race.
+ *
+ * The timeout is the assertion. If the flag is ever dropped this fails on the clock
+ * rather than hanging a CI run forever.
+ */
+it("refuses a named pipe instead of waiting for a writer that never comes", async () => {
+  const { root, base } = await opened();
+  fs.mkdirSync(`${root}/knowledge/person`, { recursive: true });
+  execFileSync("mkfifo", [`${root}/knowledge/person/hang.md`]);
+
+  const all = await base.all();
+  expect("problems" in all).toBe(true);
+  if (!("problems" in all)) return;
+  expect(all.problems.map(describeViolation)).toStrictEqual([
+    "person/hang.md: not a regular file — the base is read from files, never through a link or a pipe",
+  ]);
+}, 10_000);
