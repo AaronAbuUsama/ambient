@@ -13,6 +13,7 @@
  * block, so nothing downstream of `all()` narrows anything or sees `unknown`.
  */
 
+import { constants } from "node:fs";
 import * as fs from "node:fs/promises";
 
 import * as Result from "effect/Result";
@@ -134,6 +135,12 @@ const documentOf = (at: string, text: string): Document | KnowledgeProblem => {
     };
   }
 
+  // An empty block is a fence with nothing in it — `---\n\n---` matches FENCE with an
+  // empty capture, and `parseDocument("")` has null contents. Decoding that yields a
+  // `BadValue` on the empty key, which tells a person nothing; it is the same absence
+  // as a file with no fence at all, and is reported as one.
+  if (parsed.contents === null) return one(at, { _tag: "NoFrontmatter" });
+
   const decoded = decodeBlock(parsed.toJS());
   return Result.isFailure(decoded)
     ? { problems: detailsOf(at, decoded.failure.issue, "") }
@@ -141,17 +148,31 @@ const documentOf = (at: string, text: string): Document | KnowledgeProblem => {
 };
 
 /**
- * `lstat` and not `stat`, and before the read rather than after it. `readFile`
- * follows a symlink, so `person/link.md -> /etc/passwd` would be ingested as a
- * document and its body returned — the `Place` names a directory, and following a
- * link out of it hands back bytes the grant never covered. Refused unread.
+ * **`O_NOFOLLOW`, not an `lstat` first.** `readFile` follows a symlink, so
+ * `person/link.md -> /etc/passwd` would be ingested as a document and its body
+ * returned — the `Place` names a directory, and a link out of it hands back bytes
+ * the grant never covered.
+ *
+ * Checking with `lstat` and then reading by path is a check of one thing and a use
+ * of another: the name can be replaced between the two calls. The flag moves the
+ * refusal into the `open` itself, which is one syscall rather than two and has no
+ * instant in between — the kernel fails with `ELOOP` and the bytes are never opened.
+ * Reading happens on the descriptor, so the path is resolved exactly once.
  */
 const readOne = async (root: string, at: string): Promise<Document | KnowledgeProblem> => {
   try {
-    if (!(await fs.lstat(`${root}/${at}`)).isFile()) return one(at, { _tag: "Escapes" });
-    return documentOf(at, await fs.readFile(`${root}/${at}`, "utf8"));
+    const opened = await fs.open(`${root}/${at}`, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+      return documentOf(at, await opened.readFile("utf8"));
+    } finally {
+      await opened.close();
+    }
   } catch (cause: unknown) {
-    return one(at, { _tag: "Unreadable", cause: causeOf(cause) });
+    // `in` rather than an assertion: an errno is external data like any other.
+    const escaped = cause instanceof Error && "code" in cause && cause.code === "ELOOP";
+    return escaped
+      ? one(at, { _tag: "Escapes" })
+      : one(at, { _tag: "Unreadable", cause: causeOf(cause) });
   }
 };
 
