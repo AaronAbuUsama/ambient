@@ -16,6 +16,7 @@ nothing else:
 | `ambient chat add <slug>` | `home.chat(slug).converge()` |
 | `ambient agent add <name>` | `home.agent(name).converge()` |
 | `ambient import <archive> --into <slug> [--zone <IANA>]` | `archive` → `transcript` → `blobs`, into a chat that already exists |
+| `ambient ontology lint` | `knowledge.open(home.knowledge).all()` → `knowledge.lint(global.schema, docs)` |
 | `--home <path>` | overrides the root the caller supplied |
 
 **`import` was the one row that did not read as a single verb, and no longer is.** Its

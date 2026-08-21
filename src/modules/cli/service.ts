@@ -12,6 +12,7 @@ import { doctor } from "./internal/commands/doctor.ts";
 import { init } from "./internal/commands/init.ts";
 import { importArchive } from "./internal/commands/import.ts";
 import { ingest } from "./internal/commands/ingest.ts";
+import { ontology } from "./internal/commands/ontology.ts";
 import { pairSource } from "./internal/commands/pair.ts";
 import { peers } from "./internal/commands/peers.ts";
 import type { Run } from "./types.ts";
@@ -28,6 +29,8 @@ const USAGE = `ambient — a durable conversational home
   ambient peers <source>       list that account's conversations. Reads only
   ambient ingest --into <slug> copy one conversation into its Chat's Transcript
 
+  ambient ontology lint        check the knowledge base against schema.yaml
+
   --home <path>                override $AMBIENT_HOME (default ~/.ambient)
 `;
 
@@ -40,6 +43,7 @@ const COMMANDS = {
   pair: pairSource,
   peers,
   ingest,
+  ontology,
 };
 
 /**
