@@ -57,7 +57,8 @@ to name, and `types.ts` says so.
 
 **2 · `type` and `name` are the base's own vocabulary, not the ontology's.** No
 `schema.yaml` type declares either, and `Commitment` declares **neither** — so requiring
-`name` as a field would be impossible for four of the six types, while deriving it from the
+`name` as a field would be impossible for three of the six types — `Commitment`, `Issue` and
+`Media` declare no `name`, while `Person`, `Organization` and `Chat` do — while deriving it from the
 filename would make identity a path, which the design forbids. Both are therefore always
 known keys. The one measured piece of evidence available —
 [`findings/04`](../findings/04-straight-tools-cost.md) §2's
