@@ -66,6 +66,8 @@ const said = (detail: ViolationDetail): string => {
       return `${detail.key} must be ${detail.expected}, got "${detail.got}"`;
     case "NoFolder":
       return `no declared folder for type "${detail.type}"`;
+    case "Collides":
+      return `slug "${detail.slug}" is already taken by ${detail.with}`;
   }
 };
 
