@@ -21,7 +21,7 @@ const said = (detail: ViolationDetail): string => {
     case "NoFrontmatter":
       return "no frontmatter block";
     case "Escapes":
-      return "a link, not a file — the knowledge base is not read through symlinks";
+      return "not a regular file — the base is read from files, never through a link or a pipe";
     case "Malformed":
       return detail.detail;
     case "UnknownType":

@@ -158,11 +158,22 @@ const documentOf = (at: string, text: string): Document | KnowledgeProblem => {
  * refusal into the `open` itself, which is one syscall rather than two and has no
  * instant in between — the kernel fails with `ELOOP` and the bytes are never opened.
  * Reading happens on the descriptor, so the path is resolved exactly once.
+ *
+ * **`O_NONBLOCK`, and a `stat` on the descriptor.** A link is not the only thing a
+ * `.md` entry can be: opening a FIFO read-only blocks until a writer arrives, so
+ * `person/hang.md` made by `mkfifo` hung `all()` for as long as anyone cared to wait.
+ * The flag makes the open return instead of waiting, and the descriptor is asked what
+ * it is before a byte is read. `stat` on the descriptor and not the path, so it
+ * inherits the same freedom from the race the open just bought.
  */
 const readOne = async (root: string, at: string): Promise<Document | KnowledgeProblem> => {
   try {
-    const opened = await fs.open(`${root}/${at}`, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const opened = await fs.open(
+      `${root}/${at}`,
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+    );
     try {
+      if (!(await opened.stat()).isFile()) return one(at, { _tag: "Escapes" });
       return documentOf(at, await opened.readFile("utf8"));
     } finally {
       await opened.close();
