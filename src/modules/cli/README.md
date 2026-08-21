@@ -17,6 +17,8 @@ nothing else:
 | `ambient agent add <name>` | `home.agent(name).converge()` |
 | `ambient import <archive> --into <slug> [--zone <IANA>]` | `archive` → `transcript` → `blobs`, into a chat that already exists |
 | `ambient ontology lint` | `knowledge.open(home.knowledge).all()` → `knowledge.lint(global.schema, docs)` |
+| `ambient ontology next [--type=<type>] [--limit=<n>]` | `base.all()` → `knowledge.next(docs, query)` — the work queue: `status: unreviewed` |
+| `ambient ontology index` | `base.all()` → `knowledge.index(docs)` → `knowledge.writeIndex(home.index, built)` |
 | `--home <path>` | overrides the root the caller supplied |
 
 **`import` was the one row that did not read as a single verb, and no longer is.** Its

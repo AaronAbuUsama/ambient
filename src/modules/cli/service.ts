@@ -30,6 +30,9 @@ const USAGE = `ambient — a durable conversational home
   ambient ingest --into <slug> copy one conversation into its Chat's Transcript
 
   ambient ontology lint        check the knowledge base against schema.yaml
+  ambient ontology next        the work queue: status: unreviewed documents
+    [--type=<type>] [--limit=<n>]
+  ambient ontology index       rebuild the derived index at home.index
 
   --home <path>                override $AMBIENT_HOME (default ~/.ambient)
 `;

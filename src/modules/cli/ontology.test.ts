@@ -1,10 +1,11 @@
 /**
- * `ambient ontology lint` — gate rows 8 and 9 of
+ * `ambient ontology lint | next | index` — gate rows 8, 9, 10 and 11 of
  * [`docs/planning/knowledge/spec.md`](../../../docs/planning/knowledge/spec.md).
  *
  * Driven through `run(argv, defaultRoot)`, the real interface, plus one spawn of
  * `src/main.ts` per row: *"exits 0 and prints nothing"* is a claim about a
- * process, and only a process can prove it.
+ * process, and only a process can prove it. Row 11's byte-identity claim is the
+ * same reason — a re-run is only a re-run if it goes through `ambient` again.
  */
 
 import { spawnSync } from "node:child_process";
@@ -57,6 +58,32 @@ const PERSON = [
   "source: history",
 ];
 
+const AARON = [
+  "type: Person",
+  "name: Aaron",
+  "aliases: []",
+  "numbers: []",
+  "status: unreviewed",
+  "source: history",
+];
+
+const REVIEWED = [
+  "type: Person",
+  "name: Reviewed",
+  "aliases: []",
+  "numbers: []",
+  "status: reviewed",
+  "source: history",
+];
+
+const ORG = [
+  "type: Organization",
+  "name: Capxul",
+  "aliases: []",
+  "status: unreviewed",
+  "source: history",
+];
+
 it("names the file, the key and the expected form of a missing required field", async () => {
   const root = tmp();
   await run(["init", "--home", root], "/nowhere");
@@ -86,15 +113,94 @@ it("exits 0 and prints nothing on a clean base", async () => {
   expect(ambient(root, "ontology", "lint")).toStrictEqual({ code: 0, out: "", err: "" });
 });
 
+const USAGE =
+  "usage: ambient ontology lint | ambient ontology next [--type=<type>] [--limit=<n>] | ambient ontology index";
+
 it("a wrong ontology command line is misuse, never a violation", async () => {
   const root = tmp();
   await run(["init", "--home", root], "/nowhere");
   expect(await run(["ontology", "--home", root], "/nowhere")).toStrictEqual({
     kind: "misuse",
-    said: "usage: ambient ontology lint",
+    said: USAGE,
   });
   expect(await run(["ontology", "lint", "extra", "--home", root], "/nowhere")).toStrictEqual({
     kind: "misuse",
-    said: "usage: ambient ontology lint",
+    said: USAGE,
   });
+  expect(await run(["ontology", "next", "--bogus", "--home", root], "/nowhere")).toStrictEqual({
+    kind: "misuse",
+    said: USAGE,
+  });
+  expect(await run(["ontology", "next", "--limit=zero", "--home", root], "/nowhere")).toStrictEqual(
+    {
+      kind: "misuse",
+      said: USAGE,
+    },
+  );
+  expect(await run(["ontology", "index", "extra", "--home", root], "/nowhere")).toStrictEqual({
+    kind: "misuse",
+    said: USAGE,
+  });
+});
+
+// ── gate row 10 — the work queue ─────────────────────────────────────
+
+it("gate row 10 — next returns only status: unreviewed documents, narrowed by type and capped by limit", async () => {
+  const root = tmp();
+  await run(["init", "--home", root], "/nowhere");
+  wrote(root, "person/zeeshan.md", PERSON);
+  wrote(root, "person/aaron.md", AARON);
+  wrote(root, "person/reviewed.md", REVIEWED);
+  wrote(root, "organization/capxul.md", ORG);
+
+  const args = ["ontology", "next", "--type=person", "--limit=20"];
+  expect(await run([...args, "--home", root], "/nowhere")).toStrictEqual({
+    kind: "message",
+    ok: true,
+    said: "person/aaron.md\nperson/zeeshan.md",
+  });
+  expect(ambient(root, ...args)).toStrictEqual({
+    code: 0,
+    out: "person/aaron.md\nperson/zeeshan.md\n",
+    err: "",
+  });
+});
+
+it("a quiet work queue prints nothing and exits 0 — nothing unreviewed, nothing spent", async () => {
+  const root = tmp();
+  await run(["init", "--home", root], "/nowhere");
+  wrote(root, "person/reviewed.md", REVIEWED);
+
+  expect(await run(["ontology", "next", "--home", root], "/nowhere")).toStrictEqual({
+    kind: "report",
+    problems: [],
+  });
+  expect(ambient(root, "ontology", "next")).toStrictEqual({ code: 0, out: "", err: "" });
+});
+
+// ── gate row 11 — the derived index ──────────────────────────────────
+
+/**
+ * The one with teeth: an index that is not reproducible is not actually
+ * derived. Bytes off disk, not a parsed object, and through the real
+ * `ambient` process both times — a re-run is only a re-run if it goes through
+ * `ambient` again.
+ */
+it("gate row 11 — index writes home.index, and deleting then re-running reproduces it byte-identically", async () => {
+  const root = tmp();
+  await run(["init", "--home", root], "/nowhere");
+  wrote(root, "person/zeeshan.md", PERSON);
+  wrote(root, "organization/capxul.md", ORG);
+  const indexPath = `${root}/index.json`;
+
+  expect(ambient(root, "ontology", "index")).toStrictEqual({ code: 0, out: "", err: "" });
+  expect(fs.existsSync(indexPath)).toBe(true);
+  expect(indexPath.startsWith(`${root}/knowledge/`)).toBe(false);
+  const first = fs.readFileSync(indexPath);
+
+  fs.rmSync(indexPath);
+  expect(ambient(root, "ontology", "index")).toStrictEqual({ code: 0, out: "", err: "" });
+  const second = fs.readFileSync(indexPath);
+
+  expect(second.equals(first)).toBe(true);
 });
