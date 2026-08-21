@@ -24,9 +24,14 @@ import type { Document, Index, IndexProblem, IndexRow, Written } from "../types.
 /** `docs` arrives sorted by `at` — `readAll`'s own invariant — so row and count order is stable. */
 export const buildIndex = (docs: readonly Document[]): Index => {
   const documents: IndexRow[] = docs.map((doc) => ({ at: doc.at, type: doc.type, name: doc.name }));
-  const counts: Record<string, number> = {};
-  for (const doc of docs) counts[doc.type] = (counts[doc.type] ?? 0) + 1;
-  return { documents, counts };
+  // A `Map`, because a type name is an open vocabulary and a plain object is not one:
+  // `schema.yaml` may declare `constructor`, whose lookup finds `Object.prototype`'s and
+  // counts to "function Object() { [native code] }11", or `__proto__`, which assigns the
+  // prototype instead of a key and vanishes from the JSON. `Object.fromEntries` defines
+  // both as ordinary own properties.
+  const counts = new Map<string, number>();
+  for (const doc of docs) counts.set(doc.type, (counts.get(doc.type) ?? 0) + 1);
+  return { documents, counts: Object.fromEntries(counts) };
 };
 
 export const writeIndexTo = async (place: Place, built: Index): Promise<Written | IndexProblem> => {
