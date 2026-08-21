@@ -22,9 +22,11 @@ export const LONGER = {
   "src/modules/home/types.ts":
     "THE interface of the module every other module writes through — the values, the four " +
     "handles and the whole failure vocabulary, answerable in one read. It sat at exactly 250 " +
-    "until KNOWLEDGE added `home.knowledge`, `home.index` and `Source.self_label`, which even " +
-    "uncommented is 253: the only split available is a seventh file at a module root, and that " +
-    "is not one of the six slots.",
+    "until KNOWLEDGE added `home.knowledge`, `home.index` and `Source.self_label`. 256 lines, " +
+    "of which 139 are code and 85 are the prose that makes the interface answerable without " +
+    "opening `service.ts` — deleting that prose would meet the cap by defeating what " +
+    "`modules.md` says this file is for. The only structural split is a seventh file at a " +
+    "module root, which is not one of the six slots.",
   "src/modules/home/home.test.ts":
     "SKELETON's gate plus the `home` interface resolutions later areas add. " +
     "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",
