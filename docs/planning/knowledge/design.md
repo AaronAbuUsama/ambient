@@ -70,10 +70,10 @@ the happy path hides the decisions this step exists to expose
 
 ```ts
 const home = openHome(root)                        // Home | HomeProblem
-if ("_tag" in home) return home                    // a value, never a throw
+if ("problems" in home) return home                // a value, never a throw
 
 const global = home.read()                         // Global | HomeProblem — carries `schema`
-if ("_tag" in global) return global                // Global.schema is ALREADY the parsed
+if ("problems" in global) return global            // Global.schema is ALREADY the parsed
                                                    // ontology: home/internal/schema.ts:55
 
 const base = knowledge.open(home.knowledge)        // Base — a handle over the Place.
@@ -109,7 +109,7 @@ return await base.writeIndex(index)                // Written | WriteFailure   �
 ```ts
 const chat = home.chat(slug)                       // ChatHandle — pure and total
 const place = chat.transcript()                    // Place | HomeProblem
-if ("_tag" in place) return place
+if ("problems" in place) return place
 
 const lines = await transcript.read(place)         // Line[] | ReadFailure
 if ("problems" in lines) return lines
