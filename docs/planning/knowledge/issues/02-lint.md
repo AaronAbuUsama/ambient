@@ -1,6 +1,6 @@
 # 02 — `ambient ontology lint`
 
-**Status:** todo · **Blocks:** 03, 04 · **Blocked by:** 00, 01
+**Status:** ready-for-agent · **Blocks:** 03, 04 · **Blocked by:** 00, 01
 
 The first complete path: `cli → knowledge → disk → back`. It is the ticket that creates the
 `knowledge` module, so it carries the read layer every later verb uses.

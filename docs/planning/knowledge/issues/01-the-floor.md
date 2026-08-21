@@ -1,6 +1,6 @@
 # 01 — the floor: two Places, three schema fields
 
-**Status:** todo · **Blocks:** 02, 03, 04 · **Blocked by:** 00
+**Status:** ready-for-agent · **Blocks:** 02, 03, 04 · **Blocked by:** 00
 
 The tracer bullet is `ambient init` and `ambient doctor` on a home that has everything
 KNOWLEDGE needs and no module yet. It cuts `cli → home → disk` end to end.
