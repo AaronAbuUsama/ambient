@@ -187,15 +187,22 @@ it("refuses a document that is a link out of the base, and does not read it", as
   expect(JSON.stringify(all)).not.toContain("Leaked");
 });
 
-/** An empty fence is not a document: it carries neither `type` nor `name`. */
-it("reports an empty frontmatter block as having none", async () => {
+/**
+ * An empty fence is not a document: it carries neither `type` nor `name`. Both spellings
+ * are here on purpose — `---\n---` never matches FENCE, while `---\n\n---` matches it with
+ * an empty capture and reaches the decoder. Testing only the first said the class was
+ * handled when the second returned `BadValue` on the empty key.
+ */
+it("reports an empty frontmatter block as having none, fenced blank or not", async () => {
   const { root, base } = await opened();
   wrote(root, "person/empty.md", "---\n---\n\n# Empty\n");
+  wrote(root, "person/blank.md", "---\n\n---\n\n# Blank\n");
 
   const all = await base.all();
   expect("problems" in all).toBe(true);
   if (!("problems" in all)) return;
   expect(all.problems.map(describeViolation)).toStrictEqual([
+    "person/blank.md: no frontmatter block",
     "person/empty.md: no frontmatter block",
   ]);
 });
