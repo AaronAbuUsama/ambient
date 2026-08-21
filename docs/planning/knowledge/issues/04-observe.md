@@ -1,6 +1,6 @@
 # 04 — `ambient observe --from <slug>`
 
-**Status:** todo · **Blocks:** nothing · **Blocked by:** 00, 01, 02
+**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 00, 01, 02
 
 **The tracer bullet that makes the knowledge base stop being empty.** It cuts
 `cli → observe → transcript → knowledge → disk`, and it is demoable on 13,134 real lines.

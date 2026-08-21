@@ -1,6 +1,6 @@
 # 00 — the seam rows
 
-**Status:** todo · **Blocks:** 01, 02, 03, 04 · **Blocked by:** nothing
+**Status:** done · **Blocks:** 01, 02, 03, 04 · **Blocked by:** nothing
 
 **Writes no code.** `00` is reserved for exactly this: the ticket that unblocks the rest.
 [`new-module`](../../../../.agents/skills/new-module/SKILL.md) **refuses a module with no
@@ -31,3 +31,23 @@ afternoon.
 
 [`modules.md`](../../../rules/modules.md) · [`language.md`](../../../rules/language.md) ·
 [`issues.md`](../../../rules/issues.md) · `new-module`'s seam-row precondition
+
+## Comments
+
+**2026-08-21 — verified, nothing authored.** All three checks passed as written, so this
+stayed the minutes-long ticket it says it is.
+
+- [`seams.md`](../../../design/seams.md) holds the amended `knowledge` row (`:30`, carrying
+  the [ADR 007](../../../adr/007-knowledge-is-files-not-a-client.md) amendment away from
+  *"hides the OK MCP client"*) and the new `observe` row (`:31`). The dependency block reads
+  `observe ─> transcript (read), knowledge` (`:54`) and
+  `knowledge ─> home (a Place), failure` (`:55`).
+- `cli ─> home, import, channel, ingest, knowledge, observe` (`:41`).
+- [`CONTEXT.md`](../../../../CONTEXT.md) holds **Window** (`:58`) and **Observation** (`:64`).
+- `vp run shape` clean; nothing under `src/` changed.
+
+**Status vocabulary corrected in the same commit.** All five tickets read `**Status:** todo`,
+which [`issues.md`](../../../rules/issues.md) does not define — the six are `needs-triage`,
+`needs-info`, `ready-for-agent`, `ready-for-human`, `done`, `wontfix`, plus `retracted`. They
+were written before that rule tightened. The other four now read `ready-for-agent`, which is
+what `plan-slice` writes and what they in fact were.

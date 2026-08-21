@@ -1,6 +1,6 @@
 # 03 — the work queue and the derived index
 
-**Status:** todo · **Blocks:** nothing · **Blocked by:** 00, 01, 02
+**Status:** ready-for-agent · **Blocks:** nothing · **Blocked by:** 00, 01, 02
 
 Two verbs, one ticket, because both are pure functions over the list `base.all()` already
 returns and neither is a complete path on its own.
