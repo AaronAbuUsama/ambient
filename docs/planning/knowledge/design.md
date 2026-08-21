@@ -206,8 +206,17 @@ export type Observation = {
 export type Base = {
   all(): Promise<readonly Document[] | Problems>
   write(schema: Schema, os: readonly Observation[]): Promise<WriteReport>
-  writeIndex(index: Index): Promise<Written | Problems>
 }
+
+/**
+ * **Amended 2026-08-21, building ticket 03.** This was drawn as `base.writeIndex(index)`,
+ * a third method on `Base`. It cannot be: `Base` is opened with one `Place` and that
+ * `Place` is documented as *the whole grant*, while the index is written to `home.index`
+ * — a different `Place`, deliberately outside the base (§ Alternatives B2). A method on
+ * `Base` that writes outside `Base`'s own grant is the seam saying one thing and doing
+ * another. It takes the `Place` it writes to, like every other write in this repository.
+ */
+export type WriteIndex = (place: Place, index: Index) => Promise<Written | IndexProblem>
 
 export type WriteReport = {
   readonly wrote: readonly string[]        // (type, name) pairs, rendered
