@@ -35,6 +35,7 @@ const ROOT_ENTRIES = [
   "schema.yaml",
   ".gitignore",
   "knowledge",
+  "index.json",
   "blobs",
   "chats",
   "agents",

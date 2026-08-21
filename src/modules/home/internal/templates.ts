@@ -83,7 +83,7 @@ Commitment:
   what: text
   who: ref
   due: date?
-  source_message: text
+  source_window: text # the Window a claim cites: "<chat>@<from>..<to>"
   status: enum(open|done|dropped)
 
 Issue:
@@ -95,7 +95,7 @@ Issue:
 
 Media:
   hash: text
-  kind: enum(image|voice|audio|video|document)
+  kind: enum(image|voice|audio|video|document|sticker)
   from: ref?
   chat: ref?
   duration: text?
@@ -109,9 +109,14 @@ Chat:
   mode: enum(ingest|speak)
 `;
 
-/** Configuration is files in a git repo. These two must stay out of it. */
+/**
+ * Configuration is files in a git repo. These three must stay out of it: two are
+ * traffic, and `index.json` is derived from the knowledge base and rebuilt by
+ * every pass — committing it would put machine noise in the log.
+ */
 export const GITIGNORE = `blobs/
 state.db
+index.json
 `;
 
 export const CHAT_CONFIG = `# The machine half of this chat's mandate. \`mandate.md\` beside it is the prose half.

@@ -91,6 +91,8 @@ export const openHome: OpenHome = (root) => {
   return {
     root: h.root,
     blobs: placeAt(h.blobs),
+    knowledge: placeAt(h.knowledge),
+    index: placeAt(h.index),
     db: placeAt(h.db),
 
     read: () => readGlobal(h),

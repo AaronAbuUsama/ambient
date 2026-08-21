@@ -231,3 +231,14 @@ it("the CLI exits 0 on a healthy home and 1 on a broken one, printing what is wr
 
   expect(ambient(root, "bogus")).toMatchObject({ code: 2, out: "" });
 });
+
+/** KNOWLEDGE's gate rows 3 and 4 — the tracer bullet, `cli → home → disk`. */
+it("init writes the knowledge base itself, and doctor names a deleted schema.yaml", () => {
+  const root = tmp();
+  expect(ambient(root, "init")).toStrictEqual({ code: 0, out: "" });
+  expect(fs.readdirSync(`${root}/knowledge`).sort()).toStrictEqual([".ok", ".okignore"]);
+  expect(ambient(root, "doctor")).toStrictEqual({ code: 0, out: "" });
+
+  fs.rmSync(`${root}/schema.yaml`);
+  expect(ambient(root, "doctor")).toStrictEqual({ code: 1, out: "schema.yaml: missing\n" });
+});
