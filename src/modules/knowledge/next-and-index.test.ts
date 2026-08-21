@@ -217,3 +217,33 @@ it("row 11 — deleting the index and re-running from the same base reproduces i
 
   expect(second.equals(first)).toBe(true);
 });
+
+/**
+ * A type name is an open vocabulary — `schema.yaml` invites users to add types — so the
+ * counter cannot be a plain object. Before the `Map`, `constructor` counted to
+ * `"function Object() { [native code] }11"` and `__proto__` was absent from the JSON
+ * altogether, which makes an index that claims to be derived quietly untrue.
+ */
+it("counts type names that collide with Object.prototype", () => {
+  const docs = ["constructor", "constructor", "__proto__", "Person"].map((type, n) => ({
+    at: `${type}/${String(n)}.md`,
+    type,
+    name: `n${String(n)}`,
+    frontmatter: { type, name: `n${String(n)}` },
+    body: "",
+  }));
+
+  const built = index(docs);
+
+  // The expectation is built with `fromEntries` for the same reason the counter is:
+  // `{ __proto__: 1 }` in a literal sets the prototype and creates no key at all, so
+  // the obvious spelling of this assertion carries the very bug it is here to catch.
+  expect(built.counts).toStrictEqual(
+    Object.fromEntries([
+      ["constructor", 2],
+      ["__proto__", 1],
+      ["Person", 1],
+    ]),
+  );
+  expect(Object.keys(built.counts).sort()).toStrictEqual(["Person", "__proto__", "constructor"]);
+});
