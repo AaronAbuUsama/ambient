@@ -19,6 +19,12 @@ const LIMIT = 250;
  * row here by being one thing that would be *less* legible in two files.
  */
 export const LONGER = {
+  "src/modules/home/types.ts":
+    "THE interface of the module every other module writes through — the values, the four " +
+    "handles and the whole failure vocabulary, answerable in one read. It sat at exactly 250 " +
+    "until KNOWLEDGE added `home.knowledge`, `home.index` and `Source.self_label`, which even " +
+    "uncommented is 253: the only split available is a seventh file at a module root, and that " +
+    "is not one of the six slots.",
   "src/modules/home/home.test.ts":
     "SKELETON's gate plus the `home` interface resolutions later areas add. " +
     "Splitting it for length would put part of the one interface gate in a file nobody knows to open.",

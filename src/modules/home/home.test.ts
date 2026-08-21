@@ -332,3 +332,58 @@ it("init writes the OpenKnowledge scaffold itself, and spawns nothing", async ()
   );
   expect(fs.readFileSync(`${root}/knowledge/.ok/.gitignore`, "utf8")).toContain("local/");
 });
+
+// ── KNOWLEDGE's gate, rows 2 and 5-7 ─────────────────────────────────
+//
+// `toStrictEqual`, never `toEqual` — KNOWLEDGE spec.md § Testing Decisions and
+// ADR 006 amendment 1: `toEqual` cannot observe a change in key presence.
+
+it("2 · the knowledge base and its index are Places, like blobs", async () => {
+  const { root, home } = await started();
+  expect(home.knowledge.path).toBe(`${root}/knowledge`);
+  expect(home.index.path).toBe(`${root}/index.json`);
+  expect(home.index.path.startsWith(`${root}/knowledge/`)).toBe(false);
+});
+
+it("5 · the ontology labels a sticker, a Commitment cites a Window, and doctor accepts both", async () => {
+  const { home } = await started();
+  const global = home.read();
+  if ("problems" in global) throw new Error(said(global.problems).join("\n"));
+  const fields = (type: string) => global.schema.types.find((t) => t.name === type)?.fields;
+  expect(fields("Media")?.find((f) => f.name === "kind")?.type).toStrictEqual({
+    form: "enum",
+    of: ["image", "voice", "audio", "video", "document", "sticker"],
+  });
+  expect(fields("Commitment")?.map((f) => f.name)).toStrictEqual([
+    "what",
+    "who",
+    "due",
+    "source_window",
+    "status",
+  ]);
+  expect(home.plan()).toStrictEqual([]);
+});
+
+it("6 · a source may name the label the principal appears under, and it must be text", async () => {
+  const { root, home } = await started();
+  const config = `${root}/config.yaml`;
+  const template = fs.readFileSync(config, "utf8");
+  const withLabel = (value: string): string =>
+    template.replace("    allow: []\n", `    allow: []\n    self_label: ${value}\n`);
+
+  fs.writeFileSync(config, withLabel("Aaron"));
+  expect(home.plan()).toStrictEqual([]);
+  const global = home.read();
+  if ("problems" in global) throw new Error(said(global.problems).join("\n"));
+  expect(global.sources.map((s) => s.self_label)).toStrictEqual(["Aaron", undefined]);
+
+  fs.writeFileSync(config, withLabel("42"));
+  expect(said(home.plan())).toContain(
+    'config.yaml: sources.personal.self_label must be text, got "42"',
+  );
+});
+
+it("7 · the home's .gitignore excludes the derived index", async () => {
+  const { root } = await started();
+  expect(fs.readFileSync(`${root}/.gitignore`, "utf8").split("\n")).toContain("index.json");
+});

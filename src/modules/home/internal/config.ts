@@ -52,6 +52,7 @@ const SourceEntry = Schema.Struct({
   kind: Schema.Literals(["whatsapp", "email"]),
   mode: Schema.Literals(["ingest", "speak"]),
   allow: Schema.Array(Schema.String),
+  self_label: Schema.optionalKey(Schema.String),
 });
 
 const McpEntry = Schema.Struct({
@@ -145,6 +146,7 @@ export const readGlobalConfig = (src: string): Checked<GlobalConfig> => {
     kind: entry.kind,
     mode: entry.mode,
     allow: entry.allow,
+    self_label: entry.self_label,
   }));
   const mcp: readonly McpServer[] = Object.entries(document.mcp).map(([name, entry]) => ({
     name,

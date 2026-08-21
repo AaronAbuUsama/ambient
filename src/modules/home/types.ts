@@ -80,6 +80,8 @@ export type Source = {
   readonly mode: "ingest" | "speak";
   /** Opt-in per conversation; empty means nothing. */
   readonly allow: readonly string[];
+  /** The label the principal appears under here. Per-install, never a fact the ontology holds. */
+  readonly self_label?: string;
 };
 
 export type McpServer = {
@@ -213,6 +215,10 @@ export type Home = {
   readonly root: string;
   /** → the `blobs` module. A property, not a `Grant`: the root has no name to be wrong. */
   readonly blobs: Place;
+  /** → the `knowledge` module. The OpenKnowledge project; `home` never reads inside it. */
+  readonly knowledge: Place;
+  /** → `knowledge`. Its derived index, **outside** the base: rebuilt by every pass, disposable. */
+  readonly index: Place;
   /** → the `work` module. Optional on disk; `home` checks its magic bytes and stops. */
   readonly db: Place;
 

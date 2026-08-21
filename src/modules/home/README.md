@@ -16,6 +16,7 @@ shape, and hands out only what another module genuinely needs:
 | `chats/<slug>/config.yaml`, `mandate.md` | `home` |
 | `agents/<name>/agent.yaml`, `SKILL.md` | `home` |
 | `knowledge/` | OpenKnowledge. `home` writes the scaffold once and never reads inside |
+| `index.json` | `knowledge`. The derived index, kept **outside** the base and out of git |
 | `blobs/`, `state.db` | `blobs` and `work`. `home` vouches for the kind and stops |
 | `transcript.jsonl`, `media/`, `now.md` | `channel` and the receipt fold. Never opened here |
 | `imports/` | the History Import Receipt writer. `home` creates and stats the directory, then stops |
