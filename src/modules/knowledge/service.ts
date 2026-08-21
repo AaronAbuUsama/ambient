@@ -1,14 +1,42 @@
 /** `knowledge` assembly. The interface is `types.ts`. */
 
 import { readAll } from "./internal/documents.ts";
+import { buildIndex, writeIndexTo } from "./internal/index.ts";
 import { violationsIn } from "./internal/lint.ts";
-import type { DescribeViolation, Lint, Open, Violation, ViolationDetail } from "./types.ts";
+import type {
+  BuildIndex,
+  DescribeDocument,
+  DescribeIndexFailure,
+  DescribeViolation,
+  IndexFailure,
+  Lint,
+  Next,
+  Open,
+  Violation,
+  ViolationDetail,
+  WriteIndex,
+} from "./types.ts";
 
 /** Builds no path and reads nothing: the `Place` is the whole grant. */
 export const open: Open = (place) => ({ all: () => readAll(place) });
 
 export const lint: Lint = (schema, docs) =>
   docs.flatMap((document) => violationsIn(schema, document));
+
+/** The work queue: a frontmatter status and nothing more. */
+export const next: Next = (docs, query) =>
+  docs
+    .filter((document) => document.frontmatter.status === "unreviewed")
+    .filter(
+      (document) =>
+        query.type === undefined || document.type.toLowerCase() === query.type.toLowerCase(),
+    )
+    .slice(0, query.limit);
+
+export const index: BuildIndex = (docs) => buildIndex(docs);
+
+/** The `Place` is passed explicitly: it is outside the base `open` was granted for. */
+export const writeIndex: WriteIndex = (place, built) => writeIndexTo(place, built);
 
 /** A malformed block is the one problem a person fixes by looking at a position. */
 const where = (violation: Violation): string =>
@@ -38,3 +66,9 @@ const said = (detail: ViolationDetail): string => {
 /** Rendering lives in `knowledge` — `cli`'s README forbids it building strings. */
 export const describe: DescribeViolation = (violation) =>
   `${where(violation)}: ${said(violation.detail)}`;
+
+/** One line per document, for the work queue — `at` is what a person opens. */
+export const describeDocument: DescribeDocument = (document) => document.at;
+
+export const describeIndexFailure: DescribeIndexFailure = (failure: IndexFailure) =>
+  `index.json: unwritable — ${failure.cause}`;

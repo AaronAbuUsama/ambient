@@ -125,3 +125,65 @@ export type Lint = (schema: Schema, docs: readonly Document[]) => readonly Viola
 
 /** Rendering lives here, not in `cli`. */
 export type DescribeViolation = Describe<Violation>;
+
+// ── the work queue ───────────────────────────────────────────────────
+
+/**
+ * What `next` narrows to, beyond the status the queue is defined by. `type`
+ * matches `Document.type` case-insensitively, so `--type=person` reaches
+ * `Person` without a folder-naming table — that mapping is `write`'s to own,
+ * not the queue's.
+ */
+export type Query = { readonly type?: string; readonly limit?: number };
+
+/**
+ * The work queue. **Pure** — a list in, a value out. It filters
+ * `status: unreviewed` and nothing else: that is what lets a quiet day be
+ * cheap — nothing unreviewed, nothing printed, nothing spent.
+ */
+export type Next = (docs: readonly Document[], query: Query) => readonly Document[];
+
+/** One line per document, for the work queue. */
+export type DescribeDocument = Describe<Document>;
+
+// ── the derived index ────────────────────────────────────────────────
+
+/** One row in the derived index — enough to say what is in the base without re-reading it. */
+export type IndexRow = { readonly at: string; readonly type: string; readonly name: string };
+
+/**
+ * The derived read model. **Frontmatter is truth and this is disposable**:
+ * deleting it and rebuilding from the same documents must reproduce it
+ * byte-identically, or it is not actually derived
+ * ([design.md § B2](../../../docs/planning/knowledge/design.md)).
+ */
+export type Index = {
+  readonly documents: readonly IndexRow[];
+  readonly counts: Readonly<Record<string, number>>;
+};
+
+/** **Pure** — a list in, a value out. No I/O, no clock. */
+export type BuildIndex = (docs: readonly Document[]) => Index;
+
+/** Why writing the derived index failed. `cause` is the OS message. */
+export type IndexFailure = { readonly cause: string };
+
+/** Narrow with `"problems" in result`. */
+export type IndexProblem = Problems<IndexFailure>;
+
+export type Written = { readonly bytes: number };
+
+/**
+ * Writes to `home.index`, **outside** the knowledge base, as a single `rename`
+ * — the same shape every write in this Slice uses, and the reason ADR 007
+ * gives for all of them: a non-atomic edit registers a phantom document in
+ * OpenKnowledge's removal ledger.
+ *
+ * It takes the `Place` explicitly rather than hanging off `Base`: a `Base`'s
+ * one invariant is that the `Place` it was opened with is the whole grant, and
+ * the index lives outside that grant on purpose.
+ */
+export type WriteIndex = (place: Place, index: Index) => Promise<Written | IndexProblem>;
+
+/** Rendering lives here, not in `cli`. */
+export type DescribeIndexFailure = Describe<IndexFailure>;

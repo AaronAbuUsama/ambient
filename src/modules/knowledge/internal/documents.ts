@@ -1,6 +1,7 @@
 /**
  * The base on disk: walk it, split the fence, decode the block. The only file in
- * `knowledge` that opens anything.
+ * `knowledge` that **reads** anything — `internal/index.ts` is the only other
+ * one that opens anything at all, and it only ever writes `home.index`.
  *
  * **A document is a `.md` file with a YAML frontmatter block, and nothing else.**
  * Measured, not assumed: `ok preview` and `ok lint` found and passed a document in
