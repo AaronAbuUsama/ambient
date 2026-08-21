@@ -20,6 +20,8 @@ const said = (detail: ViolationDetail): string => {
       return `unreadable — ${detail.cause}`;
     case "NoFrontmatter":
       return "no frontmatter block";
+    case "Escapes":
+      return "a link, not a file — the knowledge base is not read through symlinks";
     case "Malformed":
       return detail.detail;
     case "UnknownType":

@@ -161,3 +161,41 @@ it("says so as a value when the base is not there, and never throws", async () =
     { at: ".", detail: { _tag: "Unreadable", cause: expect.stringContaining("ENOENT") } },
   ]);
 });
+
+/**
+ * The `Place` is the grant, and a symlink is how a path inside it addresses bytes
+ * outside it. Before this was refused, `all()` returned the target's frontmatter and
+ * its body — the file below is written outside the home on purpose.
+ */
+it("refuses a document that is a link out of the base, and does not read it", async () => {
+  const { root, base } = await opened();
+  const outside = `${root}/../outside-secret.md`;
+  fs.writeFileSync(
+    outside,
+    `---\ntype: Person\nname: Leaked\naliases: []\nnumbers: []\nstatus: unreviewed\nsource: history\n---\n\n# SECRET BODY\n`,
+  );
+  fs.mkdirSync(`${root}/knowledge/person`, { recursive: true });
+  fs.symlinkSync(outside, `${root}/knowledge/person/link.md`);
+
+  const all = await base.all();
+  expect("problems" in all).toBe(true);
+  if (!("problems" in all)) return;
+  expect(all.problems.map(describeViolation)).toStrictEqual([
+    "person/link.md: a link, not a file — the knowledge base is not read through symlinks",
+  ]);
+  expect(JSON.stringify(all)).not.toContain("SECRET BODY");
+  expect(JSON.stringify(all)).not.toContain("Leaked");
+});
+
+/** An empty fence is not a document: it carries neither `type` nor `name`. */
+it("reports an empty frontmatter block as having none", async () => {
+  const { root, base } = await opened();
+  wrote(root, "person/empty.md", "---\n---\n\n# Empty\n");
+
+  const all = await base.all();
+  expect("problems" in all).toBe(true);
+  if (!("problems" in all)) return;
+  expect(all.problems.map(describeViolation)).toStrictEqual([
+    "person/empty.md: no frontmatter block",
+  ]);
+});
