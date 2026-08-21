@@ -94,9 +94,16 @@ step-3 spike: refusing to overwrite *by filename* silently duplicates.
 **4 · A type does not give you its folder.** `Person` → `person/`, never `people/`. The
 mapping is declared, not derived — same source.
 
-**5 · Every write lands as a single `rename`.** Measured: a non-atomic edit registers a
+**5 · Every write lands as a single atomic publish.** Measured: a non-atomic edit registers a
 **phantom document** in OpenKnowledge's permanent removal ledger, and the viewer is the one
 thing ADR 007 keeps.
+
+*Amended 2026-08-21, building ticket 04:* this said **`rename`**, and `rename` is the wrong
+primitive for it. It replaces its destination silently, and the destination is derived from a
+`name` the Transcript chose — so two labels whose slugs collide, or one that collides with a
+document the principal edited by hand, destroy what was there and still report as written.
+The publish is `link`, which fails with `EEXIST` instead. The property this decision is
+actually about — the document appears complete, in one step — is unchanged.
 
 **6 · Frontmatter decodes through an Effect `Schema`.**
 [ADR 006](../../adr/006-schema-is-the-parse-boundary.md) — external data is decoded at the

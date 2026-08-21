@@ -122,3 +122,68 @@ const hasOk = spawnSync("ok", ["--version"]).error === undefined;
     });
   },
 );
+
+// ── the write boundary defends the base against the names in a Transcript ──
+
+/** `slugOf` is not injective: `"A B"` and `"A/B"` both reach `a-b`. */
+const named = (name: string): Observation => ({ ...zeeshan, name });
+
+it("refuses the second of two names that reach one slug, and writes only the first", async () => {
+  const { root, schema, base } = await opened();
+  const report = await base.write(schema, [named("A B"), named("A/B")]);
+
+  expect(report.wrote).toStrictEqual(["Person/A B"]);
+  expect(report.refused.map((r) => describeViolation({ at: r.at, detail: r.why }))).toStrictEqual([
+    'Person/A/B: slug "person/a-b.md" is already taken by Person/A B',
+  ]);
+  // The survivor is the one that was reported, not the one that ran last.
+  expect(fs.readFileSync(`${root}/knowledge/person/a-b.md`, "utf8")).toContain("name: A B");
+  expect(fs.readdirSync(`${root}/knowledge/person`)).toStrictEqual(["a-b.md"]);
+});
+
+it("refuses rather than replacing a document already on disk", async () => {
+  const { root, schema, base } = await opened();
+  expect((await base.write(schema, [named("A B")])).wrote).toStrictEqual(["Person/A B"]);
+
+  const path = `${root}/knowledge/person/a-b.md`;
+  fs.writeFileSync(path, "---\ntype: Person\nname: A B\n---\n\n# corrected by hand\n");
+  const before = fs.readFileSync(path);
+
+  // A different identity, same slug, arriving in a later pass.
+  const report = await base.write(schema, [named("A/B")]);
+  expect(report.wrote).toStrictEqual([]);
+  expect(report.refused).toHaveLength(1);
+  expect(fs.readFileSync(path).equals(before)).toBe(true);
+  expect(fs.readdirSync(`${root}/knowledge/person`)).toStrictEqual(["a-b.md"]);
+});
+
+it("refuses a destination folder that is a link out of the base", async () => {
+  const { root, schema, base } = await opened();
+  const outside = `${root}/../outside-person`;
+  fs.mkdirSync(outside, { recursive: true });
+  fs.symlinkSync(outside, `${root}/knowledge/person`);
+
+  const report = await base.write(schema, [zeeshan]);
+  expect(report.wrote).toStrictEqual([]);
+  expect(report.refused.map((r) => describeViolation({ at: r.at, detail: r.why }))).toStrictEqual([
+    "Person/Zeeshan: not a regular file — the base is read from files, never through a link or a pipe",
+  ]);
+  expect(fs.readdirSync(outside)).toStrictEqual([]);
+});
+
+it("does not let a proposal's frontmatter overwrite the identity that chose its path", async () => {
+  const { root, schema, base } = await opened();
+  const lying: Observation = {
+    type: "Person",
+    name: "Zeeshan",
+    frontmatter: { ...zeeshan.frontmatter, type: "Organization", name: "Somebody Else" },
+  };
+
+  expect((await base.write(schema, [lying])).wrote).toStrictEqual(["Person/Zeeshan"]);
+  const text = fs.readFileSync(`${root}/knowledge/person/zeeshan.md`, "utf8");
+  // The bytes name the document its path names, and `type`/`name` stay at the top.
+  expect(text).toStrictEqual(
+    "---\ntype: Person\nname: Zeeshan\naliases: []\nnumbers: []\nstatus: unreviewed\nsource: history\n---\n",
+  );
+  expect(fs.existsSync(`${root}/knowledge/organization`)).toBe(false);
+});

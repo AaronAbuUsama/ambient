@@ -95,7 +95,14 @@ export type ViolationDetail =
    * because `schema.yaml` invites new ones and `write` is every later pass's one
    * path to disk.
    */
-  | { readonly _tag: "NoFolder"; readonly type: string };
+  | { readonly _tag: "NoFolder"; readonly type: string }
+  /**
+   * Two identities want one file. `slugOf` is not injective — `"A B"` and `"A/B"`
+   * both reach `a-b` — and a name comes from a Transcript, so the pair is chosen by
+   * whoever wrote the messages. Refused rather than published, because the write
+   * that wins destroys the one that lost and both would be reported as written.
+   */
+  | { readonly _tag: "Collides"; readonly slug: string; readonly with: string };
 
 /** A problem and the document it is in. `at` is base-relative — `person/zeeshan.md`. */
 export type Violation = { readonly at: string; readonly detail: ViolationDetail };
