@@ -24,12 +24,38 @@ runs this list and reports it row by row.
 
 ```
 $ pnpm dlx fallow dupes
-✓ No code duplication found          →  0 lines, 0.0%
+✗ 62 lines (0.9%) duplicated across 2 files
+    34 lines  2 instances   home/internal/yaml.ts:39-72 · knowledge/internal/documents.ts:61-88
 ```
 
-Measured on 2026-08-16, after the two clone groups in `home/internal/config.ts` — 30
-lines, 1.7% — were extracted into `section` and `open`. **A closing slice must not exceed
-0 lines.**
+Was `0 lines, 0.0%`, measured 2026-08-16 after the two clone groups in
+`home/internal/config.ts` — 30 lines, 1.7% — were extracted into `section` and `open`.
+**Raised to 62 on 2026-08-22, by KNOWLEDGE, and this is the reason.**
+
+The clone is `gotOf`: the fourteen lines that turn a value which failed a check into the
+word after `got` — `"nothing"`, `"a list"`, `"a mapping"`, or the primitive itself. `home`
+renders it for a bad `config.yaml` value and `knowledge` for a bad frontmatter value.
+
+**Two rules make the obvious extraction illegal, and each is worth more than the fourteen
+lines.** It belongs in `failure`, whose whole job is *"a `catch` hands back `unknown`, and
+something has to turn it into text a person reads"* — and:
+
+- `failure` cannot take the Effect `Issue`, because it *"names no other module and depends
+  on nothing"*, which is why every module may depend on it.
+- It cannot take the value either: `anti-slop/no-unknown-parameters` exempts exactly one
+  parameter name, `cause`, hard-coded at
+  [`tools/rules/no-unknown-parameters.ts:61`](../../tools/rules/no-unknown-parameters.ts).
+  Renaming the parameter to `cause` to pass would be a lie to a linter.
+
+`home` cannot export it either without leaking an Effect `Issue` into an interface
+[ADR 001](../adr/001-home-interface.md) keeps deliberately narrow, and `knowledge` cannot
+reach `home/internal/` — [imports.md](../rules/imports.md).
+
+**What would actually fix it** is a second exemption in that lint rule, for a renderer of an
+unparsed value. That is a decision about a repo-wide rule, and it is not a slice's to take on
+the way past. Until then the duplication is declared here rather than hidden, and the number
+is exact: **new duplication anywhere still fails this row**, because it pushes the total
+above 62.
 
 Raising the baseline is a decision, not a side effect: if a slice genuinely needs to
 leave duplication behind, change the number in this file in the same commit, and say why
