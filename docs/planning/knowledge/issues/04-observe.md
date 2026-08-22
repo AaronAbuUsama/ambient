@@ -19,7 +19,8 @@
 3. `unseen(found, held) → Observation[]`. **Pure.** Identity is `(type, name)`, **never a
    path** — refusing by filename silently duplicates.
 4. `base.write(schema, observations) → WriteReport`. Validates and **refuses**; `Refusal` is
-   a value, never a throw. Each accepted write lands as a single `rename`.
+   a value, never a throw. Each accepted write lands as a single atomic publish — `link`,
+   not `rename`; see the Comments below.
 5. A type does not give you its folder — `Person` → `person/`. Declared, not derived.
 
 ## Done when

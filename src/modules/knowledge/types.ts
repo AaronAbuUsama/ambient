@@ -97,10 +97,9 @@ export type ViolationDetail =
    */
   | { readonly _tag: "NoFolder"; readonly type: string }
   /**
-   * Two identities want one file. `slugOf` is not injective — `"A B"` and `"A/B"`
-   * both reach `a-b` — and a name comes from a Transcript, so the pair is chosen by
-   * whoever wrote the messages. Refused rather than published, because the write
-   * that wins destroys the one that lost and both would be reported as written.
+   * Two identities want one file: `slugOf` is not injective (`"A B"` and `"A/B"` both
+   * reach `a-b`) and a Transcript chooses the names. Refused, because the write that
+   * wins destroys the one that lost and both would be reported as written.
    */
   | { readonly _tag: "Collides"; readonly slug: string; readonly with: string };
 
@@ -115,13 +114,11 @@ export type KnowledgeProblem = Problems<Violation>;
 /**
  * What a mechanical pass proposes. No prose — a reasoning pass writes that later.
  *
- * Lives here and not in `observe`: a `Base` is what validates and turns one into a
- * `Document`, so the shape belongs with the thing that checks it. `frontmatter`
- * reuses `Field` rather than `unknown` — a mechanical pass writes only text it
- * already holds, never a decoded-but-unvalidated value, so `Field` says exactly
- * what it may contain. It is still *unvalidated*: nothing has checked it against
- * `schema.yaml` yet, and `base.write` is where ADR 006's ontology boundary sits
- * for a proposal, exactly as `all()` is where it sits for a read.
+ * Lives here and not in `observe`: a `Base` validates one and turns it into a
+ * `Document`, so the shape belongs with what checks it. `frontmatter` reuses `Field`
+ * rather than `unknown` — a mechanical pass writes only text it already holds. It is
+ * still *unvalidated*; `base.write` is where ADR 006's ontology boundary sits for a
+ * proposal, exactly as `all()` is where it sits for a read.
  */
 export type Observation = {
   readonly type: string;
@@ -166,10 +163,13 @@ export type Base = {
    *
    * **Refuses rather than throws.** A missing required field or a type absent
    * from `schema.yaml` comes back in `refused`, and nothing of that Observation
-   * reaches disk. **Every accepted write lands as a single `rename`**
+   * reaches disk. **Every accepted write lands as a single atomic publish**
    * (Implementation Decision 5): a non-atomic edit registers a phantom document
    * in OpenKnowledge's permanent removal ledger, and the viewer is the one thing
-   * ADR 007 keeps.
+   * ADR 007 keeps. **It never publishes over a document already there:** the path
+   * comes from a name a Transcript chose and `slugOf` is not injective, so the
+   * primitive is `link`, which fails with `EEXIST`, not `rename`, which would
+   * replace whatever held it — hand edits included. A taken slug is a `Collides`.
    */
   write(schema: Schema, observations: readonly Observation[]): Promise<WriteReport>;
 };
@@ -235,14 +235,13 @@ export type IndexProblem = Problems<IndexFailure>;
 export type Written = { readonly bytes: number };
 
 /**
- * Writes to `home.index`, **outside** the knowledge base, as a single `rename`
- * — the same shape every write in this Slice uses, and the reason ADR 007
- * gives for all of them: a non-atomic edit registers a phantom document in
- * OpenKnowledge's removal ledger.
+ * Writes to `home.index`, **outside** the knowledge base, as a single `rename` —
+ * right here, unlike `write`'s publish, because the index is derived and disposable:
+ * replacing the previous one is the point and nothing authored is lost.
  *
- * It takes the `Place` explicitly rather than hanging off `Base`: a `Base`'s
- * one invariant is that the `Place` it was opened with is the whole grant, and
- * the index lives outside that grant on purpose.
+ * It takes the `Place` explicitly rather than hanging off `Base`, whose one invariant
+ * is that the `Place` it was opened with is the whole grant — and the index is outside
+ * that grant on purpose.
  */
 export type WriteIndex = (place: Place, index: Index) => Promise<Written | IndexProblem>;
 
