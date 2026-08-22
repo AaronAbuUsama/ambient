@@ -1,5 +1,5 @@
 /**
- * One Observation, checked against the ontology and written as a single `rename`.
+ * One Observation, checked against the ontology and published with a single `link`.
  *
  * The only file in `knowledge` that writes anything. Reading lives in
  * `documents.ts`; this reuses `lint.ts`'s `violationsIn` rather than a second
@@ -111,7 +111,11 @@ const writeOne = async (root: Place, document: Document): Promise<Violation | un
   const dir = `${root.path}/${folder}`;
   const slug = slugOf(document.name);
   const dest = `${dir}/${slug}.md`;
-  const tmp = `${dir}/.${slug}.tmp-${randomUUID()}`;
+  // The temp file goes in the base root, not beside the destination. The root is the
+  // `Place` itself and is verified below; `dir` is a name inside it that could be a link.
+  // Filling the temp file there means **no byte is ever created outside the grant**, even
+  // if `dir` is swapped — only the final `link` could land wrong, and that is checked.
+  const tmp = `${root.path}/.${slug}.tmp-${randomUUID()}`;
   const escaped = { at: document.at, detail: { _tag: "Escapes" } } as const;
 
   try {
@@ -128,8 +132,8 @@ const writeOne = async (root: Place, document: Document): Promise<Violation | un
     // handle, and Node exposes no way to write relative to one. So the durable case — a
     // linked folder sitting in the base — is refused, the window is narrow, and the
     // publish is verified again below rather than trusted.
-    const here = await fs.realpath(dir);
     const base = await fs.realpath(root.path);
+    const here = await fs.realpath(dir);
     if (here !== base && !here.startsWith(`${base}/`)) return escaped;
 
     await fs.writeFile(tmp, bytesOf(document), { encoding: "utf8", flag: "wx" });
